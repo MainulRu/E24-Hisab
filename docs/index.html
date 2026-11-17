@@ -16,7 +16,7 @@ main{padding:16px 14px 90px;flex:1}.page-title{font-size:19px;font-weight:750;ma
 .btn{border:0;border-radius:11px;background:var(--g);color:#fff;font-weight:750;padding:13px 15px;font-size:14px;width:100%;margin:7px 0}.btn.bluebtn{background:var(--blue)}.btn.purplebtn{background:var(--purple)}.btn.light{background:#e7eee9;color:var(--g)}
 .search,input,select,textarea{width:100%;border:1px solid #d4ded7;border-radius:10px;padding:12px;background:white;font:inherit;margin:5px 0;color:var(--ink)}.pill{padding:5px 9px;border-radius:30px;background:#ffebeb;color:var(--red);font-size:11px;font-weight:750;white-space:nowrap}.pill.ok{background:#e5f6eb;color:var(--g)}
 nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(480px,100%);height:68px;background:#fff;box-shadow:0 -3px 14px #102a1715;display:grid;grid-template-columns:repeat(5,1fr);z-index:3;padding-bottom:env(safe-area-inset-bottom)}
-nav button{border:0;background:white;color:#65736a;font-size:11px;font-weight:650;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}nav button .ni{font-size:21px}nav button.active{color:var(--g);background:#f0f8f2}
+nav button{border:0;background:white;color:#65736a;font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}nav button .ni{display:grid;place-items:center;width:30px;height:28px}nav button .ni svg{width:25px;height:25px}nav button.active{color:var(--g);background:#f0f8f2}nav button:focus-visible{outline:2px solid var(--g);outline-offset:-3px}
 .profile{display:flex;align-items:center;gap:12px;background:white;padding:14px;border-radius:14px}.profile .avatar{width:58px;height:58px;font-size:27px}
 .toolbar{display:flex;gap:8px}.toolbar>*{flex:1}
 .empty{padding:22px;text-align:center;color:var(--muted);background:white;border-radius:12px}
@@ -36,17 +36,42 @@ try{const saved=JSON.parse(localStorage.getItem('e24hisab_preview_v2'));state=sa
 function persist(){try{localStorage.setItem('e24hisab_preview_v2',JSON.stringify(state))}catch(e){toast('ডেটা সংরক্ষণ করা যায়নি—ব্রাউজার স্টোরেজ পরীক্ষা করুন')}}
 const money=n=>'৳ '+Number(n||0).toLocaleString('en-IN');
 const icon={হোম:'home',গ্রাহক:'users',নতুন:'plus-circle',রিপোর্ট:'chart',সেটিংস:'settings'};
-function svgIcon(name,size=22){const paths={home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',users:'<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',plus:'<path d="M12 5v14M5 12h14"/>', 'plus-circle':'<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',chart:'<path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 5-7"/>',settings:'<circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.7-1.4-2.4 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a7 7 0 0 1 0 2z"/>',deposit:'<path d="M12 19V5M6 11l6-6 6 6"/>',due:'<path d="M12 5v14M6 13l6 6 6-6"/>',expense:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/>',person:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'};return `<svg class="svgico" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.home}</svg>`}
+function svgIcon(name,size=22){
+ const art={
+  home:`<path d="M3 10.8 12 3l9 7.8v9.1a1.2 1.2 0 0 1-1.2 1.2h-5.1v-6.4h-5.4v6.4H4.2A1.2 1.2 0 0 1 3 19.9z" fill="#d8f5df" stroke="#087a35" stroke-width="1.5"/><path d="m2.5 10.8 9.5-8 9.5 8" fill="none" stroke="#087a35" stroke-width="2" stroke-linecap="round"/>`,
+  users:`<circle cx="9" cy="8" r="4" fill="#dcecff" stroke="#1769c2" stroke-width="1.5"/><circle cx="17.5" cy="9" r="3" fill="#f1e7ff" stroke="#7138c8" stroke-width="1.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0" fill="#b9dcff" stroke="#1769c2" stroke-width="1.5"/><path d="M15 15a5.3 5.3 0 0 1 6.5 5" fill="none" stroke="#7138c8" stroke-width="1.5" stroke-linecap="round"/>`,
+  plus:`<circle cx="12" cy="12" r="9" fill="#e2f5e8" stroke="#087a35" stroke-width="1.7"/><path d="M12 7v10M7 12h10" stroke="#087a35" stroke-width="2.4" stroke-linecap="round"/>`,
+  'plus-circle':`<circle cx="12" cy="12" r="9" fill="#e2f5e8" stroke="#087a35" stroke-width="1.7"/><path d="M12 7v10M7 12h10" stroke="#087a35" stroke-width="2.4" stroke-linecap="round"/>`,
+  chart:`<rect x="3" y="3" width="18" height="18" rx="4" fill="#e6dcff" stroke="#7138c8" stroke-width="1.5"/><path d="M7 16v-3m5 3V8m5 8v-6" stroke="#7138c8" stroke-width="2.2" stroke-linecap="round"/><path d="m6 10 4-3 3 2 5-4" fill="none" stroke="#087a35" stroke-width="1.6" stroke-linecap="round"/>`,
+  settings:`<path d="M10 2.8h4l.7 2.3 2 .9 2.2-1 2 3.5-1.7 1.7v2.2l1.7 1.7-2 3.5-2.2-1-2 .9-.7 2.3h-4l-.7-2.3-2-.9-2.2 1-2-3.5 1.7-1.7v-2.2L3.1 8.5l2-3.5 2.2 1 2-.9z" fill="#e7e2ff" stroke="#7138c8" stroke-width="1.4"/><circle cx="12" cy="11.3" r="3.2" fill="#fff" stroke="#7138c8" stroke-width="1.7"/>`,
+  deposit:`<circle cx="12" cy="12" r="10" fill="#d9f6e2"/><path d="M7 14.5h10M12 17V6m-4 4 4-4 4 4" fill="none" stroke="#087a35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19h14" stroke="#087a35" stroke-width="1.5" stroke-linecap="round"/>`,
+  due:`<circle cx="12" cy="12" r="10" fill="#ffe0df"/><path d="M7 9.5h10M12 7v11m-4-4 4 4 4-4" fill="none" stroke="#d62828" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 5l2 2m12-2-2 2" stroke="#d62828" stroke-width="1.5" stroke-linecap="round"/>`,
+  expense:`<rect x="2.5" y="5" width="19" height="14" rx="3" fill="#dcecff" stroke="#1769c2" stroke-width="1.5"/><path d="M3 9h18" stroke="#1769c2" stroke-width="1.5"/><circle cx="16.5" cy="14" r="2" fill="#fff" stroke="#1769c2" stroke-width="1.3"/><path d="M6 14h4" stroke="#1769c2" stroke-width="1.7" stroke-linecap="round"/>`,
+  person:`<circle cx="12" cy="8" r="4" fill="#dcecff" stroke="#1769c2" stroke-width="1.5"/><path d="M4 21a8 8 0 0 1 16 0" fill="#b9dcff" stroke="#1769c2" stroke-width="1.5"/>`
+ };
+ return `<svg class="svgico" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">${art[name]||art.home}</svg>`;
+}
 function customerDue(id){return Math.max(0,state.tx.filter(t=>t.cid===id).reduce((sum,t)=>sum+(t.type==='বাকি'?t.amount:t.type==='জমা'?-t.amount:0),0))}
 function totals(){let a=0,e=0;state.tx.forEach(t=>{if(t.type==='জমা')a+=Number(t.amount)||0;else if(t.type==='খরচ')e+=Number(t.amount)||0});let b=state.customers.reduce((sum,c)=>sum+customerDue(c.id),0);return {a,b,e}}
-function nav(){document.getElementById('nav').innerHTML=['হোম','গ্রাহক','নতুন','রিপোর্ট','সেটিংস'].map(p=>`<button class="${state.page===p?'active':''}" onclick="${p==='নতুন'?'transactionModal()':`show('${p}')`}"><span class="ni">${svgIcon(icon[p],22)}</span>${p}</button>`).join('')}
+function nav(){
+ const el=document.getElementById('nav');
+ el.innerHTML=['হোম','গ্রাহক','নতুন','রিপোর্ট','সেটিংস'].map(p=>`<button type="button" class="${state.page===p?'active':''}" data-nav-page="${p}" aria-label="${p}"><span class="ni">${svgIcon(icon[p],25)}</span><span>${p}</span></button>`).join('');
+}
+// Event delegation keeps navigation reliable after every re-render and avoids inline-handler issues.
+document.getElementById('nav').addEventListener('click',function(event){
+ const button=event.target.closest('button[data-nav-page]');
+ if(!button)return;
+ const page=button.getAttribute('data-nav-page');
+ if(page==='নতুন'){transactionModal();return;}
+ show(page);
+});
 function show(p){state.page=p;nav();let m=document.getElementById('main');if(p==='হোম')home(m);else if(p==='গ্রাহক')customers(m);else if(p==='খাতা')ledger(m);else if(p==='রিপোর্ট')reports(m);else if(p==='মেসেজ')messages(m);else settings(m)}
-function home(m){let t=totals();m.innerHTML=`<div class="page-title">☀ আজকের সারাংশ</div><div class="cards">
+function home(m){let t=totals();m.innerHTML=`<div class="page-title">${svgIcon('chart',23)} আজকের সারাংশ</div><div class="cards">
 <div class="card green"><div class="ico">${svgIcon('deposit',25)}</div><div class="label">মোট জমা</div><div class="value">${money(t.a)}</div></div>
 <div class="card red"><div class="ico">${svgIcon('due',25)}</div><div class="label">মোট বাকি</div><div class="value">${money(t.b)}</div></div>
 <div class="card blue"><div class="ico">${svgIcon('expense',25)}</div><div class="label">মোট খরচ</div><div class="value">${money(t.e)}</div></div>
 <div class="card purple"><div class="ico">${svgIcon('users',25)}</div><div class="label">মোট গ্রাহক</div><div class="value">${state.customers.length}</div></div></div>
-<div class="section">▤ সাম্প্রতিক লেনদেন</div>${state.tx.slice().reverse().slice(0,10).map(txrow).join('')||'<div class="empty">এখনো কোনো লেনদেন নেই</div>'}<button class="btn" onclick="customerModal()">＋ নতুন গ্রাহক যোগ করুন</button>`}
+<div class="section">${svgIcon('chart',20)} সাম্প্রতিক লেনদেন</div>${state.tx.slice().reverse().slice(0,10).map(txrow).join('')||'<div class="empty">এখনো কোনো লেনদেন নেই</div>'}<button class="btn" onclick="customerModal()">＋ নতুন গ্রাহক যোগ করুন</button>`}
 function txrow(t){let c=state.customers.find(x=>x.id===t.cid)||{name:'গ্রাহক'};let cl=t.type==='জমা'?'deposit':t.type==='বাকি'?'due':'expense';let ic=t.type==='জমা'?'deposit':t.type==='বাকি'?'due':'expense';return `<div class="row"><div class="avatar">${svgIcon(ic,22)}</div><div class="grow"><div class="name">${c.name}</div><div class="sub">${t.type} • ${t.date}</div></div><div class="amount ${cl}">${money(t.amount)}</div></div>`}
 function customers(m){m.innerHTML=`<div class="page-title">♟ গ্রাহক তালিকা</div><input class="search" placeholder="⌕ নাম দিয়ে খুঁজুন..." oninput="filterCustomers(this.value)"><button class="btn" onclick="customerModal()">＋ নতুন গ্রাহক যোগ করুন</button><div id="customerlist">${customerRows(state.customers)}</div>`}
 function customerRows(arr){return arr.map(c=>{let due=customerDue(c.id);return `<div class="row" onclick="state.selected=${c.id};show('খাতা')"><div class="avatar">${svgIcon('person',22)}</div><div class="grow"><div class="name">${c.name}</div><div class="sub">${c.phone||'মোবাইল নম্বর নেই'}</div></div><span class="pill ${due<=0?'ok':''}">বাকি ${money(Math.max(0,due))}</span></div>`}).join('')||'<div class="empty">কোনো গ্রাহক পাওয়া যায়নি</div>'}

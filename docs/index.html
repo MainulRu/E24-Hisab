@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#087a35">
+<title>E24 Hisab — Live Preview</title>
+<style>
+:root{--g:#087a35;--gd:#075c2b;--red:#e53935;--blue:#1769c2;--purple:#7138c8;--bg:#f3f7f4;--ink:#202a24;--muted:#718078}
+*{box-sizing:border-box}body{margin:0;background:#e7eee9;color:var(--ink);font-family:system-ui,"Noto Sans Bengali","Hind Siliguri",sans-serif}
+.app{max-width:480px;min-height:100vh;margin:auto;background:var(--bg);display:flex;flex-direction:column;box-shadow:0 0 30px #183b2520}
+header{height:62px;background:var(--g);color:white;display:flex;align-items:center;padding:0 16px;gap:14px;position:sticky;top:0;z-index:2}
+header .brand{font-size:20px;font-weight:800;flex:1}header button{border:0;background:transparent;color:white;font-size:23px}
+main{padding:16px 14px 90px;flex:1}.page-title{font-size:19px;font-weight:750;margin:0 0 13px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:9px}.card{border-radius:14px;color:#fff;padding:13px;min-height:103px;box-shadow:0 3px 8px #00000012}.card .ico{font-size:22px}.card .label{font-size:13px;font-weight:650;margin-top:4px}.card .value{font-size:22px;font-weight:850;margin-top:3px}.green{background:var(--g)}.red{background:var(--red)}.blue{background:var(--blue)}.purple{background:var(--purple)}
+.section{font-size:17px;font-weight:800;margin:20px 0 9px}.row{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:11px;margin:7px 0;box-shadow:0 2px 5px #102a1710}.avatar{width:42px;height:42px;border-radius:50%;background:#e2efff;color:#1769c2;display:grid;place-items:center;font-size:22px;font-weight:800;flex-shrink:0}.grow{flex:1;min-width:0}.name{font-weight:750}.sub{font-size:12px;color:var(--muted);margin-top:3px}.amount{font-weight:800;white-space:nowrap}.deposit{color:var(--g)}.due{color:var(--red)}.expense{color:var(--blue)}
+.btn{border:0;border-radius:11px;background:var(--g);color:#fff;font-weight:750;padding:13px 15px;font-size:14px;width:100%;margin:7px 0}.btn.bluebtn{background:var(--blue)}.btn.purplebtn{background:var(--purple)}.btn.light{background:#e7eee9;color:var(--g)}
+.search,input,select,textarea{width:100%;border:1px solid #d4ded7;border-radius:10px;padding:12px;background:white;font:inherit;margin:5px 0;color:var(--ink)}.pill{padding:5px 9px;border-radius:30px;background:#ffebeb;color:var(--red);font-size:11px;font-weight:750;white-space:nowrap}.pill.ok{background:#e5f6eb;color:var(--g)}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(480px,100%);height:68px;background:#fff;box-shadow:0 -3px 14px #102a1715;display:grid;grid-template-columns:repeat(5,1fr);z-index:3;padding-bottom:env(safe-area-inset-bottom)}
+nav button{border:0;background:white;color:#65736a;font-size:11px;font-weight:650;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}nav button .ni{font-size:21px}nav button.active{color:var(--g);background:#f0f8f2}
+.profile{display:flex;align-items:center;gap:12px;background:white;padding:14px;border-radius:14px}.profile .avatar{width:58px;height:58px;font-size:27px}
+.toolbar{display:flex;gap:8px}.toolbar>*{flex:1}
+.empty{padding:22px;text-align:center;color:var(--muted);background:white;border-radius:12px}
+.modalback{position:fixed;inset:0;background:#0008;display:none;align-items:flex-end;justify-content:center;z-index:5}.modal{background:#fff;width:min(480px,100%);padding:20px;border-radius:20px 20px 0 0;max-height:88vh;overflow:auto}.modal h3{margin:0 0 12px}.modal .actions{display:flex;gap:8px}.modal .actions button{flex:1}
+.note{font-size:12px;color:var(--muted);line-height:1.5}
+@media(min-width:600px){body{padding:18px 0}.app{border-radius:24px;overflow:hidden;min-height:calc(100vh - 36px)}nav{bottom:18px;border-radius:0 0 24px 24px}}
+</style></head>
+<body><div class="app">
+<header><button aria-label="menu" onclick="show('সেটিংস')">☰</button><div class="brand">E24 Hisab</div><button onclick="toast('নতুন নোটিফিকেশন নেই')" aria-label="notifications">♧</button></header>
+<main id="main"></main>
+<nav id="nav"></nav></div>
+<div class="modalback" id="modalback" onclick="if(event.target===this)closeModal()"><div class="modal" id="modal"></div></div>
+<script>
+const state={page:'হোম',selected:null,customers:[{id:1,name:'রহিম মিয়া',phone:'01712-345678'},{id:2,name:'করিম উদ্দিন',phone:'01812-456789'}],tx:[{cid:1,type:'জমা',amount:1000,note:'নগদ জমা',date:'17-11-2026'},{cid:1,type:'জমা',amount:25588,note:'পূর্বের জমা',date:'16-11-2026'},{cid:2,type:'বাকি',amount:5000,note:'পণ্য ক্রয়',date:'15-11-2026'}]};
+const money=n=>'৳ '+Number(n).toLocaleString('en-IN');
+const icon={হোম:'⌂',গ্রাহক:'♟',নতুন:'＋',রিপোর্ট:'▥',সেটিংস:'⚙'};
+function totals(){let a=0,b=0,e=0;state.tx.forEach(t=>{if(t.type==='জমা')a+=t.amount;else if(t.type==='বাকি')b+=t.amount;else e+=t.amount});return {a,b,e}}
+function nav(){document.getElementById('nav').innerHTML=['হোম','গ্রাহক','নতুন','রিপোর্ট','সেটিংস'].map(p=>`<button class="${state.page===p?'active':''}" onclick="${p==='নতুন'?'transactionModal()':`show('${p}')`}"><span class="ni">${icon[p]}</span>${p}</button>`).join('')}
+function show(p){state.page=p;nav();let m=document.getElementById('main');if(p==='হোম')home(m);else if(p==='গ্রাহক')customers(m);else if(p==='খাতা')ledger(m);else if(p==='রিপোর্ট')reports(m);else settings(m)}
+function home(m){let t=totals();m.innerHTML=`<div class="page-title">☀ আজকের সারাংশ</div><div class="cards">
+<div class="card green"><div class="ico">⬇</div><div class="label">মোট জমা</div><div class="value">${money(t.a)}</div></div>
+<div class="card red"><div class="ico">⬆</div><div class="label">মোট বাকি</div><div class="value">${money(t.b)}</div></div>
+<div class="card blue"><div class="ico">▣</div><div class="label">মোট খরচ</div><div class="value">${money(t.e)}</div></div>
+<div class="card purple"><div class="ico">♟</div><div class="label">মোট গ্রাহক</div><div class="value">${state.customers.length}</div></div></div>
+<div class="section">▤ সাম্প্রতিক লেনদেন</div>${state.tx.slice().reverse().slice(0,10).map(txrow).join('')||'<div class="empty">এখনো কোনো লেনদেন নেই</div>'}<button class="btn" onclick="customerModal()">＋ নতুন গ্রাহক যোগ করুন</button>`}
+function txrow(t){let c=state.customers.find(x=>x.id===t.cid)||{name:'গ্রাহক'};let cl=t.type==='জমা'?'deposit':t.type==='বাকি'?'due':'expense';let ic=t.type==='জমা'?'⬆':t.type==='বাকি'?'⬇':'▣';return `<div class="row"><div class="avatar">${ic}</div><div class="grow"><div class="name">${c.name}</div><div class="sub">${t.type} • ${t.date}</div></div><div class="amount ${cl}">${money(t.amount)}</div></div>`}
+function customers(m){m.innerHTML=`<div class="page-title">♟ গ্রাহক তালিকা</div><input class="search" placeholder="⌕ নাম দিয়ে খুঁজুন..." oninput="filterCustomers(this.value)"><button class="btn" onclick="customerModal()">＋ নতুন গ্রাহক যোগ করুন</button><div id="customerlist">${customerRows(state.customers)}</div>`}
+function customerRows(arr){return arr.map(c=>{let due=state.tx.filter(t=>t.cid===c.id).reduce((s,t)=>s+(t.type==='বাকি'?t.amount:t.type==='জমা'?-t.amount:0),0);return `<div class="row" onclick="state.selected=${c.id};show('খাতা')"><div class="avatar">●</div><div class="grow"><div class="name">${c.name}</div><div class="sub">${c.phone||'মোবাইল নম্বর নেই'}</div></div><span class="pill ${due<=0?'ok':''}">বাকি ${money(Math.max(0,due))}</span></div>`}).join('')||'<div class="empty">কোনো গ্রাহক পাওয়া যায়নি</div>'}
+function filterCustomers(q){document.getElementById('customerlist').innerHTML=customerRows(state.customers.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())||c.phone.includes(q)))}
+function ledger(m){let c=state.customers.find(x=>x.id===state.selected);if(!c){show('গ্রাহক');return}let tx=state.tx.filter(t=>t.cid===c.id);let a=tx.filter(t=>t.type==='জমা').reduce((s,t)=>s+t.amount,0),b=tx.filter(t=>t.type==='বাকি').reduce((s,t)=>s+t.amount,0);m.innerHTML=`<div class="profile"><div class="avatar">👤</div><div><div class="name">${c.name}</div><div class="sub">☎ ${c.phone||'মোবাইল নম্বর নেই'}</div></div></div><div class="cards" style="margin-top:10px"><div class="card green"><div class="label">মোট জমা</div><div class="value">${money(a)}</div></div><div class="card red"><div class="label">মোট বাকি</div><div class="value">${money(b)}</div></div></div><button class="btn bluebtn" onclick="transactionModal(${c.id})">＋ নতুন লেনদেন</button><button class="btn purplebtn" onclick="show('মেসেজ')">✉ মেসেজ পাঠান</button><div class="section">▤ লেনদেনের ইতিহাস</div>${tx.slice().reverse().map(txrow).join('')||'<div class="empty">এখনো কোনো লেনদেন নেই</div>'}`}
+function reports(m){let t=totals();m.innerHTML=`<div class="page-title">▥ হিসাব রিপোর্ট</div><div class="cards"><div class="card green"><div class="label">মোট জমা</div><div class="value">${money(t.a)}</div></div><div class="card red"><div class="label">মোট বাকি</div><div class="value">${money(t.b)}</div></div><div class="card blue"><div class="label">মোট খরচ</div><div class="value">${money(t.e)}</div></div><div class="card purple"><div class="label">গ্রাহক</div><div class="value">${state.customers.length}</div></div></div><div class="section">লেনদেনের সারাংশ</div>${state.tx.slice().reverse().map(txrow).join('')}<p class="note">এটি ব্রাউজারভিত্তিক ডেমো; বাস্তব APK-এর SQLite ডেটার সঙ্গে সংযুক্ত নয়।</p>`}
+function settings(m){m.innerHTML=`<div class="page-title">⚙ সেটিংস</div>${['▣ ডেটা ব্যাকআপ ও রিস্টোর','৳ পেমেন্ট সেটিংস','☏ SMS ও WhatsApp','♙ নিরাপত্তা (PIN Lock)','◎ ভাষা নির্বাচন (বাংলা)','ⓘ অ্যাপ সম্পর্কে'].map(x=>`<div class="row"><div class="grow">${x}</div><b>›</b></div>`).join('')}<p class="note">Live Preview-তে পেমেন্ট, SMS, WhatsApp ও ক্লাউড ব্যাকআপ কেবল UI নমুনা; সংযুক্ত নয়।</p>`}
+function modal(content){document.getElementById('modal').innerHTML=content;document.getElementById('modalback').style.display='flex'}
+function closeModal(){document.getElementById('modalback').style.display='none'}
+function customerModal(){modal(`<h3>নতুন গ্রাহক</h3><input id="cn" placeholder="গ্রাহকের নাম"><input id="cp" placeholder="মোবাইল নম্বর"><div class="actions"><button class="btn light" onclick="closeModal()">বাতিল</button><button class="btn" onclick="saveCustomer()">সংরক্ষণ</button></div>`)}
+function saveCustomer(){let n=document.getElementById('cn').value.trim(),p=document.getElementById('cp').value.trim();if(!n){toast('গ্রাহকের নাম লিখুন');return}state.customers.push({id:Date.now(),name:n,phone:p});closeModal();show('গ্রাহক')}
+function transactionModal(cid){if(!state.customers.length){toast('আগে গ্রাহক যোগ করুন');return}let opts=state.customers.map(c=>`<option value="${c.id}" ${cid===c.id?'selected':''}>${c.name}</option>`).join('');modal(`<h3>নতুন লেনদেন</h3><label>গ্রাহক</label><select id="tc">${opts}</select><label>লেনদেনের ধরন</label><select id="tt"><option>জমা</option><option>বাকি</option><option>খরচ</option></select><input id="ta" type="number" min="1" placeholder="টাকার পরিমাণ"><input id="tn" placeholder="বিবরণ"><div class="actions"><button class="btn light" onclick="closeModal()">বাতিল</button><button class="btn" onclick="saveTx()">সংরক্ষণ</button></div>`)}
+function saveTx(){let amount=Number(document.getElementById('ta').value);if(!amount||amount<1){toast('সঠিক টাকার পরিমাণ লিখুন');return}state.tx.push({cid:Number(document.getElementById('tc').value),type:document.getElementById('tt').value,amount,note:document.getElementById('tn').value,date:new Date().toLocaleDateString('en-GB')});closeModal();show(state.page)}
+function toast(s){let d=document.createElement('div');d.textContent=s;d.style='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#26352b;color:white;padding:12px 18px;border-radius:30px;z-index:9';document.body.append(d);setTimeout(()=>d.remove(),1800)}
+show('হোম');
+</script></body></html>

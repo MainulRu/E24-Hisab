@@ -762,7 +762,7 @@
     // E24 Hisab: persistent customer and transaction data (local device/browser storage)
     (() => {
       const KEY = 'e24hisab_records_v1';
-      let db = { customers: [], transactions: [], selectedCustomerId: null, txType: 'জমা' };
+      let db = { customers: [], transactions: [], selectedCustomerId: null, txType: 'বাকি' };
       const money = n => '৳ ' + Number(n || 0).toLocaleString('en-IN');
       const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       const id = () => 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
@@ -785,7 +785,7 @@
         const photoBtn=document.getElementById('change-customer-photo'); if(photoBtn)photoBtn.onclick=()=>{const picker=document.getElementById('customer-photo-picker');if(picker){picker.value='';picker.click();}};
       }
       function renderTransactionForm(type) {
-        db.txType=type||db.txType||'জমা'; const p=document.getElementById('page-4'); if(!p)return;
+        db.txType=type||db.txType||'বাকি'; const p=document.getElementById('page-4'); if(!p)return;
         p.innerHTML=`<div class="type-selector"><button class="type-btn ${db.txType==='বাকি'?'active-green':'inactive-red'}" id="tx-due"><i class="fa-solid fa-arrow-down"></i> বাকি</button><button class="type-btn ${db.txType==='জমা'?'active-green':'inactive-red'}" id="tx-paid"><i class="fa-solid fa-arrow-up"></i> জমা</button></div><div class="form-group"><label class="form-label">গ্রাহক নির্বাচন:</label><select class="form-input" id="tx-customer">${db.customers.map(c=>`<option value="${esc(c.id)}" ${selected()?.id===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">পরিমাণ (৳):</label><input class="form-input" id="tx-amount" type="number" min="1" step="1" inputmode="numeric" placeholder="টাকার পরিমাণ"></div><div class="form-group"><label class="form-label">বিবরণ (ঐচ্ছিক):</label><input class="form-input" id="tx-note" type="text" placeholder="লেনদেনের বিবরণ"></div><button class="btn btn-green shadow-btn" id="tx-save"><i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন</button>`;
         document.getElementById('tx-paid').onclick=()=>renderTransactionForm('জমা'); document.getElementById('tx-due').onclick=()=>renderTransactionForm('বাকি');
         document.getElementById('tx-save').onclick=()=>{const cid=document.getElementById('tx-customer').value,amount=Number(document.getElementById('tx-amount').value),note=document.getElementById('tx-note').value.trim();if(!cid){showToast('আগে একজন গ্রাহক যোগ করুন');return;}if(!Number.isSafeInteger(amount)||amount<=0){showToast('পূর্ণ সংখ্যায় সঠিক টাকার পরিমাণ লিখুন');return;}db.transactions.push({id:id(),customerId:cid,type:db.txType,amount,note,date:new Date().toLocaleDateString('bn-BD')});db.selectedCustomerId=cid;save();refreshAll();showToast('লেনদেন সংরক্ষিত হয়েছে');switchPage('3');};

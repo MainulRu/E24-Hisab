@@ -3,21 +3,21 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#087a35">
-<title>E24 Hisab — Live Preview</title>
+<title>E24 Hisab - IndexNew Design Live Preview</title>
 <style>
-:root{--g:#078735;--gd:#05632b;--red:#e51e24;--blue:#0755c8;--purple:#7138d8;--bg:#f5f7f8;--ink:#17231c;--muted:#718078}
+:root{--g:#087a35;--gd:#075c2b;--red:#e53935;--blue:#1769c2;--purple:#7138c8;--bg:#f3f7f4;--ink:#202a24;--muted:#718078}
 *{box-sizing:border-box}body{margin:0;background:#e7eee9;color:var(--ink);font-family:system-ui,"Noto Sans Bengali","Hind Siliguri",sans-serif}
 .app{max-width:480px;min-height:100vh;margin:auto;background:var(--bg);display:flex;flex-direction:column;box-shadow:0 0 30px #183b2520}
-header{height:64px;background:linear-gradient(180deg,#07933d 0%,#056b2d 100%);color:white;display:flex;align-items:center;padding:0 16px;gap:14px;position:sticky;top:0;z-index:2;box-shadow:0 2px 7px #003b1b30}
+header{height:62px;background:var(--g);color:white;display:flex;align-items:center;padding:0 16px;gap:14px;position:sticky;top:0;z-index:2}
 header .brand{font-size:20px;font-weight:800;flex:1}header button{border:0;background:transparent;color:white;font-size:23px}
-main{padding:16px 14px 90px;flex:1}.page-title{font-size:19px;font-weight:800;margin:0 0 13px;color:#17231c}
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}.card{border-radius:12px;color:#fff;padding:12px;min-height:105px;box-shadow:0 3px 8px #00000018}.card .ico{display:flex;align-items:center}.svgico{display:inline-block;vertical-align:middle;flex-shrink:0}.card .ico .svgico{width:25px;height:25px}.card .label{font-size:13px;font-weight:650;margin-top:4px}.card .value{font-size:22px;font-weight:850;margin-top:3px}.green{background:var(--g)}.red{background:var(--red)}.blue{background:var(--blue)}.purple{background:var(--purple)}
-.section{font-size:16px;font-weight:800;margin:17px 0 9px;background:linear-gradient(90deg,#087a35,#075c2b);color:#fff;padding:8px 10px;border-radius:7px}.row{display:flex;align-items:center;gap:10px;background:#fff;border-radius:10px;padding:10px;margin:5px 0;box-shadow:0 1px 4px #102a1710;border:1px solid #edf1ee}.avatar{width:42px;height:42px;border-radius:50%;background:#e2efff;color:#1769c2;display:grid;place-items:center;font-size:22px;font-weight:800;flex-shrink:0}.grow{flex:1;min-width:0}.name{font-weight:750}.sub{font-size:12px;color:var(--muted);margin-top:3px}.amount{font-weight:800;white-space:nowrap}.deposit{color:var(--g)}.due{color:var(--red)}.expense{color:var(--blue)}
-.btn{border:0;border-radius:10px;background:linear-gradient(180deg,#0aa83e,#087a35);color:#fff;font-weight:800;padding:13px 15px;font-size:14px;width:100%;margin:7px 0;box-shadow:0 2px 5px #003b1b25}.btn.bluebtn{background:var(--blue)}.btn.purplebtn{background:var(--purple)}.btn.light{background:#e7eee9;color:var(--g)}
+main{padding:16px 14px 90px;flex:1}.page-title{font-size:19px;font-weight:750;margin:0 0 13px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:9px}.card{border-radius:14px;color:#fff;padding:13px;min-height:103px;box-shadow:0 3px 8px #00000012}.card .ico{display:flex;align-items:center}.svgico{display:inline-block;vertical-align:middle;flex-shrink:0}.card .ico .svgico{width:25px;height:25px}.card .label{font-size:13px;font-weight:650;margin-top:4px}.card .value{font-size:22px;font-weight:850;margin-top:3px}.green{background:var(--g)}.red{background:var(--red)}.blue{background:var(--blue)}.purple{background:var(--purple)}
+.section{font-size:17px;font-weight:800;margin:20px 0 9px}.row{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:11px;margin:7px 0;box-shadow:0 2px 5px #102a1710}.avatar{width:42px;height:42px;border-radius:50%;background:#e2efff;color:#1769c2;display:grid;place-items:center;font-size:22px;font-weight:800;flex-shrink:0}.grow{flex:1;min-width:0}.name{font-weight:750}.sub{font-size:12px;color:var(--muted);margin-top:3px}.amount{font-weight:800;white-space:nowrap}.deposit{color:var(--g)}.due{color:var(--red)}.expense{color:var(--blue)}
+.btn{border:0;border-radius:11px;background:var(--g);color:#fff;font-weight:750;padding:13px 15px;font-size:14px;width:100%;margin:7px 0}.btn.bluebtn{background:var(--blue)}.btn.purplebtn{background:var(--purple)}.btn.light{background:#e7eee9;color:var(--g)}
 .search,input,select,textarea{width:100%;border:1px solid #d4ded7;border-radius:10px;padding:12px;background:white;font:inherit;margin:5px 0;color:var(--ink)}.pill{padding:5px 9px;border-radius:30px;background:#ffebeb;color:var(--red);font-size:11px;font-weight:750;white-space:nowrap}.pill.ok{background:#e5f6eb;color:var(--g)}
 nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(480px,100%);height:68px;background:#fff;box-shadow:0 -3px 14px #102a1715;display:grid;grid-template-columns:repeat(5,1fr);z-index:3;padding-bottom:env(safe-area-inset-bottom)}
 nav button{border:0;background:white;color:#65736a;font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}nav button .ni{display:grid;place-items:center;width:30px;height:28px}nav button .ni svg{width:25px;height:25px}nav button.active{color:var(--g);background:#f0f8f2}nav button:focus-visible{outline:2px solid var(--g);outline-offset:-3px}
-.profile{display:flex;align-items:center;gap:12px;background:white;padding:14px;border-radius:12px;border:1px solid #e7eee9;box-shadow:0 2px 6px #102a1710}.profile .avatar{width:58px;height:58px;font-size:27px}
+.profile{display:flex;align-items:center;gap:12px;background:white;padding:14px;border-radius:14px}.profile .avatar{width:58px;height:58px;font-size:27px}
 .toolbar{display:flex;gap:8px}.toolbar>*{flex:1}
 .quick-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.quick-actions button{border:0;border-radius:12px;padding:12px 5px;background:#fff;color:var(--ink);font:inherit;font-size:12px;font-weight:750;box-shadow:0 2px 6px #102a1710}.quick-actions button span{display:block;font-size:19px;margin-bottom:4px}.balance-line{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid #edf1ee;font-size:13px}.balance-line:last-child{border-bottom:0}.ledger-summary{background:#fff;border-radius:13px;padding:12px;margin:10px 0}
 .empty{padding:22px;text-align:center;color:var(--muted);background:white;border-radius:12px}
@@ -25,6 +25,36 @@ nav button{border:0;background:white;color:#65736a;font-size:11px;font-weight:70
 .note{font-size:12px;color:var(--muted);line-height:1.5}
 @media(min-width:600px){body{padding:18px 0}.app{border-radius:24px;overflow:hidden;min-height:calc(100vh - 36px)}nav{bottom:18px;border-radius:0 0 24px 24px}}
 @media print{body{background:#fff!important;padding:0!important}.app{max-width:none!important;min-height:0!important;box-shadow:none!important;border-radius:0!important}header,nav,.no-print{display:none!important}main{padding:0!important}.card{-webkit-print-color-adjust:exact;print-color-adjust:exact;break-inside:avoid}.row,.ledger-summary,.profile{break-inside:avoid;box-shadow:none!important;border:1px solid #e5e5e5}.section{break-after:avoid}.page-title{margin-top:0}}
+
+/* ===== INDEXNEW.HTML DESIGN MATCH ===== */
+:root{--g:#008744;--gd:#005c2e;--red:#d93025;--blue:#1a73e8;--purple:#7b1fa2;--bg:#f8f9fa;--ink:#202124;--muted:#5f6368}
+body{background:linear-gradient(135deg,#e4f5ec 0%,#fff 50%,#fff8e7 100%);font-family:'Hind Siliguri','Noto Sans Bengali',system-ui,sans-serif}
+.app{max-width:480px;background:#f8f9fa;box-shadow:0 12px 30px #00000020}
+header{height:58px;background:var(--g);padding:0 16px;gap:12px}
+header .brand{font-size:20px;font-weight:800}
+main{padding:12px 12px 94px}
+.page-title{font-size:17px;font-weight:800;margin:0 0 10px;padding:5px 10px;border-radius:7px;background:#c8e6c9;color:#005c2e;text-align:center}
+.cards{gap:8px}
+.card{border-radius:9px;padding:10px;min-height:92px;box-shadow:0 2px 5px #00000012}
+.card .ico .svgico{width:22px;height:22px}
+.card .label{font-size:12px;font-weight:650}
+.card .value{font-size:19px;font-weight:850}
+.section{background:#008744;color:#fff;border-radius:7px;padding:7px 10px;font-size:15px;font-weight:800;margin:13px 0 8px}
+.row{border-radius:8px;padding:9px 10px;margin:6px 0;box-shadow:0 1px 4px #0000000d}
+.avatar{width:34px;height:34px;font-size:19px}
+.name{font-size:14px;font-weight:750}
+.sub{font-size:11px}
+.amount{font-size:13px}
+.btn{border-radius:8px;padding:10px 13px;font-size:13px;box-shadow:0 2px 4px #00000018}
+.search,input,select,textarea{border:1px solid #cbd5e1;border-radius:7px;padding:9px 10px;font-size:13px}
+.profile{border-radius:9px;padding:9px}
+.profile .avatar{width:46px;height:46px}
+.ledger-summary{border-radius:9px}
+nav{height:58px;background:#fff;box-shadow:0 -2px 9px #00000012}
+nav button{font-size:10px}
+nav button.active{background:#e6f4ea;color:#008744}
+@media(min-width:600px){body{padding:18px 0}.app{border-radius:22px;min-height:calc(100vh - 36px)}}
+
 </style></head>
 <body><div class="app">
 <header><button aria-label="menu" onclick="show('সেটিংস')">☰</button><div class="brand">E24 Hisab</div><button onclick="toast('নতুন নোটিফিকেশন নেই')" aria-label="notifications">♧</button></header>

@@ -707,6 +707,51 @@
         });
       }
     });
+
+    // E24 Hisab: persistent customer and transaction data (local device/browser storage)
+    (() => {
+      const KEY = 'e24hisab_records_v1';
+      let db = { customers: [], transactions: [], selectedCustomerId: null, txType: 'জমা' };
+      const money = n => '৳ ' + Number(n || 0).toLocaleString('en-IN');
+      const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const id = () => 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+      function load() { try { const x=JSON.parse(localStorage.getItem(KEY)); if(x && Array.isArray(x.customers) && Array.isArray(x.transactions)) db={...db,...x}; } catch(e) { console.warn('E24 data load:',e); } }
+      function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e) { showToast('ডেটা সংরক্ষণ করা যায়নি'); } }
+      function customerTotals(cid) { let a=0,b=0; db.transactions.filter(t=>t.customerId===cid).forEach(t=>{ if(t.type==='জমা') a+=t.amount; else b+=t.amount; }); return {paid:a,due:b}; }
+      function selected() { return db.customers.find(c=>c.id===db.selectedCustomerId) || db.customers[0] || null; }
+      function renderCustomers() {
+        const ul=document.querySelector('#page-2 .customer-list'); if(!ul)return;
+        ul.innerHTML=db.customers.length ? db.customers.map(c=>{const t=customerTotals(c.id),due=t.due-t.paid;return `<li class="customer-item" data-cid="${esc(c.id)}"><div class="user-avatar"><i class="fa-solid fa-user"></i></div><div class="customer-name">${esc(c.name)}<small style="display:block;color:#888;font-size:10px">${esc(c.phone)}</small></div><span class="amount-tag ${due>0?'tag-red':'tag-green'}">${due>0?'বাকি: '+money(due):'জমা: '+money(Math.abs(due))}</span><i class="fa-solid fa-chevron-right"></i></li>`}).join('') : '<li style="padding:22px;text-align:center;color:#888">এখনো কোনো গ্রাহক যোগ করা হয়নি</li>';
+        ul.querySelectorAll('[data-cid]').forEach(el=>el.addEventListener('click',()=>{db.selectedCustomerId=el.dataset.cid;renderLedger();switchPage('3');}));
+      }
+      function renderLedger() {
+        const p=document.getElementById('page-3'), c=selected(); if(!p)return;
+        if(!c){p.innerHTML='<div style="padding:30px;text-align:center">প্রথমে গ্রাহক তালিকা থেকে একজন গ্রাহক যোগ করুন বা নির্বাচন করুন।<br><button class="btn btn-green" style="margin-top:15px" onclick="switchPage(\'2\')">গ্রাহক তালিকা</button></div>';return;}
+        const t=customerTotals(c.id), rows=db.transactions.filter(x=>x.customerId===c.id).slice().reverse();
+        p.innerHTML=`<div class="profile-header"><div class="profile-avatar-large"><i class="fa-solid fa-user"></i></div><div class="profile-name">${esc(c.name)}</div><div class="profile-phone"><i class="fa-solid fa-phone"></i> ${esc(c.phone)}</div></div><div class="two-col-summary"><div class="summary-box box-green"><span>মোট জমা</span><strong>${money(t.paid)}</strong></div><div class="summary-box box-red"><span>মোট বাকি</span><strong>${money(t.due)}</strong></div></div><div class="section-banner border-banner" style="margin:4px 0;font-size:11px"><i class="fa-solid fa-list-check"></i> লেনদেনের ইতিহাস</div><ul class="transaction-history">${rows.length?rows.map(x=>`<li class="history-item"><span class="tx-icon ${x.type==='জমা'?'icon-up':'icon-down'}"><i class="fa-solid ${x.type==='জমা'?'fa-arrow-up':'fa-arrow-down'}"></i></span><div class="tx-info"><span class="tx-name">${x.type} ${x.note?'— '+esc(x.note):''}</span><span class="${x.type==='জমা'?'green-text':'red-text'}" style="font-weight:700">${money(x.amount)}</span></div><span class="tx-date">${esc(x.date)}</span></li>`).join(''):'<li style="padding:20px;text-align:center;color:#888">এখনো কোনো লেনদেন নেই</li>'}</ul><div class="action-btn-group"><button class="btn btn-blue" onclick="beginTransaction('জমা')"><i class="fa-solid fa-plus"></i> নতুন লেনদেন</button><button class="btn btn-purple" onclick="beginTransaction('বাকি')"><i class="fa-solid fa-plus"></i> বাকি যোগ</button></div>`;
+      }
+      function renderTransactionForm(type) {
+        db.txType=type||db.txType||'জমা'; const p=document.getElementById('page-4'); if(!p)return;
+        p.innerHTML=`<div class="type-selector"><button class="type-btn ${db.txType==='জমা'?'active-green':'inactive-red'}" id="tx-paid">জমা</button><button class="type-btn ${db.txType==='বাকি'?'active-green':'inactive-red'}" id="tx-due">বাকি</button></div><div class="form-group"><label class="form-label">গ্রাহক নির্বাচন:</label><select class="form-input" id="tx-customer">${db.customers.map(c=>`<option value="${esc(c.id)}" ${selected()?.id===c.id?'selected':''}>${esc(c.name)} — ${esc(c.phone)}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">পরিমাণ (৳):</label><input class="form-input" id="tx-amount" type="number" min="1" step="0.01" placeholder="টাকার পরিমাণ"></div><div class="form-group"><label class="form-label">বিবরণ (ঐচ্ছিক):</label><input class="form-input" id="tx-note" type="text" placeholder="লেনদেনের বিবরণ"></div><button class="btn btn-green shadow-btn" id="tx-save"><i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন</button>`;
+        document.getElementById('tx-paid').onclick=()=>renderTransactionForm('জমা'); document.getElementById('tx-due').onclick=()=>renderTransactionForm('বাকি');
+        document.getElementById('tx-save').onclick=()=>{const cid=document.getElementById('tx-customer').value,amount=Number(document.getElementById('tx-amount').value),note=document.getElementById('tx-note').value.trim();if(!cid){showToast('আগে একজন গ্রাহক যোগ করুন');return;}if(!Number.isFinite(amount)||amount<=0){showToast('সঠিক টাকার পরিমাণ লিখুন');return;}db.transactions.push({id:id(),customerId:cid,type:db.txType,amount,note,date:new Date().toLocaleDateString('bn-BD')});db.selectedCustomerId=cid;save();refreshAll();showToast('লেনদেন সংরক্ষিত হয়েছে');switchPage('3');};
+      }
+      function refreshHome() {
+        const stats=document.querySelectorAll('#page-1 .stat-card .stat-amount'); const paid=db.transactions.filter(t=>t.type==='জমা').reduce((s,t)=>s+t.amount,0),due=db.transactions.filter(t=>t.type==='বাকি').reduce((s,t)=>s+t.amount,0);
+        if(stats[0])stats[0].textContent=money(paid); if(stats[1])stats[1].textContent=money(due); if(stats[3])stats[3].textContent=db.customers.length.toLocaleString('bn-BD')+' জন';
+        const ul=document.querySelector('#page-1 .transaction-list'); if(ul)ul.innerHTML=db.transactions.length?db.transactions.slice(-5).reverse().map(t=>{const c=db.customers.find(x=>x.id===t.customerId);return `<li class="transaction-item"><span class="tx-icon ${t.type==='জমা'?'icon-up':'icon-down'}"><i class="fa-solid ${t.type==='জমা'?'fa-arrow-up':'fa-arrow-down'}"></i></span><div class="tx-info"><span class="tx-name">${esc(c?.name||'গ্রাহক')}</span><span class="tx-sub ${t.type==='বাকি'?'text-red':''}">${t.type}: ${money(t.amount)}</span></div><span class="tx-date">${esc(t.date)}</span></li>`}).join(''):'<li style="padding:18px;text-align:center;color:#888">কোনো লেনদেন নেই</li>';
+      }
+      function refreshAll(){renderCustomers();renderLedger();renderTransactionForm(db.txType);refreshHome();}
+      window.beginTransaction=(type)=>{if(!db.customers.length){showToast('আগে একজন গ্রাহক যোগ করুন');switchPage('2');return;}renderTransactionForm(type);switchPage('4');};
+      window.switchPage = ((old)=>function(pageKey){if(String(pageKey)==='3')renderLedger();if(String(pageKey)==='4')renderTransactionForm(db.txType);old(String(pageKey));})(window.switchPage);
+      document.addEventListener('DOMContentLoaded',()=>{
+        load();
+        const add=document.querySelector('#page-2 button'); if(add)add.onclick=()=>{const name=prompt('গ্রাহকের নাম লিখুন:');if(name===null)return;if(!name.trim()){showToast('গ্রাহকের নাম লিখুন');return;}const phone=prompt('গ্রাহকের ফোন নম্বর লিখুন:');if(phone===null)return;if(!phone.trim()){showToast('ফোন নম্বর লিখুন');return;}const c={id:id(),name:name.trim(),phone:phone.trim()};db.customers.push(c);db.selectedCustomerId=c.id;save();refreshAll();showToast('নতুন গ্রাহক সংরক্ষিত হয়েছে');};
+        const search=document.getElementById('search-input');if(search)search.addEventListener('input',()=>{document.querySelectorAll('#page-2 .customer-item').forEach(el=>{el.style.display=el.textContent.toLowerCase().includes(search.value.toLowerCase())?'':'none';});});
+        refreshAll();
+      });
+    })();
+
   </script>
 
 </body>

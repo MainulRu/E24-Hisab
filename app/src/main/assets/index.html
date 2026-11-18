@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E24 Hisab - Full Interactive App Simulator</title>
+  <!-- Google Font: Hind Siliguri -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary-green: #008744;
+      --dark-green: #005c2e;
+      --light-green: #e6f4ea;
+      --accent-red: #d93025;
+      --light-red: #fce8e6;
+      --accent-blue: #1a73e8;
+      --accent-purple: #7b1fa2;
+      --accent-pink: #e91e63;
+      --bg-gradient: linear-gradient(135deg, #e4f5ec 0%, #ffffff 50%, #fff8e7 100%);
+      --phone-bg: #f8f9fa;
+      --text-dark: #202124;
+      --text-muted: #5f6368;
+      --border-color: #dadce0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Hind Siliguri', sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: stretch;
+      overflow: hidden;
+    }
+
+    .card-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      background: #ffffff;
+      border-radius: 0;
+      border: 0;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .label-badge {
+      margin-top: 15px;
+      background: var(--primary-green);
+      color: #fff;
+      padding: 6px 20px;
+      border-radius: 16px;
+      font-weight: 600;
+      font-size: 15px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+
+    /* Status Bar */
+    .status-bar {
+      background: var(--dark-green);
+      color: #fff;
+      padding: 6px 16px 2px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-icons { display: flex; gap: 5px; }
+
+    /* Android supplies the real device status bar. */
+    .status-bar, .label-badge { display: none !important; }
+
+    /* App Bar */
+    .app-bar {
+      background: var(--primary-green);
+      color: #fff;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .app-title { flex-grow: 1; text-align: center; margin: 0 10px; }
+    .interactive-icon { cursor: pointer; transition: transform 0.2s; }
+    .interactive-icon:active { transform: scale(0.85); }
+
+    /* Screen Body */
+    .screen-body {
+      flex: 1;
+      background: var(--phone-bg);
+      padding: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Page Views */
+    .app-page {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+    }
+    .app-page.active-page {
+      display: flex;
+    }
+
+    /* Common Helpers */
+    .text-center { text-align: center; }
+    .text-red { color: var(--accent-red) !important; }
+    .green-text { color: var(--primary-green) !important; }
+    .red-text { color: var(--accent-red) !important; }
+
+    .section-title {
+      background: #c8e6c9; color: var(--dark-green);
+      padding: 4px 10px; border-radius: 6px;
+      font-weight: 700; font-size: 13px; margin-bottom: 10px;
+    }
+    .section-banner {
+      background: var(--primary-green); color: #fff;
+      padding: 6px 10px; border-radius: 6px;
+      font-size: 13px; font-weight: 600; margin: 10px 0 8px;
+    }
+
+    /* 1. Home */
+    .stats-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .stat-card {
+      padding: 10px; border-radius: 8px; color: #fff; text-align: center; cursor: pointer;
+    }
+    .bg-green { background: #008744; }
+    .bg-red { background: #d93025; }
+    .bg-blue { background: #1a73e8; }
+    .bg-purple { background: #7b1fa2; }
+    .stat-card i { font-size: 16px; margin-bottom: 2px; }
+    .stat-label { font-size: 11px; opacity: 0.9; }
+    .stat-amount { font-size: 14px; font-weight: 700; }
+
+    .transaction-list, .customer-list, .transaction-history, .settings-menu {
+      list-style: none; display: flex; flex-direction: column; gap: 6px;
+    }
+    .transaction-item, .customer-item, .history-item {
+      background: #fff; padding: 8px 10px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05); font-size: 12px; cursor: pointer;
+    }
+    .tx-icon {
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 10px; margin-right: 8px;
+    }
+    .icon-up { background: var(--primary-green); }
+    .icon-down { background: var(--accent-red); }
+    .tx-info { display: flex; flex-direction: column; flex-grow: 1; }
+    .tx-name { font-weight: 600; }
+    .tx-sub { font-size: 10px; color: var(--primary-green); font-weight: 600; }
+    .tx-date { font-size: 10px; color: var(--text-muted); }
+
+    /* 2. Customer List */
+    .search-box {
+      background: #fff; border: 1px solid var(--border-color);
+      border-radius: 20px; padding: 6px 12px; display: flex;
+      align-items: center; gap: 8px; margin-bottom: 10px; font-size: 12px;
+    }
+    .search-box input {
+      border: none; outline: none; width: 100%; background: transparent; font-size: 12px;
+    }
+    .user-avatar {
+      width: 28px; height: 28px; background: #e8f0fe; color: var(--accent-blue);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 12px; margin-right: 8px;
+    }
+    .customer-name { font-weight: 600; flex-grow: 1; }
+    .amount-tag {
+      padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; margin-right: 6px;
+    }
+    .tag-red { background: var(--light-red); color: var(--accent-red); }
+    .tag-green { background: var(--light-green); color: var(--primary-green); }
+
+    /* 3. Customer Ledger (গ্রাহকের খাতা) */
+    .profile-header {
+      text-align: center; background: #fff; padding: 8px; border-radius: 8px; margin-bottom: 6px;
+    }
+    .profile-avatar-large {
+      width: 36px; height: 36px; background: #e8f0fe; color: var(--accent-blue);
+      border-radius: 50%; margin: 0 auto 3px; display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .profile-name { font-weight: 700; font-size: 13px; }
+    .profile-phone { font-size: 10px; color: var(--text-muted); }
+    .two-col-summary {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px;
+    }
+    .summary-box {
+      padding: 6px; border-radius: 8px; color: #fff; text-align: center; display: flex; flex-direction: column; font-size: 10px;
+    }
+    .summary-box strong { font-size: 12px; }
+    .box-green { background: var(--primary-green); }
+    .box-red { background: var(--accent-red); }
+    .action-btn-group {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: auto; padding-top: 6px;
+    }
+
+    /* 4. New Transaction Form */
+    .type-selector {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;
+    }
+    .type-btn {
+      border: none; padding: 6px; border-radius: 8px; font-weight: 700;
+      font-size: 11px; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 5px;
+    }
+    .active-green { background: var(--primary-green); color: #fff; }
+    .inactive-red { background: var(--light-red); color: var(--accent-red); }
+    .form-group { margin-bottom: 6px; }
+    .form-label { font-size: 10px; font-weight: 600; margin-bottom: 2px; display: block; }
+    .custom-select, .form-input, .date-input-box {
+      width: 100%; background: #fff; border: 1px solid var(--border-color);
+      border-radius: 6px; padding: 5px 8px; font-size: 11px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .form-input { outline: none; display: block; }
+
+    /* 5. Payment Page (পেমেন্ট পেজ) */
+    .payment-header {
+      display: flex; align-items: center; gap: 8px; background: #fff; padding: 6px 8px; border-radius: 8px; margin-bottom: 8px;
+    }
+    .profile-avatar-small {
+      width: 28px; height: 28px; background: #e8f0fe; color: var(--accent-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    }
+    .payment-user-info .name { font-weight: 700; font-size: 12px; }
+    .payment-user-info .due-text { font-size: 9px; color: var(--accent-red); font-weight: 600; }
+    .payment-amount-box {
+      background: #e8f5e9; color: var(--primary-green); text-align: center; padding: 8px; border-radius: 8px; font-size: 18px; font-weight: 700; margin-bottom: 8px;
+    }
+    .payment-options { display: flex; flex-direction: column; gap: 5px; }
+    .pay-option {
+      background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 8px; display: flex; align-items: center; gap: 8px; font-size: 11px; cursor: pointer;
+    }
+    .pay-option input { accent-color: var(--primary-green); }
+
+    /* 6. Message Center (মেসেজ সেন্টার) */
+    .msg-type-toggle {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px;
+    }
+    .msg-tab {
+      border: none; padding: 5px; border-radius: 6px; font-weight: 600; font-size: 11px; background: #e0e0e0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .msg-tab.active { background: var(--primary-green); color: #fff; }
+    .msg-tab.green-tab { background: #25d366; color: #fff; }
+    .message-preview-box {
+      background: #e8f0fe; border-radius: 6px; padding: 6px 8px; font-size: 10px; line-height: 1.3; color: #1967d2; border-left: 3px solid var(--accent-blue);
+    }
+
+    /* 7. Report */
+    .report-tabs {
+      display: flex; background: #e0e0e0; border-radius: 6px; padding: 2px; margin-bottom: 6px;
+    }
+    .rep-tab {
+      flex: 1; text-align: center; padding: 3px; font-size: 10px; font-weight: 600; border-radius: 4px; cursor: pointer;
+    }
+    .rep-tab.active { background: var(--primary-green); color: #fff; }
+    .month-picker {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #fff; border: 1px solid var(--border-color); padding: 4px 8px;
+      border-radius: 6px; font-size: 10px; font-weight: 600; margin-bottom: 6px;
+    }
+    .chart-container {
+      background: #fff; border-radius: 8px; padding: 8px;
+      display: flex; align-items: center; justify-content: space-around; margin-bottom: 6px;
+    }
+    .pie-chart {
+      width: 55px; height: 55px; border-radius: 50%;
+      background: conic-gradient(var(--primary-green) 0% 71%, var(--accent-red) 71% 100%);
+    }
+    .chart-legend { display: flex; flex-direction: column; gap: 3px; font-size: 10px; }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .legend-color { width: 7px; height: 7px; border-radius: 2px; }
+
+    /* 8. Settings */
+    .settings-app-info {
+      display: flex; align-items: center; gap: 8px; background: #fff; padding: 6px; border-radius: 8px; margin-bottom: 6px;
+    }
+    .inline-logo {
+      width: 32px; height: 32px; background: linear-gradient(135deg, #008744, #005c2e);
+      border-radius: 6px; color: #fff; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; font-size: 6px; font-weight: 700;
+    }
+    .setting-title { font-weight: 700; font-size: 12px; }
+    .setting-sub { font-size: 9px; color: var(--text-muted); }
+    .setting-item {
+      background: #fff; padding: 6px 8px; border-radius: 6px;
+      display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 500; cursor: pointer;
+    }
+    .setting-item span { flex-grow: 1; }
+    .sub-desc { font-size: 8px; color: var(--text-muted); }
+    .menu-icon { width: 12px; text-align: center; color: var(--text-muted); }
+    .pink-icon { color: var(--accent-pink); }
+    .green-icon { color: #25d366; }
+    .blue-icon { color: var(--accent-blue); }
+
+    /* Buttons */
+    .btn {
+      width: 100%; border: none; padding: 7px; border-radius: 6px;
+      font-weight: 600; font-size: 11px; color: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .shadow-btn { box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+    .btn-green { background: var(--primary-green); }
+    .btn-blue { background: var(--accent-blue); }
+    .btn-purple { background: var(--accent-purple); }
+    .btn-pink { background: var(--accent-pink); }
+    .btn-logout { background: var(--accent-red); }
+
+    /* Bottom Nav Bar */
+    .bottom-nav {
+      height: 48px; background: #fff; border-top: 1px solid var(--border-color);
+      display: flex; justify-content: space-around; align-items: center;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center;
+      font-size: 8px; color: var(--text-muted); cursor: pointer; width: 12.5%;
+    }
+    .nav-item i { font-size: 12px; margin-bottom: 2px; }
+    .nav-item.active { color: var(--primary-green); font-weight: 700; }
+    .add-btn {
+      width: 22px; height: 22px; background: var(--primary-green);
+      color: #fff; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; font-size: 10px;
+    }
+
+    /* Toast Notification */
+    .toast-msg {
+      position: absolute; top: 55px; left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: rgba(0, 0, 0, 0.8); color: #fff;
+      padding: 5px 12px; border-radius: 12px; font-size: 11px;
+      opacity: 0; transition: all 0.3s ease; pointer-events: none;
+      z-index: 10; white-space: nowrap;
+    }
+    .toast-msg.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    html, body { width: 100%; height: 100%; }
+    .screen-body { min-height: 0; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+    button, .nav-item, .interactive-icon, .customer-item, .transaction-item { -webkit-tap-highlight-color: transparent; }
+  </style>
+</head>
+<body>
+
+  <div class="card-wrapper">
+    <div class="phone-screen">
+      
+      <!-- Status Bar -->
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="status-icons">
+          <i class="fa-solid fa-signal"></i>
+          <i class="fa-solid fa-wifi"></i>
+          <i class="fa-solid fa-battery-full"></i>
+        </div>
+      </div>
+
+      <!-- App Bar -->
+      <div class="app-bar" id="dynamic-app-bar">
+        <i class="fa-solid fa-bars interactive-icon"></i>
+        <span class="app-title" id="bar-title">E24 Hisab</span>
+        <i class="fa-regular fa-bell interactive-icon"></i>
+      </div>
+
+      <!-- Toast Message -->
+      <div class="toast-msg" id="toast">নোটিফিকেশন!</div>
+
+      <!-- Screen Body -->
+      <div class="screen-body">
+
+        <!-- 1. HOME PAGE -->
+        <div class="app-page active-page" id="page-1">
+          <div class="section-title text-center">আজকের সারাংশ</div>
+          <div class="stats-grid">
+            <div class="stat-card bg-green" onclick="switchPage('7')">
+              <i class="fa-solid fa-bag-shopping"></i>
+              <div class="stat-label">মোট জমা</div>
+              <div class="stat-amount">৳ 45,750</div>
+            </div>
+            <div class="stat-card bg-red" onclick="switchPage('7')">
+              <i class="fa-solid fa-wallet"></i>
+              <div class="stat-label">মোট বাকি</div>
+              <div class="stat-amount">৳ 18,500</div>
+            </div>
+            <div class="stat-card bg-blue">
+              <i class="fa-solid fa-cart-shopping"></i>
+              <div class="stat-label">মোট খরচ</div>
+              <div class="stat-amount">৳ 7,250</div>
+            </div>
+            <div class="stat-card bg-purple" onclick="switchPage('2')">
+              <i class="fa-solid fa-users"></i>
+              <div class="stat-label">মোট গ্রাহক</div>
+              <div class="stat-amount">১২ জন</div>
+            </div>
+          </div>
+
+          <div class="section-banner"><i class="fa-solid fa-chart-line"></i> সাম্প্রতিক লেনদেন</div>
+          <ul class="transaction-list">
+            <li class="transaction-item" onclick="switchPage('3')">
+              <span class="tx-icon icon-up"><i class="fa-solid fa-arrow-up"></i></span>
+              <div class="tx-info"><span class="tx-name">রহিম মিঞা</span><span class="tx-sub">জমা: ৳ 1,000</span></div>
+              <span class="tx-date">১৩-১১-২০২৬</span>
+            </li>
+            <li class="transaction-item" onclick="switchPage('3')">
+              <span class="tx-icon icon-down"><i class="fa-solid fa-arrow-down"></i></span>
+              <div class="tx-info"><span class="tx-name">করিম উদ্দিন</span><span class="tx-sub text-red">বাকি: ৳ 500</span></div>
+              <span class="tx-date">১২-১১-২০২৬</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- 2. CUSTOMER LIST PAGE -->
+        <div class="app-page" id="page-2">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="search-input" placeholder="নাম দিয়ে খুঁজুন...">
+          </div>
+          <ul class="customer-list">
+            <li class="customer-item" onclick="switchPage('3')">
+              <div class="user-avatar"><i class="fa-solid fa-user"></i></div>
+              <div class="customer-name">রহিম মিঞা</div>
+              <span class="amount-tag tag-red">বাকি: ৳ 2,500</span>
+              <i class="fa-solid fa-chevron-right"></i>
+            </li>
+            <li class="customer-item" onclick="switchPage('3')">
+              <div class="user-avatar"><i class="fa-solid fa-user"></i></div>
+              <div class="customer-name">করিম উদ্দিন</div>
+              <span class="amount-tag tag-red">বাকি: ৳ 1,200</span>
+              <i class="fa-solid fa-chevron-right"></i>
+            </li>
+            <li class="customer-item" onclick="switchPage('3')">
+              <div class="user-avatar"><i class="fa-solid fa-user"></i></div>
+              <div class="customer-name">আব্দুল কাদের</div>
+              <span class="amount-tag tag-green">জমা: ৳ 800</span>
+              <i class="fa-solid fa-chevron-right"></i>
+            </li>
+          </ul>
+          <button class="btn btn-green shadow-btn" style="margin-top: 8px;" onclick="showToast('নতুন গ্রাহক ফরম')">
+            <i class="fa-solid fa-user-plus"></i> নতুন গ্রাহক যোগ করুন
+          </button>
+        </div>
+
+        <!-- 3. CUSTOMER LEDGER PAGE (গ্রাহকের খাতা) -->
+        <div class="app-page" id="page-3">
+          <div class="profile-header">
+            <div class="profile-avatar-large"><i class="fa-solid fa-user"></i></div>
+            <div class="profile-name">রহিম মিঞা</div>
+            <div class="profile-phone"><i class="fa-solid fa-phone"></i> 01712-345678</div>
+          </div>
+          <div class="two-col-summary">
+            <div class="summary-box box-green"><span>মোট জমা</span><strong>৳ 5,000</strong></div>
+            <div class="summary-box box-red"><span>মোট বাকি</span><strong>৳ 2,500</strong></div>
+          </div>
+          <div class="section-banner border-banner" style="margin:4px 0; font-size:11px;"><i class="fa-solid fa-list-check"></i> লেনদেনের ইতিহাস</div>
+          <ul class="transaction-history">
+            <li class="history-item"><span class="tx-icon icon-up"><i class="fa-solid fa-arrow-up"></i></span><div class="tx-info"><span class="tx-name">জমা</span><span class="green-text" style="font-weight:700;">৳ 1,000</span></div><span class="tx-date">13-11-2026</span></li>
+            <li class="history-item"><span class="tx-icon icon-down"><i class="fa-solid fa-arrow-down"></i></span><div class="tx-info"><span class="tx-name">বাকি</span><span class="red-text" style="font-weight:700;">৳ 500</span></div><span class="tx-date">12-11-2026</span></li>
+          </ul>
+          <div class="action-btn-group">
+            <button class="btn btn-blue" onclick="switchPage('4')"><i class="fa-solid fa-plus"></i> নতুন লেনদেন</button>
+            <button class="btn btn-purple" onclick="switchPage('6')"><i class="fa-solid fa-envelope"></i> মেসেজ পাঠান</button>
+          </div>
+        </div>
+
+        <!-- 4. NEW TRANSACTION PAGE (নতুন লেনদেন) -->
+        <div class="app-page" id="page-4">
+          <div class="type-selector">
+            <button class="type-btn active-green"><i class="fa-solid fa-arrow-up"></i> জমা</button>
+            <button class="type-btn inactive-red"><i class="fa-solid fa-arrow-down"></i> বাকি</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">গ্রাহক নির্বাচন:</label>
+            <div class="custom-select"><span>রহিম মিঞা</span><i class="fa-solid fa-chevron-down"></i></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">পরিমাণ (৳):</label>
+            <input type="text" class="form-input" value="1000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">পেমেন্ট মাধ্যম:</label>
+            <div class="custom-select" onclick="switchPage('5')"><span style="color:#e91e63; font-weight:600;"><i class="fa-solid fa-mobile-screen"></i> বিকাশ (bKash)</span><i class="fa-solid fa-chevron-right"></i></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Transaction ID:</label>
+            <input type="text" class="form-input" value="TRX123456789">
+          </div>
+          <button class="btn btn-green shadow-btn" onclick="showToast('লেনদেন সফলভাবে সংরক্ষিত!')">
+            <i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন
+          </button>
+        </div>
+
+        <!-- 5. PAYMENT PAGE (পেমেন্ট পেজ) -->
+        <div class="app-page" id="page-5">
+          <div class="payment-header">
+            <div class="profile-avatar-small"><i class="fa-solid fa-user"></i></div>
+            <div class="payment-user-info">
+              <div class="name">রহিম মিঞা</div>
+              <div class="due-text">বকেয়া পরিমাণ: ৳ 2,500</div>
+            </div>
+          </div>
+          <div class="payment-amount-box">৳ 2,500</div>
+          <div class="form-label" style="font-weight:700; margin-bottom:5px;">পেমেন্ট মাধ্যম নির্বাচন করুন:</div>
+          <div class="payment-options">
+            <label class="pay-option"><input type="radio" name="pay" checked><i class="fa-solid fa-mobile-button" style="color:#e91e63;"></i> বিকাশ দিয়ে পেমেন্ট</label>
+            <label class="pay-option"><input type="radio" name="pay"><i class="fa-solid fa-wallet" style="color:#f57c00;"></i> নগদ দিয়ে পেমেন্ট</label>
+            <label class="pay-option"><input type="radio" name="pay"><i class="fa-solid fa-building-columns" style="color:#1565c0;"></i> ব্যাংক পেমেন্ট</label>
+            <label class="pay-option"><input type="radio" name="pay"><i class="fa-solid fa-money-bill-1" style="color:#2e7d32;"></i> নগদ টাকা (Cash)</label>
+          </div>
+          <button class="btn btn-pink shadow-btn" style="margin-top:8px;" onclick="showToast('পেমেন্ট সফল হয়েছে!')">
+            <i class="fa-solid fa-paper-plane"></i> পেমেন্ট করুন
+          </button>
+        </div>
+
+        <!-- 6. MESSAGE CENTER (মেসেজ সেন্টার) -->
+        <div class="app-page" id="page-6">
+          <div class="msg-type-toggle">
+            <button class="msg-tab active"><i class="fa-solid fa-comment-sms"></i> SMS</button>
+            <button class="msg-tab green-tab"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">প্রাপকের নম্বর:</label>
+            <input type="text" class="form-input" value="01712-345678">
+          </div>
+          <div class="form-group">
+            <label class="form-label">মেসেজের ধরন:</label>
+            <div class="custom-select"><span>বাকি রিমাইন্ডার</span><i class="fa-solid fa-chevron-down"></i></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">মেসেজের নমুনা:</label>
+            <div class="message-preview-box">
+              <strong>E24 Hisab</strong><br>
+              সম্মানিত Rahim Miya,<br>
+              আপনার বকেয়া টাকা: ৳ 2,500।<br>
+              দয়া করে দ্রুত পরিশোধ করুন।<br>– E24 Hisab
+            </div>
+          </div>
+          <button class="btn btn-green shadow-btn" onclick="showToast('মেসেজ পাঠানো হয়েছে!')">
+            <i class="fa-solid fa-paper-plane"></i> মেসেজ পাঠান
+          </button>
+        </div>
+
+        <!-- 7. REPORT PAGE -->
+        <div class="app-page" id="page-7">
+          <div class="report-tabs">
+            <div class="rep-tab">দৈনিক</div>
+            <div class="rep-tab active">মাসিক</div>
+            <div class="rep-tab">বার্ষিক</div>
+          </div>
+          <div class="month-picker">
+            <i class="fa-solid fa-chevron-left"></i>
+            <span><i class="fa-regular fa-calendar"></i> নভেম্বর 2026</span>
+            <i class="fa-solid fa-chevron-right"></i>
+          </div>
+          <div class="two-col-summary">
+            <div class="summary-box box-green"><span>মোট জমা</span><strong>৳ 45,000</strong></div>
+            <div class="summary-box box-red"><span>মোট বাকি</span><strong>৳ 18,500</strong></div>
+          </div>
+          <div class="chart-container">
+            <div class="pie-chart"></div>
+            <div class="chart-legend">
+              <div class="legend-item"><span class="legend-color" style="background:var(--primary-green)"></span> জমা (71%)</div>
+              <div class="legend-item"><span class="legend-color" style="background:var(--accent-red)"></span> বাকি (29%)</div>
+            </div>
+          </div>
+          <button class="btn btn-blue shadow-btn" onclick="showToast('PDF রিপোর্ট ডাউনলোড হচ্ছে...')">
+            <i class="fa-solid fa-download"></i> PDF রিপোর্ট ডাউনলোড
+          </button>
+        </div>
+
+        <!-- 8. SETTINGS PAGE -->
+        <div class="app-page" id="page-8">
+          <div class="settings-app-info">
+            <div class="app-logo inline-logo"><i class="fa-solid fa-book-bookmark"></i><span>E24</span></div>
+            <div>
+              <div class="setting-title">E24 Hisab</div>
+              <div class="setting-sub">Version 1.0.0</div>
+            </div>
+          </div>
+          <ul class="settings-menu">
+            <li class="setting-item" onclick="showToast('ব্যাকআপ সফল')"><i class="fa-solid fa-database menu-icon"></i><span>ডাটা ব্যাকআপ ও রিস্টোর</span><i class="fa-solid fa-chevron-right"></i></li>
+            <li class="setting-item" onclick="switchPage('5')"><i class="fa-solid fa-credit-card menu-icon pink-icon"></i><div><span>পেমেন্ট সেটিংস</span><div class="sub-desc">(bKash / Nagad)</div></div><i class="fa-solid fa-chevron-right"></i></li>
+            <li class="setting-item" onclick="switchPage('6')"><i class="fa-solid fa-comments menu-icon green-icon"></i><div><span>মেসেজ সেটিংস</span><div class="sub-desc">(SMS / WhatsApp)</div></div><i class="fa-solid fa-chevron-right"></i></li>
+            <li class="setting-item" onclick="showToast('ভাষা পরিবর্তন')"><i class="fa-solid fa-globe menu-icon"></i><span>ভাষা নির্বাচন (বাংলা)</span><i class="fa-solid fa-chevron-right"></i></li>
+          </ul>
+          <button class="btn btn-logout shadow-btn" style="margin-top: 6px;" onclick="showToast('লগ আউট করা হয়েছে')">
+            <i class="fa-solid fa-right-from-bracket"></i> লগ আউট
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Bottom Nav Bar with 1 to 8 Menu Links -->
+      <nav class="bottom-nav">
+        <div class="nav-item active" id="nav-1" onclick="switchPage('1')">
+          <i class="fa-solid fa-house"></i><span>১.হোম</span>
+        </div>
+        <div class="nav-item" id="nav-2" onclick="switchPage('2')">
+          <i class="fa-solid fa-users"></i><span>২.গ্রাহক</span>
+        </div>
+        <div class="nav-item" id="nav-3" onclick="switchPage('3')">
+          <i class="fa-solid fa-book"></i><span>৩.খাতা</span>
+        </div>
+        <div class="nav-item" id="nav-4" onclick="switchPage('4')">
+          <div class="add-btn"><i class="fa-solid fa-plus"></i></div><span>৪.নতুন</span>
+        </div>
+        <div class="nav-item" id="nav-5" onclick="switchPage('5')">
+          <i class="fa-solid fa-wallet"></i><span>৫.পেমেন্ট</span>
+        </div>
+        <div class="nav-item" id="nav-6" onclick="switchPage('6')">
+          <i class="fa-solid fa-comments"></i><span>৬.মেসেজ</span>
+        </div>
+        <div class="nav-item" id="nav-7" onclick="switchPage('7')">
+          <i class="fa-solid fa-chart-pie"></i><span>৭.রিপোর্ট</span>
+        </div>
+        <div class="nav-item" id="nav-8" onclick="switchPage('8')">
+          <i class="fa-solid fa-gear"></i><span>৮.সেটিংস</span>
+        </div>
+      </nav>
+
+    </div>
+    <div class="label-badge">E24 Hisab - ১ থেকে ৮ নম্বর পেজ সহ সম্পূর্ণ মেনু</div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.innerText = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    function switchPage(pageKey) {
+      // Hide all pages & remove active navs
+      for (let i = 1; i <= 8; i++) {
+        const p = document.getElementById('page-' + i);
+        const n = document.getElementById('nav-' + i);
+        if (p) p.classList.remove('active-page');
+        if (n) n.classList.remove('active');
+      }
+
+      // Show selected page & activate nav
+      const targetPage = document.getElementById('page-' + pageKey);
+      const targetNav = document.getElementById('nav-' + pageKey);
+      if (targetPage) targetPage.classList.add('active-page');
+      if (targetNav) targetNav.classList.add('active');
+
+      // Update Header Title
+      const dynamicBar = document.getElementById('dynamic-app-bar');
+      const titles = {
+        '1': 'E24 Hisab',
+        '2': 'গ্রাহক তালিকা',
+        '3': 'রহিম মিঞার হিসাব',
+        '4': 'নতুন লেনদেন',
+        '5': 'পেমেন্ট করুন',
+        '6': 'মেসেজ সেন্টার',
+        '7': 'হিসাব রিপোর্ট',
+        '8': 'সেটিংস'
+      };
+
+      if (pageKey === '1') {
+        dynamicBar.innerHTML = `<i class="fa-solid fa-bars interactive-icon"></i><span class="app-title">E24 Hisab</span><i class="fa-regular fa-bell interactive-icon"></i>`;
+      } else {
+        dynamicBar.innerHTML = `<i class="fa-solid fa-arrow-left interactive-icon" onclick="switchPage('1')"></i><span class="app-title">${titles[pageKey]}</span>`;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const bar = document.getElementById('dynamic-app-bar');
+      if (bar) {
+        bar.addEventListener('click', (event) => {
+          const icon = event.target.closest('.interactive-icon');
+          if (!icon) return;
+          if (icon.classList.contains('fa-bell')) showToast('নতুন কোনো নোটিফিকেশন নেই');
+          else if (icon.classList.contains('fa-bars')) showToast('E24 Hisab মেনু');
+        });
+      }
+    });
+  </script>
+
+</body>
+</html>

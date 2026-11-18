@@ -16,3 +16,6 @@
 - Preview-তে যোগ করা গ্রাহক/লেনদেন ব্রাউজারের demo state-এ থাকে; APK-এর SQLite database-এ সেভ হয় না।
 - bKash/Nagad, SMS, WhatsApp, cloud backup বাস্তবে সংযুক্ত নয়।
 - GitHub-এ deploy করতে তোমার repository-তে ফাইল upload/commit করতে হবে; আমি তোমার GitHub account-এ সরাসরি publish করতে পারি না।
+
+## Live Preview সংশোধন
+`docs/index.html` এখন আপনার দেওয়া `indexnew.html`-এর একই ফাইল। GitHub Pages deploy হলে Live Preview-তে এই ডিজাইনই দেখা যাবে। `docs/indexnew-reference.html`-এও reference কপি রাখা হয়েছে।

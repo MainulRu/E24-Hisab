@@ -196,8 +196,11 @@
     .user-avatar {
       width: 28px; height: 28px; background: #e8f0fe; color: var(--accent-blue);
       border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      font-size: 12px; margin-right: 8px;
+      font-size: 12px; margin-right: 8px; overflow:hidden; flex:0 0 28px;
     }
+    .user-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .profile-avatar-large { overflow:hidden; }
+    .profile-avatar-large img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
     .customer-name { font-weight: 600; flex-grow: 1; }
     .amount-tag {
       padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; margin-right: 6px;
@@ -681,7 +684,7 @@
       const titles = {
         '1': 'E24 Hisab',
         '2': 'গ্রাহক তালিকা',
-        '3': 'রহিম মিঞার হিসাব',
+        '3': (window.currentLedgerTitle || 'গ্রাহকের হিসাব'),
         '4': 'নতুন লেনদেন',
         '5': 'পেমেন্ট করুন',
         '6': 'মেসেজ সেন্টার',
@@ -715,20 +718,23 @@
       const money = n => '৳ ' + Number(n || 0).toLocaleString('en-IN');
       const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       const id = () => 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+      const avatar = (photo, large=false) => photo ? `<img src="${photo}" alt="গ্রাহকের ছবি">` : '<i class="fa-solid fa-user"></i>'; 
       function load() { try { const x=JSON.parse(localStorage.getItem(KEY)); if(x && Array.isArray(x.customers) && Array.isArray(x.transactions)) db={...db,...x}; } catch(e) { console.warn('E24 data load:',e); } }
       function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e) { showToast('ডেটা সংরক্ষণ করা যায়নি'); } }
       function customerTotals(cid) { let a=0,b=0; db.transactions.filter(t=>t.customerId===cid).forEach(t=>{ if(t.type==='জমা') a+=t.amount; else b+=t.amount; }); return {paid:a,due:b}; }
       function selected() { return db.customers.find(c=>c.id===db.selectedCustomerId) || db.customers[0] || null; }
       function renderCustomers() {
         const ul=document.querySelector('#page-2 .customer-list'); if(!ul)return;
-        ul.innerHTML=db.customers.length ? db.customers.map(c=>{const t=customerTotals(c.id),due=t.due-t.paid;return `<li class="customer-item" data-cid="${esc(c.id)}"><div class="user-avatar"><i class="fa-solid fa-user"></i></div><div class="customer-name">${esc(c.name)}<small style="display:block;color:#888;font-size:10px">${esc(c.phone)}</small></div><span class="amount-tag ${due>0?'tag-red':'tag-green'}">${due>0?'বাকি: '+money(due):'জমা: '+money(Math.abs(due))}</span><i class="fa-solid fa-chevron-right"></i></li>`}).join('') : '<li style="padding:22px;text-align:center;color:#888">এখনো কোনো গ্রাহক যোগ করা হয়নি</li>';
+        ul.innerHTML=db.customers.length ? db.customers.map(c=>{const t=customerTotals(c.id),due=t.due-t.paid;return `<li class="customer-item" data-cid="${esc(c.id)}"><div class="user-avatar">${avatar(c.photo)}</div><div class="customer-name">${esc(c.name)}<small style="display:block;color:#888;font-size:10px">${esc(c.phone)}</small></div><span class="amount-tag ${due>0?'tag-red':'tag-green'}">${due>0?'বাকি: '+money(due):'জমা: '+money(Math.abs(due))}</span><i class="fa-solid fa-chevron-right"></i></li>`}).join('') : '<li style="padding:22px;text-align:center;color:#888">এখনো কোনো গ্রাহক যোগ করা হয়নি</li>';
         ul.querySelectorAll('[data-cid]').forEach(el=>el.addEventListener('click',()=>{db.selectedCustomerId=el.dataset.cid;renderLedger();switchPage('3');}));
       }
       function renderLedger() {
         const p=document.getElementById('page-3'), c=selected(); if(!p)return;
-        if(!c){p.innerHTML='<div style="padding:30px;text-align:center">প্রথমে গ্রাহক তালিকা থেকে একজন গ্রাহক যোগ করুন বা নির্বাচন করুন।<br><button class="btn btn-green" style="margin-top:15px" onclick="switchPage(\'2\')">গ্রাহক তালিকা</button></div>';return;}
+        if(!c){window.currentLedgerTitle='গ্রাহকের হিসাব';p.innerHTML='<div style="padding:30px;text-align:center">প্রথমে গ্রাহক তালিকা থেকে একজন গ্রাহক যোগ করুন বা নির্বাচন করুন।<br><button class="btn btn-green" style="margin-top:15px" onclick="switchPage(\'2\')">গ্রাহক তালিকা</button></div>';return;}
         const t=customerTotals(c.id), rows=db.transactions.filter(x=>x.customerId===c.id).slice().reverse();
-        p.innerHTML=`<div class="profile-header"><div class="profile-avatar-large"><i class="fa-solid fa-user"></i></div><div class="profile-name">${esc(c.name)}</div><div class="profile-phone"><i class="fa-solid fa-phone"></i> ${esc(c.phone)}</div></div><div class="two-col-summary"><div class="summary-box box-green"><span>মোট জমা</span><strong>${money(t.paid)}</strong></div><div class="summary-box box-red"><span>মোট বাকি</span><strong>${money(t.due)}</strong></div></div><div class="section-banner border-banner" style="margin:4px 0;font-size:11px"><i class="fa-solid fa-list-check"></i> লেনদেনের ইতিহাস</div><ul class="transaction-history">${rows.length?rows.map(x=>`<li class="history-item"><span class="tx-icon ${x.type==='জমা'?'icon-up':'icon-down'}"><i class="fa-solid ${x.type==='জমা'?'fa-arrow-up':'fa-arrow-down'}"></i></span><div class="tx-info"><span class="tx-name">${x.type} ${x.note?'— '+esc(x.note):''}</span><span class="${x.type==='জমা'?'green-text':'red-text'}" style="font-weight:700">${money(x.amount)}</span></div><span class="tx-date">${esc(x.date)}</span></li>`).join(''):'<li style="padding:20px;text-align:center;color:#888">এখনো কোনো লেনদেন নেই</li>'}</ul><div class="action-btn-group"><button class="btn btn-blue" onclick="beginTransaction('জমা')"><i class="fa-solid fa-plus"></i> নতুন লেনদেন</button><button class="btn btn-purple" onclick="beginTransaction('বাকি')"><i class="fa-solid fa-plus"></i> বাকি যোগ</button></div>`;
+        window.currentLedgerTitle = c.name + 'র হিসাব';
+        p.innerHTML=`<div class="profile-header"><div class="profile-avatar-large">${avatar(c.photo,true)}</div><div class="profile-name">${esc(c.name)}</div><div class="profile-phone"><i class="fa-solid fa-phone"></i> ${esc(c.phone)}</div><button class="btn btn-blue" id="change-customer-photo" style="margin-top:6px;padding:5px 10px;font-size:10px"><i class="fa-solid fa-camera"></i> ছবি আপলোড / পরিবর্তন</button></div><div class="two-col-summary"><div class="summary-box box-green"><span>মোট জমা</span><strong>${money(t.paid)}</strong></div><div class="summary-box box-red"><span>মোট বাকি</span><strong>${money(t.due)}</strong></div></div><div class="section-banner border-banner" style="margin:4px 0;font-size:11px"><i class="fa-solid fa-list-check"></i> লেনদেনের ইতিহাস</div><ul class="transaction-history">${rows.length?rows.map(x=>`<li class="history-item"><span class="tx-icon ${x.type==='জমা'?'icon-up':'icon-down'}"><i class="fa-solid ${x.type==='জমা'?'fa-arrow-up':'fa-arrow-down'}"></i></span><div class="tx-info"><span class="tx-name">${x.type} ${x.note?'— '+esc(x.note):''}</span><span class="${x.type==='জমা'?'green-text':'red-text'}" style="font-weight:700">${money(x.amount)}</span></div><span class="tx-date">${esc(x.date)}</span></li>`).join(''):'<li style="padding:20px;text-align:center;color:#888">এখনো কোনো লেনদেন নেই</li>'}</ul><div class="action-btn-group"><button class="btn btn-blue" onclick="beginTransaction('জমা')"><i class="fa-solid fa-plus"></i> নতুন লেনদেন</button><button class="btn btn-purple" onclick="beginTransaction('বাকি')"><i class="fa-solid fa-plus"></i> বাকি যোগ</button></div>`;
+        const photoBtn=document.getElementById('change-customer-photo'); if(photoBtn)photoBtn.onclick=()=>{const picker=document.getElementById('customer-photo-picker');if(picker){picker.value='';picker.click();}};
       }
       function renderTransactionForm(type) {
         db.txType=type||db.txType||'জমা'; const p=document.getElementById('page-4'); if(!p)return;
@@ -746,7 +752,10 @@
       window.switchPage = ((old)=>function(pageKey){if(String(pageKey)==='3')renderLedger();if(String(pageKey)==='4')renderTransactionForm(db.txType);old(String(pageKey));})(window.switchPage);
       document.addEventListener('DOMContentLoaded',()=>{
         load();
-        const add=document.querySelector('#page-2 button'); if(add)add.onclick=()=>{const name=prompt('গ্রাহকের নাম লিখুন:');if(name===null)return;if(!name.trim()){showToast('গ্রাহকের নাম লিখুন');return;}const phone=prompt('গ্রাহকের ফোন নম্বর লিখুন:');if(phone===null)return;if(!phone.trim()){showToast('ফোন নম্বর লিখুন');return;}const c={id:id(),name:name.trim(),phone:phone.trim()};db.customers.push(c);db.selectedCustomerId=c.id;save();refreshAll();showToast('নতুন গ্রাহক সংরক্ষিত হয়েছে');};
+        const add=document.querySelector('#page-2 button');
+        const photoPicker=document.createElement('input'); photoPicker.type='file'; photoPicker.accept='image/*'; photoPicker.hidden=true; photoPicker.id='customer-photo-picker'; document.body.appendChild(photoPicker);
+        photoPicker.addEventListener('change',()=>{const file=photoPicker.files&&photoPicker.files[0];if(!file)return;if(!file.type.startsWith('image/')){showToast('শুধু ছবির ফাইল নির্বাচন করুন');return;}if(file.size>5*1024*1024){showToast('ছবির সাইজ ৫ MB-এর কম রাখুন');return;}const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas'),max=480,scale=Math.min(1,max/Math.max(img.width,img.height));canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);const c=db.customers.find(x=>x.id===db.selectedCustomerId);if(c){c.photo=canvas.toDataURL('image/jpeg',0.78);save();refreshAll();showToast('গ্রাহকের ছবি সংরক্ষিত হয়েছে');}};img.onerror=()=>showToast('ছবিটি খোলা যায়নি');img.src=reader.result;};reader.readAsDataURL(file);});
+        if(add)add.onclick=()=>{const name=prompt('গ্রাহকের নাম লিখুন:');if(name===null)return;if(!name.trim()){showToast('গ্রাহকের নাম লিখুন');return;}const phone=prompt('গ্রাহকের ফোন নম্বর লিখুন:');if(phone===null)return;if(!phone.trim()){showToast('ফোন নম্বর লিখুন');return;}const c={id:id(),name:name.trim(),phone:phone.trim(),photo:''};db.customers.push(c);db.selectedCustomerId=c.id;save();refreshAll();showToast('গ্রাহক সংরক্ষিত হয়েছে — এখন ছবি নির্বাচন করুন');photoPicker.value='';photoPicker.click();};
         const search=document.getElementById('search-input');if(search)search.addEventListener('input',()=>{document.querySelectorAll('#page-2 .customer-item').forEach(el=>{el.style.display=el.textContent.toLowerCase().includes(search.value.toLowerCase())?'':'none';});});
         refreshAll();
       });

@@ -25,6 +25,39 @@ nav button{border:0;background:white;color:#65736a;font-size:11px;font-weight:70
 .note{font-size:12px;color:var(--muted);line-height:1.5}
 @media(min-width:600px){body{padding:18px 0}.app{border-radius:24px;overflow:hidden;min-height:calc(100vh - 36px)}nav{bottom:18px;border-radius:0 0 24px 24px}}
 @media print{body{background:#fff!important;padding:0!important}.app{max-width:none!important;min-height:0!important;box-shadow:none!important;border-radius:0!important}header,nav,.no-print{display:none!important}main{padding:0!important}.card{-webkit-print-color-adjust:exact;print-color-adjust:exact;break-inside:avoid}.row,.ledger-summary,.profile{break-inside:avoid;box-shadow:none!important;border:1px solid #e5e5e5}.section{break-after:avoid}.page-title{margin-top:0}}
+
+/* E24 Hisab poster-matched visual refresh: shared green/white app language */
+:root{--g:#078a3b;--gd:#05652d;--red:#e92323;--blue:#0754c8;--purple:#7138d8;--bg:#f4f7f5;--ink:#17251d;--muted:#718078}
+body{background:linear-gradient(145deg,#eaf4ee 0%,#f5f8f6 48%,#e8f2ec 100%);font-family:system-ui,"Noto Sans Bengali","Hind Siliguri",sans-serif}
+.app{background:#f8faf9;box-shadow:0 12px 38px #123b251f}
+header{height:64px;background:linear-gradient(100deg,#078a3b,#05652d);box-shadow:0 3px 12px #063f222b;padding:0 15px}
+header .brand{font-size:21px;letter-spacing:.1px}
+header button{width:36px;height:38px;border-radius:10px;cursor:pointer}
+main{padding:15px 13px 94px}
+.page-title{font-size:19px;font-weight:850;color:#17251d;margin:0 0 13px;padding:9px 11px;border-radius:10px;background:linear-gradient(90deg,#e8f5b5,#f5f9e9)}
+.cards{gap:9px}
+.card{border-radius:13px;min-height:108px;padding:13px 12px;box-shadow:0 4px 11px #102a171b;display:flex;flex-direction:column;justify-content:center}
+.card .label{font-size:13px;font-weight:750;line-height:1.45}
+.card .value{font-size:22px;font-weight:900;letter-spacing:.1px}
+.section{margin:19px 0 9px;padding:8px 11px;border-radius:8px;background:linear-gradient(90deg,#078a3b,#05652d);color:#fff;font-size:16px;font-weight:850}
+.row{border:1px solid #edf1ee;border-radius:11px;padding:10px;margin:7px 0;box-shadow:0 2px 7px #102a1710;transition:transform .12s ease,box-shadow .12s ease}
+.row[role=button]{cursor:pointer}.row[role=button]:active{transform:scale(.99)}
+.avatar{box-shadow:inset 0 0 0 1px #d7e9f7}
+.name{font-size:14px;font-weight:800}
+.sub{font-size:12px;line-height:1.5}
+.amount{font-size:14px}
+.btn{border-radius:10px;background:linear-gradient(100deg,#078a3b,#05652d);box-shadow:0 3px 8px #087a3524;padding:12px 14px;font-size:14px;cursor:pointer}
+.btn.bluebtn{background:linear-gradient(100deg,#0754c8,#123f9c)}.btn.purplebtn{background:linear-gradient(100deg,#7138d8,#5520ad)}
+.btn.light{background:#e9f4ec;box-shadow:none}
+input,select,textarea{border:1px solid #cbd8d0;border-radius:10px;padding:11px 12px;outline:none;box-shadow:0 1px 2px #102a1708}
+input:focus,select:focus,textarea:focus{border-color:#078a3b;box-shadow:0 0 0 3px #078a3b18}
+.profile{border:1px solid #edf1ee;box-shadow:0 2px 8px #102a1710}
+nav{height:70px;border-top:1px solid #e7eee9;box-shadow:0 -4px 14px #102a1717;padding:3px 5px env(safe-area-inset-bottom)}
+nav button{border-radius:10px;font-size:11px;gap:2px}nav button.active{background:#eaf6ee;color:#078a3b}
+.modal{border:1px solid #e7eee9;box-shadow:0 -8px 28px #102a1720}
+@media(min-width:600px){.app{border-radius:22px}.modal{border-radius:20px}}
+@media(max-width:360px){main{padding-left:10px;padding-right:10px}.card{padding:10px;min-height:98px}.card .value{font-size:19px}.page-title{font-size:17px}}
+
 </style></head>
 <body><div class="app">
 <header><button aria-label="menu" onclick="show('সেটিংস')">☰</button><div class="brand">E24 Hisab</div><button onclick="toast('নতুন নোটিফিকেশন নেই')" aria-label="notifications">♧</button></header>

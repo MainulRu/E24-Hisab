@@ -14,9 +14,9 @@ import java.util.*;
 
 public class MainActivity extends Activity {
     DB db; LinearLayout root, content, nav; String page="হোম"; int selectedId=-1;
-    final int GREEN=0xFF008744, DARK=0xFF005C2E, RED=0xFFD93025, BLUE=0xFF1A73E8, PURPLE=0xFF7B1FA2, BG=0xFFF8F9FA, INK=0xFF202124, MUTED=0xFF5F6368;
+    final int GREEN=0xFF087A35, DARK=0xFF075C2B, RED=0xFFE53935, BLUE=0xFF1769C2, PURPLE=0xFF7138C8, BG=0xFFF3F7F4, INK=0xFF202A24, MUTED=0xFF718078;
     int dp(float n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
-    public void onCreate(Bundle b){super.onCreate(b); getWindow().setStatusBarColor(DARK); getWindow().getDecorView().setSystemUiVisibility(0); db=new DB(this); show("হোম");}
+    public void onCreate(Bundle b){super.onCreate(b); db=new DB(this); show("হোম");}
     GradientDrawable shape(int color,int radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(radius));return d;}
     TextView label(String s,int size,int color){TextView t=new TextView(this);t.setText(s);t.setTextSize(size);t.setTextColor(color);t.setPadding(dp(4),dp(4),dp(4),dp(4));return t;}
     TextView bold(String s,int size,int color){TextView t=label(s,size,color);t.setTypeface(Typeface.DEFAULT,Typeface.BOLD);return t;}
@@ -27,23 +27,24 @@ public class MainActivity extends Activity {
     TextView action(String title,int color){TextView t=bold(title,14,Color.WHITE);t.setGravity(Gravity.CENTER);t.setBackground(shape(color,12));t.setPadding(dp(12),dp(13),dp(12),dp(13));return t;}
     void show(String p){
         page=p; root=column();root.setBackgroundColor(BG);
-        LinearLayout header=row();header.setBackgroundColor(GREEN);header.setPadding(dp(16),dp(10),dp(16),dp(10));
-        TextView menu=bold("☰",24,Color.WHITE);header.addView(menu);TextView brand=bold("  E24 Hisab",19,Color.WHITE);header.addView(brand,new LinearLayout.LayoutParams(0,-2,1));TextView bell=bold("♧",22,Color.WHITE);header.addView(bell);root.addView(header);
-        ScrollView sc=new ScrollView(this);content=column();content.setPadding(dp(12),dp(12),dp(12),dp(18));sc.addView(content);root.addView(sc,new LinearLayout.LayoutParams(-1,0,1));
-        nav=row();nav.setBackgroundColor(Color.WHITE);nav.setElevation(dp(5));String[] tabs={"⌂\nহোম","♙\nগ্রাহক","＋\nনতুন","▥\nরিপোর্ট","⚙\nসেটিংস"};
-        String[] names={"হোম","গ্রাহক","নতুন","রিপোর্ট","সেটিংস"};
-        for(int i=0;i<tabs.length;i++){final String tab=names[i];TextView b=label(tabs[i],12,tab.equals(page)?GREEN:0xFF58645D);b.setGravity(Gravity.CENTER);b.setTypeface(null,tab.equals(page)?Typeface.BOLD:Typeface.NORMAL);b.setPadding(0,dp(9),0,dp(9));nav.addView(b,new LinearLayout.LayoutParams(0,-2,1));b.setOnClickListener(v->{if(tab.equals("নতুন"))transactionDialog();else show(tab);});}
-        root.addView(nav);setContentView(root);
-        if(p.equals("হোম"))dashboard();else if(p.equals("গ্রাহক"))customers();else if(p.equals("খাতা"))ledger();else if(p.equals("রিপোর্ট"))reports();else if(p.equals("সেটিংস"))settings();else if(p.equals("পেমেন্ট"))payment();else if(p.equals("মেসেজ"))messages();
+        LinearLayout header=row();header.setBackgroundColor(GREEN);header.setPadding(dp(12),dp(12),dp(12),dp(12));
+        TextView menu=bold("☰",22,Color.WHITE);menu.setGravity(Gravity.CENTER);header.addView(menu);menu.setOnClickListener(v->show("সেটিংস"));TextView brand=bold("  E24 Hisab",20,Color.WHITE);header.addView(brand,new LinearLayout.LayoutParams(0,-2,1));TextView bell=bold("♧",20,Color.WHITE);bell.setGravity(Gravity.CENTER);header.addView(bell);bell.setOnClickListener(v->Toast.makeText(this,"নতুন নোটিফিকেশন নেই",Toast.LENGTH_SHORT).show());root.addView(header);
+        ScrollView sc=new ScrollView(this);content=column();content.setPadding(dp(14),dp(14),dp(14),dp(18));sc.addView(content);root.addView(sc,new LinearLayout.LayoutParams(-1,0,1));
+        nav=row();nav.setBackgroundColor(Color.WHITE);nav.setPadding(0,dp(2),0,dp(2));String[] glyphs={"⌂","♟","▤","＋","▣","▰","◔","⚙"};
+        String[] labels={"১.হোম","২.গ্রাহক","৩.খাতা","৪.নতুন","৫.পেমেন্ট","৬.মেসেজ","৭.রিপোর্ট","৮.সেটিংস"};
+        String[] names={"হোম","গ্রাহক","খাতা","নতুন","পেমেন্ট","মেসেজ","রিপোর্ট","সেটিংস"};
+        for(int i=0;i<names.length;i++){final String tab=names[i];LinearLayout item=column();item.setGravity(Gravity.CENTER);TextView ic=bold(glyphs[i],14,tab.equals(page)?GREEN:0xFF5F6368);ic.setGravity(Gravity.CENTER);TextView tx=label(labels[i],8,tab.equals(page)?GREEN:0xFF5F6368);tx.setGravity(Gravity.CENTER);tx.setPadding(0,0,0,0);item.addView(ic);item.addView(tx);nav.addView(item,new LinearLayout.LayoutParams(0,-1,1));item.setOnClickListener(v->{if(tab.equals("নতুন"))transactionDialog();else if(tab.equals("খাতা")){if(selectedId>0)show("খাতা");else show("গ্রাহক");}else show(tab);});}
+        root.addView(nav,new LinearLayout.LayoutParams(-1,dp(48)));setContentView(root);
+        if(p.equals("হোম"))dashboard();else if(p.equals("গ্রাহক"))customers();else if(p.equals("খাতা"))ledger();else if(p.equals("রিপোর্ট"))reports();else if(p.equals("সেটিংস"))settings();else if(p.equals("পেমেন্ট"))payment();else if(p.equals("মেসেজ"))messages();else if(p.equals("খাতা"))customers();
     }
-    void section(String s){TextView h=bold(s,15,Color.WHITE);h.setPadding(dp(10),dp(7),dp(10),dp(7));h.setBackground(shape(GREEN,7));content.addView(h);gap(content,8);}
+    void section(String s){content.addView(bold(s,18,INK));gap(content,8);}
     void metric(String icon,String title,String value,int color,LinearLayout parent){
-        LinearLayout c=column();c.setPadding(dp(10),dp(10),dp(10),dp(10));c.setBackground(shape(color,9));
-        c.addView(bold(icon+"  "+title,13,Color.WHITE));c.addView(bold("৳ "+value,19,Color.WHITE));
+        LinearLayout c=column();c.setPadding(dp(13),dp(12),dp(13),dp(12));c.setBackground(shape(color,14));
+        c.addView(bold(icon+"  "+title,14,Color.WHITE));c.addView(bold("৳ "+value,22,Color.WHITE));
         LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-2,1);lp.setMargins(dp(3),dp(3),dp(3),dp(3));parent.addView(c,lp);
     }
     void dashboard(){
-        TextView today=bold("আজকের সারাংশ",16,DARK); today.setGravity(Gravity.CENTER); today.setBackground(shape(0xFFC8E6C9,8)); today.setPadding(dp(8),dp(6),dp(8),dp(6));content.addView(today);gap(content,7);
+        TextView today=label("☀  আজকের সারাংশ",17,INK);content.addView(today);gap(content,7);
         int[] t=db.totals();LinearLayout r1=row();metric("↓","মোট জমা",String.valueOf(t[0]),GREEN,r1);metric("↑","মোট বাকি",String.valueOf(t[1]),RED,r1);content.addView(r1);
         gap(content,4);LinearLayout r2=row();metric("▣","মোট খরচ",String.valueOf(db.expenses()),BLUE,r2);metric("♟","মোট গ্রাহক",String.valueOf(db.countCustomers()),PURPLE,r2);content.addView(r2);
         gap(content,16);section("▤  সাম্প্রতিক লেনদেন");
@@ -51,7 +52,7 @@ public class MainActivity extends Activity {
         gap(content,10);TextView add=action("＋  নতুন গ্রাহক যোগ করুন",GREEN);content.addView(add);add.setOnClickListener(v->customerDialog());
     }
     void transactionRow(String name,String type,int amount,String date){
-        LinearLayout r=row();r.setBackground(shape(Color.WHITE,8));r.setPadding(dp(10),dp(8),dp(10),dp(8));
+        LinearLayout r=row();r.setBackground(shape(Color.WHITE,12));r.setPadding(dp(10),dp(7),dp(10),dp(7));
         TextView ic=bold(type.equals("জমা")?"⬆":type.equals("বাকি")?"⬇":"▣",20,type.equals("জমা")?GREEN:type.equals("বাকি")?RED:BLUE);r.addView(ic);
         LinearLayout info=column();info.addView(bold(name,15,INK));info.addView(label(type+"  •  "+(date==null?"":date),12,MUTED));r.addView(info,new LinearLayout.LayoutParams(0,-2,1));
         r.addView(bold("৳ "+amount,15,type.equals("জমা")?GREEN:type.equals("বাকি")?RED:BLUE));
@@ -61,7 +62,7 @@ public class MainActivity extends Activity {
         section("♟  গ্রাহক তালিকা");
         EditText search=new EditText(this);search.setSingleLine(true);search.setHint("⌕  নাম দিয়ে খুঁজুন...");search.setTextSize(14);content.addView(search);
         TextView add=action("＋  নতুন গ্রাহক যোগ করুন",GREEN);content.addView(add);add.setOnClickListener(v->customerDialog());gap(content,8);
-        Cursor c=db.customers();while(c.moveToNext()){final int id=c.getInt(0);String name=c.getString(1),phone=c.getString(2);LinearLayout r=row();r.setBackground(shape(Color.WHITE,8));r.setPadding(dp(10),dp(9),dp(10),dp(9));
+        Cursor c=db.customers();while(c.moveToNext()){final int id=c.getInt(0);String name=c.getString(1),phone=c.getString(2);LinearLayout r=row();r.setBackground(shape(Color.WHITE,12));r.setPadding(dp(10),dp(10),dp(10),dp(10));
             TextView avatar=bold("●",25,BLUE);r.addView(avatar);LinearLayout info=column();info.addView(bold(name,15,INK));info.addView(label(phone,12,MUTED));r.addView(info,new LinearLayout.LayoutParams(0,-2,1));
             int due=db.customerDue(id);TextView dueText=bold("বাকি: ৳"+due,12,due>0?RED:GREEN);r.addView(dueText);LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,dp(4),0,dp(4));content.addView(r,lp);r.setOnClickListener(v->{selectedId=id;show("খাতা");});
         }c.close();

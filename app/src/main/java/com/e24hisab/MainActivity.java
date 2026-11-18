@@ -8,6 +8,10 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.JavascriptInterface;
+import android.content.Context;
+import android.print.PrintManager;
+import android.print.PrintDocumentAdapter;
 import android.os.Build;
 import android.view.View;
 
@@ -38,9 +42,29 @@ public class MainActivity extends Activity {
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
 
         webView.setWebChromeClient(new WebChromeClient());
+        webView.addJavascriptInterface(new AndroidPrintBridge(this, webView), "AndroidPrint");
         webView.setWebViewClient(new WebViewClient());
         setContentView(webView);
         webView.loadUrl("file:///android_asset/index.html");
+    }
+
+    public static class AndroidPrintBridge {
+        private final Activity activity;
+        private final WebView webView;
+        AndroidPrintBridge(Activity activity, WebView webView) {
+            this.activity = activity;
+            this.webView = webView;
+        }
+        @JavascriptInterface
+        public void printLedger() {
+            activity.runOnUiThread(() -> {
+                PrintManager printManager = (PrintManager) activity.getSystemService(Context.PRINT_SERVICE);
+                if (printManager != null) {
+                    PrintDocumentAdapter adapter = webView.createPrintDocumentAdapter("E24-Hisab-Khata");
+                    printManager.print("E24 Hisab - Khata", adapter, null);
+                }
+            });
+        }
     }
 
     @Override

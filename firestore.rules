@@ -7,7 +7,7 @@ service cloud.firestore {
 
     function isMainAdmin() {
       return signedIn()
-        && request.auth.uid == 'exITNpwyRNaWJpoMW6BgMcMGbf2';
+        && request.auth.uid == 'exITNpwyRNaWpoMW6BgMcMGbf2';
     }
 
     match /users/{userId} {

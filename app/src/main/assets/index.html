@@ -475,6 +475,24 @@
     .customer-modal h2 { font-size: 21px; }
     .customer-modal input { font-size: 17px; }
     .customer-modal-actions button { font-size: 16px; }
+
+    /* APK WebView safe-area and touch fixes */
+    .phone-screen { padding-top: env(safe-area-inset-top, 0px); }
+    .app-bar {
+      min-height: calc(58px + env(safe-area-inset-top, 0px));
+      padding-top: max(30px, env(safe-area-inset-top, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      position: relative; z-index: 2;
+    }
+    .app-bar .interactive-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 42px; min-height: 42px; cursor: pointer;
+      touch-action: manipulation; pointer-events: auto;
+    }
+    .side-menu-backdrop { z-index: 1000; }
+    .side-menu-panel { padding-top: max(14px, env(safe-area-inset-top, 0px)); }
+    .screen-body { padding-bottom: max(14px, env(safe-area-inset-bottom, 0px)); }
   </style>
 </head>
 <body>
@@ -494,7 +512,7 @@
 
       <!-- App Bar -->
       <div class="app-bar" id="dynamic-app-bar">
-        <i class="fa-solid fa-bars interactive-icon"></i>
+        <i class="fa-solid fa-bars interactive-icon" role="button" tabindex="0" aria-label="মেনু খুলুন" onclick="openSideMenu()"></i>
         <span class="app-title" id="bar-title">E24 Hisab</span>
         <i class="fa-regular fa-bell interactive-icon"></i>
       </div>
@@ -866,7 +884,7 @@
       };
 
       if (pageKey === '1') {
-        dynamicBar.innerHTML = `<i class="fa-solid fa-bars interactive-icon"></i><span class="app-title">E24 Hisab</span><i class="fa-regular fa-bell interactive-icon"></i>`;
+        dynamicBar.innerHTML = `<i class="fa-solid fa-bars interactive-icon" role="button" tabindex="0" aria-label="মেনু খুলুন" onclick="openSideMenu()"></i><span class="app-title">E24 Hisab</span><i class="fa-regular fa-bell interactive-icon"></i>`;
       } else if (pageKey === '3') {
         dynamicBar.innerHTML = `<i class="fa-solid fa-arrow-left interactive-icon" onclick="switchPage('1')"></i><span class="app-title">${titles[pageKey]}</span><i class="fa-solid fa-print interactive-icon" role="button" aria-label="খাতা প্রিন্ট" onclick="printLedger()"></i>`;
       } else {

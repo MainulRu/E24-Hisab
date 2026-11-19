@@ -35,8 +35,13 @@
       font-family: 'Hind Siliguri', sans-serif;
     }
 
+    html {
+      background: var(--primary-green);
+    }
+
     body {
-      background: var(--bg-gradient);
+      /* Keep Android's top status-bar area green so white system icons remain visible. */
+      background: var(--primary-green);
       min-height: 100vh;
       min-height: 100dvh;
       padding: 0;
@@ -48,6 +53,7 @@
     }
 
     .card-wrapper {
+      background: var(--primary-green);
       display: flex;
       flex-direction: column;
       align-items: stretch;

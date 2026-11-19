@@ -103,6 +103,18 @@
     .interactive-icon { cursor: pointer; transition: transform 0.2s; }
     .interactive-icon:active { transform: scale(0.85); }
 
+
+    /* In-app side menu */
+    .side-menu-backdrop{position:absolute;inset:0;z-index:50;display:none;align-items:stretch;background:rgba(0,0,0,.42)}
+    .side-menu-backdrop.show{display:flex}
+    .side-menu-panel{width:min(260px,84%);max-width:84%;height:100%;overflow-y:auto;background:#fff;box-shadow:5px 0 22px rgba(0,0,0,.2);padding:14px 12px 18px;animation:menuSlideIn .2s ease-out}
+    @keyframes menuSlideIn{from{transform:translateX(-18px);opacity:.7}to{transform:translateX(0);opacity:1}}
+    .side-menu-head{display:flex;align-items:center;justify-content:space-between;padding:8px 4px 14px;margin-bottom:8px;border-bottom:1px solid var(--border-color);color:var(--dark-green);font-size:16px;font-weight:700}
+    .side-menu-close{border:0;background:#eef5f0;color:#245b3b;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer}
+    .side-menu-link{width:100%;display:flex;align-items:center;gap:12px;border:0;background:#fff;color:var(--text-dark);padding:11px 10px;border-radius:8px;text-align:left;font-size:13px;font-weight:600;cursor:pointer}
+    .side-menu-link i{width:18px;color:var(--primary-green);text-align:center}
+    .side-menu-link:active,.side-menu-link:hover{background:var(--light-green)}
+
     /* Screen Body */
     .screen-body {
       flex: 1;
@@ -433,6 +445,21 @@
 
       <!-- Toast Message -->
       <div class="toast-msg" id="toast">নোটিফিকেশন!</div>
+
+      <div class="side-menu-backdrop" id="side-menu-backdrop" aria-hidden="true">
+        <aside class="side-menu-panel" role="dialog" aria-modal="true" aria-label="অ্যাপ মেনু">
+          <div class="side-menu-head"><span><i class="fa-solid fa-store"></i> E24 Hisab</span><button type="button" class="side-menu-close" onclick="closeSideMenu()" aria-label="মেনু বন্ধ"><i class="fa-solid fa-xmark"></i></button></div>
+          <button class="side-menu-link" onclick="openMenuPage('1')"><i class="fa-solid fa-house"></i> হোম</button>
+          <button class="side-menu-link" onclick="openMenuPage('2')"><i class="fa-solid fa-users"></i> গ্রাহক তালিকা</button>
+          <button class="side-menu-link" onclick="openMenuPage('3')"><i class="fa-solid fa-book"></i> গ্রাহকের খাতা</button>
+          <button class="side-menu-link" onclick="openMenuPage('4')"><i class="fa-solid fa-plus-circle"></i> নতুন লেনদেন</button>
+          <button class="side-menu-link" onclick="openMenuPage('5')"><i class="fa-solid fa-wallet"></i> পেমেন্ট</button>
+          <button class="side-menu-link" onclick="openMenuPage('6')"><i class="fa-solid fa-comments"></i> মেসেজ</button>
+          <button class="side-menu-link" onclick="openMenuPage('7')"><i class="fa-solid fa-chart-pie"></i> হিসাব রিপোর্ট</button>
+          <button class="side-menu-link" onclick="openMenuPage('8')"><i class="fa-solid fa-gear"></i> সেটিংস</button>
+        </aside>
+      </div>
+
 
       <!-- Screen Body -->
       <div class="screen-body">
@@ -791,6 +818,13 @@
       }
     }
 
+    function openSideMenu(){const menu=document.getElementById('side-menu-backdrop');if(menu){menu.classList.add('show');menu.setAttribute('aria-hidden','false');}}
+    function closeSideMenu(){const menu=document.getElementById('side-menu-backdrop');if(menu){menu.classList.remove('show');menu.setAttribute('aria-hidden','true');}}
+    function openMenuPage(pageKey){closeSideMenu();switchPage(String(pageKey));}
+
+    document.addEventListener('DOMContentLoaded',()=>{const bar=document.getElementById('dynamic-app-bar');if(bar)bar.addEventListener('click',event=>{const icon=event.target.closest('.interactive-icon');if(!icon)return;if(icon.classList.contains('fa-bell'))showToast('নতুন কোনো নোটিফিকেশন নেই');else if(icon.classList.contains('fa-bars'))openSideMenu();});});
+    // side-menu-backdrop-close-handler
+    document.addEventListener('DOMContentLoaded',()=>{const backdrop=document.getElementById('side-menu-backdrop');if(backdrop)backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeSideMenu();});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSideMenu();});});
     function printLedger() {
       const ledger = document.getElementById('page-3');
       if (!ledger || !ledger.classList.contains('active-page')) { showToast('প্রথমে গ্রাহকের খাতা খুলুন'); return; }

@@ -292,6 +292,7 @@
     }
     .summary-box strong { font-size: 12px; }
     .box-green { background: var(--primary-green); }
+    .box-blue { background: var(--accent-blue); }
     .box-red { background: var(--accent-red); }
     .action-btn-group {
       display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: auto; padding-top: 6px;
@@ -1062,7 +1063,7 @@
       let reportMode='daily', reportCursor=new Date();
       const bnDigits=s=>String(s).replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d));
       function reportDate(value) {
-        const parts=bnDigits(value||'').split(/[\\/.-]/).map(Number);
+        const parts=bnDigits(value||'').split(/[\/.-]/).map(Number);
         if(parts.length!==3||parts.some(n=>!Number.isFinite(n)))return null;
         let [d,m,y]=parts;
         if(y<100)y+=2000;

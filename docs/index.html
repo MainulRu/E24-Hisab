@@ -154,6 +154,10 @@
     .stat-card i { font-size: 16px; margin-bottom: 2px; }
     .stat-label { font-size: 11px; opacity: 0.9; }
     .stat-amount { font-size: 14px; font-weight: 700; }
+    .current-due-card { margin-top:9px; padding:11px 13px; border-radius:10px; background:#fce8e6; color:#8c1d18; }
+    .current-due-heading { display:flex; align-items:center; gap:7px; font-size:12px; font-weight:700; }
+    .current-due-amount { font-size:21px; font-weight:700; line-height:1.5; color:#b3261e; }
+    .current-due-note { font-size:9px; color:#8c1d18; }
 
     .transaction-list, .customer-list, .transaction-history, .settings-menu {
       list-style: none; display: flex; flex-direction: column; gap: 6px;
@@ -437,26 +441,32 @@
         <div class="app-page active-page" id="page-1">
           <div class="section-title text-center">আজকের সারাংশ</div>
           <div class="stats-grid">
-            <div class="stat-card bg-blue" onclick="switchPage('7')">
+            <div class="stat-card bg-green" onclick="switchPage('7')">
               <i class="fa-solid fa-sack-dollar"></i>
               <div class="stat-label">মোট জমা</div>
-              <div class="stat-amount">৳ 0</div>
+              <div class="stat-amount" id="today-paid">৳ 0</div>
             </div>
             <div class="stat-card bg-red">
-              <i class="fa-solid fa-wallet"></i>
+              <i class="fa-solid fa-clock"></i>
               <div class="stat-label">মোট বাকি</div>
-              <div class="stat-amount">৳ 0</div>
+              <div class="stat-amount" id="today-due">৳ 0</div>
             </div>
-              <div class="stat-card bg-green" onclick="switchPage('7')">
+            <div class="stat-card bg-blue" onclick="switchPage('7')">
               <i class="fa-solid fa-cart-shopping"></i>
               <div class="stat-label">মোট বিক্রি</div>
-              <div class="stat-amount">৳ 0</div>
+              <div class="stat-amount" id="today-sales">৳ 0</div>
             </div>
             <div class="stat-card bg-purple" onclick="switchPage('2')">
               <i class="fa-solid fa-users"></i>
               <div class="stat-label">মোট গ্রাহক</div>
-              <div class="stat-amount">0 জন</div>
+              <div class="stat-amount" id="customer-count">0 জন</div>
             </div>
+          </div>
+          <div class="current-due-card">
+            <div class="current-due-heading"><i class="fa-solid fa-wallet"></i> বর্তমান মোট বাকি</div>
+            <div class="current-due-note">সব গ্রাহক</div>
+            <div class="current-due-amount" id="current-total-due">৳ 0</div>
+            <div class="current-due-note">আগের বাকি + আজকের নতুন বাকি − পরবর্তী জমা</div>
           </div>
 
           <div class="section-banner"><i class="fa-solid fa-chart-line"></i> সাম্প্রতিক লেনদেন</div>
@@ -867,13 +877,33 @@
         };
       }
       function refreshHome() {
-        const stats=document.querySelectorAll('#page-1 .stat-card .stat-amount');
-        const totals=validTransactions().reduce((a,t)=>{if(t.type==='বাকি'){a.sales+=Number(t.amount)||0;a.paid+=Number(t.paid)||0;}else if(t.type==='জমা')a.paid+=Number(t.amount)||0;return a;},{sales:0,paid:0});
-        const due=Math.max(0,totals.sales-totals.paid);
-        if(stats[0])stats[0].textContent=money(totals.sales); if(stats[1])stats[1].textContent=money(totals.paid); if(stats[2])stats[2].textContent=money(due); if(stats[3])stats[3].textContent=db.customers.length.toLocaleString('bn-BD')+' জন';
+        const txs=validTransactions();
+        const today=new Date().toLocaleDateString('bn-BD');
+        const totals=txs.reduce((a,t)=>{
+          if(t.type==='বাকি'){a.sales+=Number(t.amount)||0;a.paid+=Number(t.paid)||0;}
+          else if(t.type==='জমা')a.paid+=Number(t.amount)||0;
+          return a;
+        },{sales:0,paid:0});
+        const currentDue=Math.max(0,totals.sales-totals.paid);
+        const todayTx=txs.filter(t=>String(t.date)===today);
+        const todayTotals=todayTx.reduce((a,t)=>{
+          if(t.type==='বাকি'){
+            a.sales+=Number(t.amount)||0;
+            a.paid+=(Number(t.paid)||0);
+            a.due+=Math.max(0,(Number(t.amount)||0)-(Number(t.paid)||0));
+          } else if(t.type==='জমা') a.paid+=Number(t.amount)||0;
+          return a;
+        },{sales:0,paid:0,due:0});
+        const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+        set('today-sales',money(todayTotals.sales));
+        set('today-paid',money(todayTotals.paid));
+        set('today-due',money(todayTotals.due));
+        set('customer-count',db.customers.length.toLocaleString('bn-BD')+' জন');
+        set('current-total-due',money(currentDue));
         refreshReport(totals);
-        const recent=validTransactions();
-        const ul=document.querySelector('#page-1 .transaction-list'); if(ul)ul.innerHTML=recent.length?recent.slice(-5).reverse().map(t=>{const c=db.customers.find(x=>x.id===t.customerId);return `<li class="transaction-item"><span class="tx-icon ${t.type==='জমা'?'icon-up':'icon-down'}"><i class="fa-solid ${t.type==='জমা'?'fa-arrow-up':'fa-arrow-down'}"></i></span><div class="tx-info"><span class="tx-name">${esc(c?.name||'গ্রাহক')}</span><span class="tx-sub ${t.type==='বাকি'?'text-red':''}">${t.type==='বাকি'?'বিক্রি':'জমা'}: ${money(t.amount)}${t.type==='বাকি'&&Number(t.paid)>0?' · জমা: '+money(t.paid):''}</span></div><span class="tx-date">${esc(t.date)}</span></li>`}).join(''):'<li style="padding:18px;text-align:center;color:#888">কোনো লেনদেন নেই</li>';
+        const recent=txs;
+        const ul=document.querySelector('#page-1 .transaction-list');
+        if(ul)ul.innerHTML=recent.length?recent.slice(-5).reverse().map(t=>{const c=db.customers.find(x=>x.id===t.customerId);return `<li class="transaction-item"><span class="tx-icon ${t.type==='জমা'?'icon-up':'icon-down'}"><i class="fa-solid ${t.type==='জমা'?'fa-arrow-up':'fa-arrow-down'}"></i></span><div class="tx-info"><span class="tx-name">${esc(c?.name||'গ্রাহক')}</span><span class="tx-sub ${t.type==='বাকি'?'text-red':''}">${t.type==='বাকি'?'বিক্রি':'জমা'}: ${money(t.amount)}${t.type==='বাকি'&&Number(t.paid)>0?' · জমা: '+money(t.paid):''}</span></div><span class="tx-date">${esc(t.date)}</span></li>`}).join(''):'<li style="padding:18px;text-align:center;color:#888">কোনো লেনদেন নেই</li>';
       }
       function refreshReport(totals) {
         totals=totals||validTransactions().reduce((a,t)=>{if(t.type==='বাকি'){a.sales+=Number(t.amount)||0;a.paid+=Number(t.paid)||0;}else if(t.type==='জমা')a.paid+=Number(t.amount)||0;return a;},{sales:0,paid:0});

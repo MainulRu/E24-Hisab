@@ -426,18 +426,18 @@
           <div class="stats-grid">
             <div class="stat-card bg-green" onclick="switchPage('7')">
               <i class="fa-solid fa-bag-shopping"></i>
-              <div class="stat-label">মোট জমা</div>
-              <div class="stat-amount">৳ 45,750</div>
+              <div class="stat-label">মোট বিক্রি</div>
+              <div class="stat-amount">৳ 0</div>
             </div>
             <div class="stat-card bg-red" onclick="switchPage('7')">
               <i class="fa-solid fa-wallet"></i>
-              <div class="stat-label">মোট বাকি</div>
-              <div class="stat-amount">৳ 18,500</div>
+              <div class="stat-label">মোট জমা</div>
+              <div class="stat-amount">৳ 0</div>
             </div>
             <div class="stat-card bg-blue">
               <i class="fa-solid fa-cart-shopping"></i>
-              <div class="stat-label">মোট খরচ</div>
-              <div class="stat-amount">৳ 7,250</div>
+              <div class="stat-label">মোট বাকি</div>
+              <div class="stat-amount">৳ 0</div>
             </div>
             <div class="stat-card bg-purple" onclick="switchPage('2')">
               <i class="fa-solid fa-users"></i>
@@ -745,11 +745,18 @@
       const avatar = (photo, large=false) => photo ? `<img src="${photo}" alt="গ্রাহকের ছবি">` : '<i class="fa-solid fa-user"></i>'; 
       function load() { try { const x=JSON.parse(localStorage.getItem(KEY)); if(x && Array.isArray(x.customers) && Array.isArray(x.transactions)) db={...db,...x}; } catch(e) { console.warn('E24 data load:',e); } }
       function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e) { showToast('ডেটা সংরক্ষণ করা যায়নি'); } }
-      function customerTotals(cid) { let a=0,b=0; db.transactions.filter(t=>t.customerId===cid).forEach(t=>{ if(t.type==='জমা') a+=t.amount; else b+=t.amount; }); return {paid:a,due:b}; }
+      function customerTotals(cid) {
+        let sales=0, paid=0;
+        db.transactions.filter(t=>t.customerId===cid).forEach(t=>{
+          if(t.type==='বাকি') { sales += Number(t.amount)||0; paid += Number(t.paid)||0; }
+          else if(t.type==='জমা') paid += Number(t.amount)||0;
+        });
+        return {sales,paid,due:Math.max(0,sales-paid)};
+      }
       function selected() { return db.customers.find(c=>c.id===db.selectedCustomerId) || db.customers[0] || null; }
       function renderCustomers() {
         const ul=document.querySelector('#page-2 .customer-list'); if(!ul)return;
-        ul.innerHTML=db.customers.length ? db.customers.map(c=>{const t=customerTotals(c.id),due=t.due-t.paid;return `<li class="customer-item" data-cid="${esc(c.id)}"><div class="user-avatar">${avatar(c.photo)}</div><div class="customer-name">${esc(c.name)}<small style="display:block;color:#888;font-size:10px">${esc(c.phone)}</small></div><span class="amount-tag ${due>0?'tag-red':'tag-green'}">${due>0?'বাকি: '+money(due):'জমা: '+money(Math.abs(due))}</span><i class="fa-solid fa-chevron-right"></i></li>`}).join('') : '<li style="padding:22px;text-align:center;color:#888">এখনো কোনো গ্রাহক যোগ করা হয়নি</li>';
+        ul.innerHTML=db.customers.length ? db.customers.map(c=>{const t=customerTotals(c.id),due=t.due;return `<li class="customer-item" data-cid="${esc(c.id)}"><div class="user-avatar">${avatar(c.photo)}</div><div class="customer-name">${esc(c.name)}<small style="display:block;color:#888;font-size:10px">${esc(c.phone)}</small></div><span class="amount-tag ${due>0?'tag-red':'tag-green'}">${due>0?'বাকি: '+money(due):'জমা: '+money(Math.abs(due))}</span><i class="fa-solid fa-chevron-right"></i></li>`}).join('') : '<li style="padding:22px;text-align:center;color:#888">এখনো কোনো গ্রাহক যোগ করা হয়নি</li>';
         ul.querySelectorAll('[data-cid]').forEach(el=>el.addEventListener('click',()=>{db.selectedCustomerId=el.dataset.cid;renderLedger();switchPage('3');}));
       }
       function renderLedger() {
@@ -757,19 +764,33 @@
         if(!c){window.currentLedgerTitle='গ্রাহকের হিসাব';p.innerHTML='<div style="padding:30px;text-align:center">প্রথমে গ্রাহক তালিকা থেকে একজন গ্রাহক যোগ করুন বা নির্বাচন করুন।<br><button class="btn btn-green" style="margin-top:15px" onclick="switchPage(\'2\')">গ্রাহক তালিকা</button></div>';return;}
         const t=customerTotals(c.id), rows=db.transactions.filter(x=>x.customerId===c.id).slice().reverse();
         window.currentLedgerTitle = c.name + '-এর হিসাব';
-        p.innerHTML=`<div class="ledger-print-only">${esc(window.currentLedgerTitle)}</div><div class="profile-header"><div class="profile-avatar-large">${avatar(c.photo,true)}</div><div class="profile-details"><div class="profile-name">${esc(c.name)}</div>${c.phone?`<div class="profile-phone"><i class="fa-solid fa-phone"></i> ${esc(c.phone)}</div>`:''}<button class="btn btn-blue" id="change-customer-photo" style="margin-top:4px;padding:3px 8px;width:auto;font-size:9px"><i class="fa-solid fa-camera"></i> ছবি পরিবর্তন</button></div></div><div class="two-col-summary ledger-summary"><div class="summary-box box-green"><span><i class="fa-solid fa-user"></i> মোট জমা</span><strong>${money(t.paid)}</strong></div><div class="summary-box box-red"><span><i class="fa-solid fa-user"></i> মোট বাকি</span><strong>${money(t.due)}</strong></div></div><div class="section-banner border-banner"><i class="fa-solid fa-list"></i> লেনদেনের ইতিহাস</div><ul class="transaction-history">${rows.length?rows.map(x=>{const type=x.type==='জমা'?'জমা':'বাকি';return `<li class="history-item"><span class="tx-icon ${type==='জমা'?'icon-up':'icon-down'}"><i class="fa-solid ${type==='জমা'?'fa-arrow-up':'fa-arrow-down'}"></i></span><div class="tx-info"><span class="tx-name">${type} ${x.note?'— '+esc(x.note):''}</span><span class="${type==='জমা'?'green-text':'red-text'}" style="font-weight:700">${money(x.amount)}</span></div><span class="tx-date">${esc(x.date)}</span></li>`}).join(''):'<li style="padding:20px;text-align:center;color:#888">এখনো কোনো লেনদেন নেই</li>'}</ul><div class="action-btn-group"><button class="btn btn-blue" onclick="beginTransaction('বাকি')"><i class="fa-solid fa-plus"></i> নতুন লেনদেন</button><button class="btn btn-purple" onclick="switchPage('6')"><i class="fa-regular fa-envelope"></i> মেসেজ পাঠান</button></div>`;
+        p.innerHTML=`<div class="ledger-print-only">${esc(window.currentLedgerTitle)}</div><div class="profile-header"><div class="profile-avatar-large">${avatar(c.photo,true)}</div><div class="profile-details"><div class="profile-name">${esc(c.name)}</div>${c.phone?`<div class="profile-phone"><i class="fa-solid fa-phone"></i> ${esc(c.phone)}</div>`:''}<button class="btn btn-blue" id="change-customer-photo" style="margin-top:4px;padding:3px 8px;width:auto;font-size:9px"><i class="fa-solid fa-camera"></i> ছবি পরিবর্তন</button></div></div><div class="two-col-summary ledger-summary"><div class="summary-box box-green"><span><i class="fa-solid fa-user"></i> মোট বিক্রি</span><strong>${money(t.sales)}</strong></div><div class="summary-box box-green"><span><i class="fa-solid fa-user"></i> মোট জমা</span><strong>${money(t.paid)}</strong></div><div class="summary-box box-red"><span><i class="fa-solid fa-user"></i> মোট বাকি</span><strong>${money(t.due)}</strong></div></div><div class="section-banner border-banner"><i class="fa-solid fa-list"></i> লেনদেনের ইতিহাস</div><ul class="transaction-history">${rows.length?rows.map(x=>`<li class="history-item"><span class="tx-icon ${x.type==='জমা'?'icon-up':'icon-down'}"><i class="fa-solid ${x.type==='জমা'?'fa-arrow-up':'fa-arrow-down'}"></i></span><div class="tx-info"><span class="tx-name">${x.type==='বাকি'?'বিক্রি':'জমা'} ${x.note?'— '+esc(x.note):''}</span><span class="${x.type==='জমা'?'green-text':'red-text'}" style="font-weight:700">${money(x.amount)}${x.type==='বাকি'&&Number(x.paid)>0?` · জমা ${money(x.paid)}`:''}</span></div><span class="tx-date">${esc(x.date)}</span></li>`).join(''):'<li style="padding:20px;text-align:center;color:#888">এখনো কোনো লেনদেন নেই</li>'}</ul><div class="action-btn-group"><button class="btn btn-blue" onclick="beginTransaction('বাকি')"><i class="fa-solid fa-plus"></i> নতুন লেনদেন</button><button class="btn btn-purple" onclick="switchPage('6')"><i class="fa-regular fa-envelope"></i> মেসেজ পাঠান</button></div>`;
         const photoBtn=document.getElementById('change-customer-photo'); if(photoBtn)photoBtn.onclick=()=>{const picker=document.getElementById('customer-photo-picker');if(picker){picker.value='';picker.click();}};
       }
       function renderTransactionForm(type) {
         db.txType=type||'বাকি'; const p=document.getElementById('page-4'); if(!p)return;
-        p.innerHTML=`<div class="type-selector"><button class="type-btn ${db.txType==='বাকি'?'active-green':'inactive-red'}" id="tx-due"><i class="fa-solid fa-arrow-down"></i> বাকি</button><button class="type-btn ${db.txType==='জমা'?'active-green':'inactive-red'}" id="tx-paid"><i class="fa-solid fa-arrow-up"></i> জমা</button></div><div class="form-group"><label class="form-label">গ্রাহক নির্বাচন:</label><select class="form-input" id="tx-customer">${db.customers.map(c=>`<option value="${esc(c.id)}" ${selected()?.id===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">পরিমাণ (৳):</label><input class="form-input" id="tx-amount" type="number" min="1" step="1" inputmode="numeric" placeholder="টাকার পরিমাণ"></div><div class="form-group"><label class="form-label">বিবরণ (ঐচ্ছিক):</label><input class="form-input" id="tx-note" type="text" placeholder="লেনদেনের বিবরণ"></div><button class="btn btn-green shadow-btn" id="tx-save"><i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন</button>`;
+        const isSale=db.txType==='বাকি';
+        p.innerHTML=`<div class="type-selector"><button class="type-btn ${isSale?'active-green':'inactive-red'}" id="tx-due"><i class="fa-solid fa-arrow-down"></i> বাকি</button><button class="type-btn ${!isSale?'active-green':'inactive-red'}" id="tx-paid"><i class="fa-solid fa-arrow-up"></i> জমা</button></div><div class="form-group"><label class="form-label">গ্রাহক নির্বাচন:</label><select class="form-input" id="tx-customer">${db.customers.map(c=>`<option value="${esc(c.id)}" ${selected()?.id===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">${isSale?'বিক্রির মোট মূল্য (৳):':'জমার পরিমাণ (৳):'}</label><input class="form-input" id="tx-amount" type="number" min="1" step="1" inputmode="numeric" placeholder="টাকার পরিমাণ"></div>${isSale?`<div class="form-group"><label class="form-label">এখন জমা (৳):</label><input class="form-input" id="tx-initial-paid" type="number" min="0" step="1" inputmode="numeric" value="0" placeholder="প্রাথমিক জমা"></div><div class="form-group" style="padding:10px;background:#f5f7fa;border-radius:8px"><span>অবশিষ্ট বাকি: </span><strong id="tx-remaining">৳ 0</strong></div>`:''}<div class="form-group"><label class="form-label">বিবরণ (ঐচ্ছিক):</label><input class="form-input" id="tx-note" type="text" placeholder="লেনদেনের বিবরণ"></div><button class="btn btn-green shadow-btn" id="tx-save"><i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন</button>`;
         document.getElementById('tx-paid').onclick=()=>renderTransactionForm('জমা'); document.getElementById('tx-due').onclick=()=>renderTransactionForm('বাকি');
-        document.getElementById('tx-save').onclick=()=>{const cid=document.getElementById('tx-customer').value,amount=Number(document.getElementById('tx-amount').value),note=document.getElementById('tx-note').value.trim();if(!cid){showToast('আগে একজন গ্রাহক যোগ করুন');return;}if(!Number.isSafeInteger(amount)||amount<=0){showToast('পূর্ণ সংখ্যায় সঠিক টাকার পরিমাণ লিখুন');return;}db.transactions.push({id:id(),customerId:cid,type:db.txType,amount,note,date:new Date().toLocaleDateString('bn-BD')});db.selectedCustomerId=cid;save();refreshAll();showToast('লেনদেন সংরক্ষিত হয়েছে');switchPage('3');};
+        const amountField=document.getElementById('tx-amount'),paidField=document.getElementById('tx-initial-paid'),remaining=document.getElementById('tx-remaining');
+        const updateRemaining=()=>{if(remaining)remaining.textContent=money(Math.max(0,(Number(amountField.value)||0)-(Number(paidField.value)||0)));};
+        if(paidField){amountField.addEventListener('input',updateRemaining);paidField.addEventListener('input',updateRemaining);}
+        document.getElementById('tx-save').onclick=()=>{
+          const cid=document.getElementById('tx-customer').value,amount=Number(amountField.value),note=document.getElementById('tx-note').value.trim();
+          const initialPaid=isSale?Number(paidField.value||0):0;
+          if(!cid){showToast('আগে একজন গ্রাহক যোগ করুন');return;}
+          if(!Number.isSafeInteger(amount)||amount<=0){showToast('পূর্ণ সংখ্যায় সঠিক টাকার পরিমাণ লিখুন');return;}
+          if(isSale&&(!Number.isSafeInteger(initialPaid)||initialPaid<0||initialPaid>amount)){showToast('জমার পরিমাণ বিক্রির মূল্যের সমান বা কম হতে হবে');return;}
+          db.transactions.push({id:id(),customerId:cid,type:db.txType,amount,paid:initialPaid,note,date:new Date().toLocaleDateString('bn-BD')});
+          db.selectedCustomerId=cid;save();refreshAll();showToast('লেনদেন সংরক্ষিত হয়েছে');switchPage('3');
+        };
       }
       function refreshHome() {
-        const stats=document.querySelectorAll('#page-1 .stat-card .stat-amount'); const paid=db.transactions.filter(t=>t.type==='জমা').reduce((s,t)=>s+t.amount,0),due=db.transactions.filter(t=>t.type==='বাকি').reduce((s,t)=>s+t.amount,0);
-        if(stats[0])stats[0].textContent=money(paid); if(stats[1])stats[1].textContent=money(due); if(stats[3])stats[3].textContent=db.customers.length.toLocaleString('bn-BD')+' জন';
-        const ul=document.querySelector('#page-1 .transaction-list'); if(ul)ul.innerHTML=db.transactions.length?db.transactions.slice(-5).reverse().map(t=>{const c=db.customers.find(x=>x.id===t.customerId);return `<li class="transaction-item"><span class="tx-icon ${t.type==='জমা'?'icon-up':'icon-down'}"><i class="fa-solid ${t.type==='জমা'?'fa-arrow-up':'fa-arrow-down'}"></i></span><div class="tx-info"><span class="tx-name">${esc(c?.name||'গ্রাহক')}</span><span class="tx-sub ${t.type==='বাকি'?'text-red':''}">${t.type}: ${money(t.amount)}</span></div><span class="tx-date">${esc(t.date)}</span></li>`}).join(''):'<li style="padding:18px;text-align:center;color:#888">কোনো লেনদেন নেই</li>';
+        const stats=document.querySelectorAll('#page-1 .stat-card .stat-amount');
+        const totals=db.transactions.reduce((a,t)=>{if(t.type==='বাকি'){a.sales+=Number(t.amount)||0;a.paid+=Number(t.paid)||0;}else if(t.type==='জমা')a.paid+=Number(t.amount)||0;return a;},{sales:0,paid:0});
+        const due=Math.max(0,totals.sales-totals.paid);
+        if(stats[0])stats[0].textContent=money(totals.sales); if(stats[1])stats[1].textContent=money(totals.paid); if(stats[2])stats[2].textContent=money(due); if(stats[3])stats[3].textContent=db.customers.length.toLocaleString('bn-BD')+' জন';
+        const ul=document.querySelector('#page-1 .transaction-list'); if(ul)ul.innerHTML=db.transactions.length?db.transactions.slice(-5).reverse().map(t=>{const c=db.customers.find(x=>x.id===t.customerId);return `<li class="transaction-item"><span class="tx-icon ${t.type==='জমা'?'icon-up':'icon-down'}"><i class="fa-solid ${t.type==='জমা'?'fa-arrow-up':'fa-arrow-down'}"></i></span><div class="tx-info"><span class="tx-name">${esc(c?.name||'গ্রাহক')}</span><span class="tx-sub ${t.type==='বাকি'?'text-red':''}">${t.type==='বাকি'?'বিক্রি':'জমা'}: ${money(t.amount)}${t.type==='বাকি'&&Number(t.paid)>0?' · জমা: '+money(t.paid):''}</span></div><span class="tx-date">${esc(t.date)}</span></li>`}).join(''):'<li style="padding:18px;text-align:center;color:#888">কোনো লেনদেন নেই</li>';
       }
       function refreshAll(){renderCustomers();renderLedger();renderTransactionForm(db.txType);refreshHome();}
       window.beginTransaction=(type)=>{if(!db.customers.length){showToast('আগে একজন গ্রাহক যোগ করুন');switchPage('2');return;}renderTransactionForm(type||'বাকি');switchPage('4');};

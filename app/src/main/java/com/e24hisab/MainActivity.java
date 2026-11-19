@@ -134,7 +134,7 @@ public class MainActivity extends Activity {
                 "(function(){var active=document.querySelector('.app-page.active-page');" +
                 "if(active && active.id !== 'page-1'){switchPage('1');return 'handled';}" +
                 "return 'home';})()",
-                value -> { if ("\\"home\\"".equals(value)) finish(); }
+                value -> { if ("\"home\"".equals(value)) finish(); }
             );
         } else {
             super.onBackPressed();

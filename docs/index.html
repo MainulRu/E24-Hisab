@@ -368,12 +368,17 @@
     .report-history { max-height:260px; overflow-y:auto; }
     .report-history .history-item { padding:7px 5px; }
     .report-empty { padding:18px 8px; text-align:center; color:#888; font-size:11px; }
+    @page { size:A4 portrait; margin:10mm; }
     @media print {
+      html, body { width:auto !important; min-height:0 !important; height:auto !important; margin:0 !important; padding:0 !important; overflow:visible !important; display:block !important; background:#fff !important; }
       body.report-printing * { visibility:hidden !important; }
+      body.report-printing .status-bar, body.report-printing .app-bar, body.report-printing .bottom-nav, body.report-printing .label-badge { display:none !important; }
+      body.report-printing .app-page:not(#page-7) { display:none !important; }
+      body.report-printing .card-wrapper, body.report-printing .phone-screen, body.report-printing .screen-body { display:block !important; position:static !important; width:auto !important; height:auto !important; min-height:0 !important; margin:0 !important; padding:0 !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; overflow:visible !important; }
       body.report-printing #page-7, body.report-printing #page-7 * { visibility:visible !important; }
-      body.report-printing #page-7 { display:block !important; position:absolute; left:0; top:0; width:100%; padding:12px; background:#fff; }
+      body.report-printing #page-7 { display:block !important; position:static !important; width:100% !important; height:auto !important; min-height:0 !important; margin:0 !important; padding:0 !important; background:#fff !important; }
       body.report-printing .report-tabs, body.report-printing .month-picker button, body.report-printing #page-7 > button { display:none !important; }
-      body.report-printing .report-history { max-height:none; overflow:visible; }
+      body.report-printing .report-history { max-height:none !important; height:auto !important; overflow:visible !important; }
     }
 
     /* 8. Settings */

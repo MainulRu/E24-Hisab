@@ -352,8 +352,8 @@
     }
     .pie-chart {
       width: 55px; height: 55px; border-radius: 50%;
-      border: 2px solid #fff;
-      background: conic-gradient(#fff 0deg 1.5deg, var(--primary-green) 1.5deg 255.6deg, #fff 255.6deg 257.1deg, var(--accent-red) 257.1deg 360deg);
+      border: none;
+      background: transparent;
     }
     .chart-legend { display: flex; flex-direction: column; gap: 3px; font-size: 10px; }
     .legend-item { display: flex; align-items: center; gap: 4px; }
@@ -677,7 +677,7 @@
             <div class="summary-box box-red"><span>নতুন বাকি</span><strong id="report-total-due">৳ 0</strong></div>
           </div>
           <div class="chart-container">
-            <div class="pie-chart" id="report-pie-chart" style="background:conic-gradient(var(--primary-green) 0% 0%, var(--accent-red) 0% 100%)"></div>
+            <div class="pie-chart" id="report-pie-chart" style="background:transparent"></div>
             <div class="chart-legend">
               <div class="legend-item"><span class="legend-color" style="background:var(--primary-green)"></span> <span id="report-paid-label">জমা (0%)</span></div>
               <div class="legend-item"><span class="legend-color" style="background:var(--accent-red)"></span> <span id="report-due-label">বাকি (0%)</span></div>
@@ -988,7 +988,7 @@
         const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
         set('report-total-sales',money(totals.sales));set('report-total-paid',money(totals.paid));set('report-total-due',money(totals.due));
         const total=totals.paid+totals.due,paidPct=total?Math.round(totals.paid/total*100):0,duePct=100-paidPct;
-        const pie=document.getElementById('report-pie-chart');if(pie)pie.style.background=`conic-gradient(#fff 0deg 1.5deg, var(--primary-green) 1.5deg ${paidPct*3.6}deg, #fff ${paidPct*3.6}deg ${paidPct*3.6+1.5}deg, var(--accent-red) ${paidPct*3.6+1.5}deg 360deg)`;
+        const pie=document.getElementById('report-pie-chart');if(pie){pie.style.background=total>0?`conic-gradient(var(--primary-green) 0% ${paidPct}%, var(--accent-red) ${paidPct}% 100%)`:'transparent';}
         set('report-paid-label',`জমা (${paidPct}%)`);set('report-due-label',`বাকি (${duePct}%)`);set('report-tx-count','লেনদেন: '+rows.length.toLocaleString('bn-BD')+'টি');
         const list=document.getElementById('report-transaction-list');
         if(list)list.innerHTML=rows.length?rows.map(t=>{const c=db.customers.find(x=>String(x.id)===String(t.customerId));const isDue=t.type==='বাকি';return `<li class="history-item"><span class="tx-icon ${isDue?'icon-down':'icon-up'}"><i class="fa-solid ${isDue?'fa-arrow-down':'fa-arrow-up'}"></i></span><div class="tx-info"><span class="tx-name">${esc(c?.name||'গ্রাহক')} — ${isDue?'বিক্রি':'জমা'}</span><span class="${isDue?'red-text':'green-text'}" style="font-weight:700">${money(t.amount)}${isDue&&Number(t.paid)>0?' · তাৎক্ষণিক জমা '+money(t.paid):''}${t.note?' · '+esc(t.note):''}</span></div><span class="tx-date">${esc(t.date)}</span></li>`;}).join(''):'<li class="report-empty">এই সময়ে কোনো লেনদেন নেই</li>';

@@ -124,6 +124,17 @@ public class MainActivity extends Activity {
                 }
             });
         }
+
+        @JavascriptInterface
+        public void printReport() {
+            activity.runOnUiThread(() -> {
+                PrintManager printManager = (PrintManager) activity.getSystemService(Context.PRINT_SERVICE);
+                if (printManager != null) {
+                    PrintDocumentAdapter adapter = webView.createPrintDocumentAdapter("E24-Hisab-Report");
+                    printManager.print("E24 Hisab - Report", adapter, null);
+                }
+            });
+        }
     }
 
     @Override

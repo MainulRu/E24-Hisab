@@ -441,9 +441,11 @@
 
     /* APK: keep the app bar below Android's overlaid status icons. */
     .app-bar {
-      min-height: 76px;
-      padding: 30px 16px 10px;
+      min-height: 0;
+      padding: 5px 16px;
       flex: 0 0 auto;
+      box-sizing: border-box;
+      align-items: center;
     }
     .app-title { font-size: 19px; line-height: 1.35; }
     .app-bar .interactive-icon { font-size: 23px; min-width: 28px; }
@@ -488,7 +490,7 @@
     .app-bar {
       min-height: 0;
       height: auto;
-      padding: 0 max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+      padding: 5px max(16px, env(safe-area-inset-right, 0px)) 5px max(16px, env(safe-area-inset-left, 0px));
       box-sizing: border-box;
       display: flex; align-items: center;
       position: relative; z-index: 2;

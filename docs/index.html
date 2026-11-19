@@ -919,14 +919,14 @@
         p.innerHTML=`<div class="type-selector"><button class="type-btn ${isSale?'active-green':'inactive-red'}" id="tx-due"><i class="fa-solid fa-arrow-down"></i> বাকি</button><button class="type-btn ${!isSale?'active-green':'inactive-red'}" id="tx-paid"><i class="fa-solid fa-arrow-up"></i> জমা</button></div><div class="form-group"><label class="form-label">গ্রাহক নির্বাচন:</label><select class="form-input" id="tx-customer">${db.customers.map(c=>`<option value="${esc(c.id)}" ${selected()?.id===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">${isSale?'বিক্রির মোট মূল্য (৳):':'জমার পরিমাণ (৳):'}</label><input class="form-input" id="tx-amount" type="number" min="1" step="1" inputmode="numeric" placeholder="টাকার পরিমাণ"></div>${isSale?`<div class="form-group"><label class="form-label">এখন জমা (৳):</label><input class="form-input" id="tx-initial-paid" type="number" min="0" step="1" inputmode="numeric" value="0" placeholder="প্রাথমিক জমা"></div><div class="form-group" style="padding:10px;background:#f5f7fa;border-radius:8px"><span>অবশিষ্ট বাকি: </span><strong id="tx-remaining">৳ 0</strong></div>`:''}<div class="form-group"><label class="form-label">বিবরণ (ঐচ্ছিক):</label><input class="form-input" id="tx-note" type="text" placeholder="লেনদেনের বিবরণ"></div><button class="btn btn-green shadow-btn" id="tx-save"><i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন</button>`;
         document.getElementById('tx-paid').onclick=()=>renderTransactionForm('জমা'); document.getElementById('tx-due').onclick=()=>renderTransactionForm('বাকি');
         const amountField=document.getElementById('tx-amount'),paidField=document.getElementById('tx-initial-paid'),remaining=document.getElementById('tx-remaining');
-        const updateRemaining=()=>{if(remaining)remaining.textContent=money(Math.max(0,(Number(amountField.value)||0)-(Number(paidField.value)||0)));};
-        if(paidField){amountField.addEventListener('input',updateRemaining);paidField.addEventListener('input',updateRemaining);}
+        const updateRemaining=()=>{if(remaining){const cid=document.getElementById('tx-customer').value,oldDue=customerTotals(cid).due;remaining.textContent=money(Math.max(0,oldDue+(Number(amountField.value)||0)-(Number(paidField.value)||0)));}};
+        if(paidField){amountField.addEventListener('input',updateRemaining);paidField.addEventListener('input',updateRemaining);document.getElementById('tx-customer').addEventListener('change',updateRemaining);updateRemaining();}
         document.getElementById('tx-save').onclick=()=>{
           const cid=document.getElementById('tx-customer').value,amount=Number(amountField.value),note=document.getElementById('tx-note').value.trim();
           const initialPaid=isSale?Number(paidField.value||0):0;
           if(!cid){showToast('আগে একজন গ্রাহক যোগ করুন');return;}
           if(!Number.isSafeInteger(amount)||amount<=0){showToast('পূর্ণ সংখ্যায় সঠিক টাকার পরিমাণ লিখুন');return;}
-          if(isSale&&(!Number.isSafeInteger(initialPaid)||initialPaid<0||initialPaid>amount)){showToast('জমার পরিমাণ বিক্রির মূল্যের সমান বা কম হতে হবে');return;}
+          if(isSale&&(!Number.isSafeInteger(initialPaid)||initialPaid<0||initialPaid>customerTotals(cid).due+amount)){showToast('জমার পরিমাণ আগের বাকি ও নতুন বিক্রির মোট টাকার বেশি হতে পারবে না');return;}
           db.transactions.push({id:id(),customerId:cid,type:db.txType,amount,paid:initialPaid,note,date:new Date().toLocaleDateString('bn-BD')});
           db.selectedCustomerId=cid;save();refreshAll();showToast('লেনদেন সংরক্ষিত হয়েছে');switchPage('3');
         };
@@ -942,13 +942,11 @@
         const currentDue=Math.max(0,totals.sales-totals.paid);
         const todayTx=txs.filter(t=>String(t.date)===today);
         const todayTotals=todayTx.reduce((a,t)=>{
-          if(t.type==='বাকি'){
-            a.sales+=Number(t.amount)||0;
-            a.paid+=(Number(t.paid)||0);
-            a.due+=Math.max(0,(Number(t.amount)||0)-(Number(t.paid)||0));
-          } else if(t.type==='জমা') a.paid+=Number(t.amount)||0;
+          if(t.type==='বাকি'){a.sales+=Number(t.amount)||0;a.paid+=Number(t.paid)||0;}
+          else if(t.type==='জমা') a.paid+=Number(t.amount)||0;
           return a;
-        },{sales:0,paid:0,due:0});
+        },{sales:0,paid:0});
+        todayTotals.due=Math.max(0,todayTotals.sales-todayTotals.paid);
         const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
         set('today-sales',money(todayTotals.sales));
         set('today-paid',money(todayTotals.paid));
@@ -982,7 +980,8 @@
         else {start=new Date(y,0,1);end=new Date(y+1,0,1);label=String(y).replace(/\d/g,n=>'০১২৩৪৫৬৭৮৯'[Number(n)]);}
         const labelEl=document.getElementById('report-period-label');if(labelEl)labelEl.innerHTML='<i class="fa-regular fa-calendar"></i> '+label;
         const rows=validTransactions().filter(t=>{const dt=reportDate(t.date);return dt&&dt>=start&&dt<end;}).sort((a,b)=>(reportDate(b.date)||0)-(reportDate(a.date)||0));
-        const totals=rows.reduce((a,t)=>{if(t.type==='বাকি'){a.sales+=Number(t.amount)||0;a.paid+=Number(t.paid)||0;a.due+=Math.max(0,(Number(t.amount)||0)-(Number(t.paid)||0));}else if(t.type==='জমা')a.paid+=Number(t.amount)||0;return a;},{sales:0,paid:0,due:0});
+        const totals=rows.reduce((a,t)=>{if(t.type==='বাকি'){a.sales+=Number(t.amount)||0;a.paid+=Number(t.paid)||0;}else if(t.type==='জমা')a.paid+=Number(t.amount)||0;return a;},{sales:0,paid:0});
+        totals.due=Math.max(0,totals.sales-totals.paid);
         const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
         set('report-total-sales',money(totals.sales));set('report-total-paid',money(totals.paid));set('report-total-due',money(totals.due));
         const total=totals.paid+totals.due,paidPct=total?Math.round(totals.paid/total*100):0,duePct=100-paidPct;

@@ -486,8 +486,8 @@
     /* APK WebView safe-area and touch fixes */
     .phone-screen { padding-top: env(safe-area-inset-top, 0px); }
     .app-bar {
-      min-height: calc(42px + env(safe-area-inset-top, 0px));
-      padding-top: env(safe-area-inset-top, 0px);
+      min-height: calc(21px + env(safe-area-inset-top, 0px));
+      padding-top: 0;
       padding-bottom: 0;
       padding-right: max(16px, env(safe-area-inset-right, 0px));
       padding-left: max(16px, env(safe-area-inset-left, 0px));
@@ -495,9 +495,10 @@
     }
     .app-bar .interactive-icon {
       display: inline-flex; align-items: center; justify-content: center;
-      min-width: 42px; min-height: 42px; cursor: pointer;
+      min-width: 42px; min-height: 28px; cursor: pointer;
       touch-action: manipulation; pointer-events: auto;
     }
+    .app-bar .app-title { font-size: 16px; line-height: 1.1; }
     .side-menu-backdrop { z-index: 1000; }
     .side-menu-panel { padding-top: max(14px, env(safe-area-inset-top, 0px)); }
     .screen-body { padding-bottom: max(14px, env(safe-area-inset-bottom, 0px)); }

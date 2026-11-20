@@ -44,6 +44,11 @@ public class MainActivity extends Activity {
         rootLayout.setBackgroundColor(Color.rgb(0, 92, 46));
 
         webView = new WebView(this);
+        // Allow Android Autofill services (including Google Password Manager) to inspect
+        // HTML login fields and offer to save/fill credentials in this WebView.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            webView.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES);
+        }
         webView.setBackgroundColor(Color.rgb(248, 249, 250));
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);

@@ -1276,16 +1276,16 @@ function e24SmsSelectedCustomer(){
 function e24RenderSmsCustomers(){
   const select=document.getElementById('sms-customer-select');if(!select)return;
   const old=select.value;
-  const customers=db.customers||[];
-  select.innerHTML='<option value="">গ্রাহক নির্বাচন করুন</option>'+customers.map(c=>'<option value="'+e24SmsEscape(c.id)+'">'+e24SmsEscape(c.name)+'</option>').join('');
+  const customers=(db.customers||[]).filter(c=>(Number(customerTotals(c.id).due)||0)>0);
+  select.innerHTML='<option value="">বকেয়া আছে এমন গ্রাহক নির্বাচন করুন</option>'+customers.map(c=>'<option value="'+e24SmsEscape(c.id)+'">'+e24SmsEscape(c.name)+'</option>').join('');
   if(customers.some(c=>String(c.id)===old))select.value=old;
 }
 function e24ApplySmsCustomer(customer){
-  if(!customer)return;
   const phone=document.getElementById('sms-test-phone');
-  if(phone)phone.value=customer.phone||'';
   const message=document.getElementById('sms-test-message');
-  if(message)message.placeholder=e24SmsDefaultMessage(customer);
+  if(!customer){if(phone)phone.value='';if(message)message.value='';return;}
+  if(phone)phone.value=customer.phone||'';
+  if(message){const text=e24SmsDefaultMessage(customer);message.value=text;message.placeholder=text;}
 }
 function e24SetupSmsWalletUI(){
   const send=document.getElementById('sms-test-send'),request=document.getElementById('sms-recharge-request'),adminList=document.getElementById('sms-admin-recharge-list');

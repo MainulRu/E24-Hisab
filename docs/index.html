@@ -772,7 +772,17 @@
               <summary><span class="e24-settings-icon"><i class="fa-solid fa-user"></i></span> অ্যাকাউন্ট সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
               <div class="e24-settings-content">
                 <div class="e24-settings-hint">আপনার অ্যাকাউন্টের তথ্য</div>
+                <label>প্রোফাইল ছবি</label>
+                <div style="display:flex;align-items:center;gap:12px;margin:6px 0 12px">
+                  <div id="e24-profile-photo-preview" style="width:76px;height:76px;flex:0 0 76px;border-radius:50%;background:#e8f0fe;color:#1a73e8;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:28px"><i class="fa-solid fa-user"></i></div>
+                  <div style="flex:1;min-width:0">
+                    <input id="e24-profile-photo-file" type="file" accept="image/*" style="width:100%;font-size:12px">
+                    <div class="e24-settings-hint">ছবি নির্বাচন করুন (সর্বোচ্চ ৫ MB)। ছবিটি ছোট করে সংরক্ষণ হবে।</div>
+                  </div>
+                </div>
                 <label>নাম / প্রোফাইল</label><input id="e24-settings-name" type="text" placeholder="আপনার নাম">
+                <label>প্রতিষ্ঠানের নাম</label><input id="e24-settings-organization" type="text" placeholder="প্রতিষ্ঠানের নাম (ঐচ্ছিক)">
+                <div class="e24-settings-hint">এই নামটি হোম পেজের উপরের Header-এ E24 Hisab-এর জায়গায় দেখাবে। ফাঁকা রাখলে E24 Hisab দেখাবে।</div>
                 <label>মোবাইল নম্বর</label><input id="e24-settings-mobile" type="tel" placeholder="মোবাইল নম্বর">
                 <div class="e24-settings-actions"><button type="button" onclick="e24SaveProfile()">প্রোফাইল সংরক্ষণ</button></div>
                 <div class="e24-settings-divider"></div>
@@ -952,7 +962,9 @@
       };
 
       if (pageKey === '1') {
-        dynamicBar.innerHTML = `<i class="fa-solid fa-bars interactive-icon"></i><span class="app-title">E24 Hisab</span><i class="fa-regular fa-bell interactive-icon"></i>`;
+        dynamicBar.innerHTML = `<i class="fa-solid fa-bars interactive-icon"></i><span class="app-title" id="bar-title">E24 Hisab</span><i class="fa-regular fa-bell interactive-icon"></i>`;
+        const homeTitle = document.getElementById('bar-title');
+        if (homeTitle) homeTitle.textContent = window.e24OrgName || 'E24 Hisab';
       } else if (pageKey === '3') {
         dynamicBar.innerHTML = `<i class="fa-solid fa-arrow-left interactive-icon" onclick="switchPage('1')"></i><span class="app-title">${titles[pageKey]}</span><i class="fa-solid fa-print interactive-icon" role="button" aria-label="খাতা প্রিন্ট" onclick="printLedger()"></i>`;
       } else {
@@ -1148,19 +1160,53 @@ async function e24SendEmailOtp(){const button=document.getElementById('e24-resen
 async function e24VerifyEmailOtp(){const user=e24Auth.currentUser,field=document.getElementById('e24-otp-code'),button=document.getElementById('e24-check-verification'),error=document.getElementById('e24-auth-error');if(!user){error.textContent='আবার লগইন করুন।';return;}const otp=(field.value||'').trim();if(!/^[0-9]{6}$/.test(otp)){error.textContent='৬ সংখ্যার OTP লিখুন।';field.focus();return;}button.disabled=true;error.textContent='OTP যাচাই হচ্ছে...';try{await e24OtpRequest('/verify-email-otp',{otp:otp});await user.reload();await user.getIdToken(true);await user.reload();if(user.emailVerified){error.textContent='Email সফলভাবে Verify হয়েছে। অ্যাপ খুলছে...';location.reload();}else{error.textContent='OTP গ্রহণ করা হয়েছে, কিন্তু Firebase verification status এখনো আপডেট হয়নি। আবার চেষ্টা করুন।';}}catch(err){error.textContent=err.message||'OTP যাচাই করা যায়নি।';}finally{button.disabled=false;}}
 
 function e24ReadSettings(){try{return JSON.parse(localStorage.getItem('e24-app-settings')||'{}')}catch(_){return {}}}
+let e24PendingProfilePhoto = null;
+window.e24OrgName = '';
+function e24SetProfilePhotoPreview(dataUrl){
+  const preview=document.getElementById('e24-profile-photo-preview');if(!preview)return;
+  preview.innerHTML='';
+  if(dataUrl){const img=document.createElement('img');img.src=dataUrl;img.alt='প্রোফাইল ছবি';img.style.cssText='width:100%;height:100%;object-fit:cover';preview.appendChild(img);}
+  else preview.innerHTML='<i class="fa-solid fa-user"></i>';
+}
+function e24PrepareProfilePhoto(file){
+  return new Promise((resolve,reject)=>{
+    if(!file||!file.type||!file.type.startsWith('image/'))return reject(new Error('INVALID_IMAGE'));
+    if(file.size>5*1024*1024)return reject(new Error('FILE_TOO_LARGE'));
+    const reader=new FileReader();reader.onerror=()=>reject(new Error('READ_FAILED'));
+    reader.onload=()=>{
+      const img=new Image();img.onerror=()=>reject(new Error('IMAGE_FAILED'));
+      img.onload=()=>{
+        const scale=Math.min(1,256/Math.max(img.width,img.height)),canvas=document.createElement('canvas');
+        canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));
+        const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        let quality=.78,data=canvas.toDataURL('image/jpeg',quality);
+        while(data.length>320000&&quality>.35){quality-=.08;data=canvas.toDataURL('image/jpeg',quality);}
+        if(data.length>320000)return reject(new Error('IMAGE_TOO_LARGE'));
+        resolve(data);
+      };img.src=reader.result;
+    };reader.readAsDataURL(file);
+  });
+}
 function e24SetupSettings(){
-  const s=e24ReadSettings(),dark=document.getElementById('e24-settings-dark'),notice=document.getElementById('e24-settings-notifications'),language=document.getElementById('e24-settings-language'),restore=document.getElementById('e24-restore-file');
+  const s=e24ReadSettings(),dark=document.getElementById('e24-settings-dark'),notice=document.getElementById('e24-settings-notifications'),language=document.getElementById('e24-settings-language'),restore=document.getElementById('e24-restore-file'),photoInput=document.getElementById('e24-profile-photo-file');
   if(dark){dark.checked=!!s.dark;dark.onchange=()=>{const v=e24ReadSettings();v.dark=dark.checked;localStorage.setItem('e24-app-settings',JSON.stringify(v));document.querySelector('.phone-screen')?.classList.toggle('e24-dark',dark.checked);};}
   if(notice){notice.checked=s.notifications!==false;notice.onchange=()=>{const v=e24ReadSettings();v.notifications=notice.checked;localStorage.setItem('e24-app-settings',JSON.stringify(v));showToast('নোটিফিকেশন পছন্দ সংরক্ষিত হয়েছে');};}
   if(language){language.value='bn';language.onchange=()=>showToast('বর্তমানে বাংলা ভাষা চালু আছে');}
+  if(photoInput)photoInput.addEventListener('change',async()=>{const file=photoInput.files&&photoInput.files[0];if(!file)return;try{e24PendingProfilePhoto=await e24PrepareProfilePhoto(file);e24SetProfilePhotoPreview(e24PendingProfilePhoto);showToast('ছবি প্রস্তুত হয়েছে। প্রোফাইল সংরক্ষণ করুন।');}catch(err){photoInput.value='';showToast(err.message==='FILE_TOO_LARGE'?'ছবির ফাইল ৫ MB-এর কম হতে হবে।':'ছবিটি ব্যবহার করা যাচ্ছে না। অন্য ছবি দিন।');}});
   document.querySelector('.phone-screen')?.classList.toggle('e24-dark',!!s.dark);
   if(restore)restore.addEventListener('change',e24RestoreBackup);
 }
 async function e24SaveProfile(){
   if(!currentUser)return showToast('আগে লগইন করুন');
-  const name=(document.getElementById('e24-settings-name').value||'').trim(),mobile=(document.getElementById('e24-settings-mobile').value||'').trim();
-  try{await e24Store.collection('users').doc(currentUser.uid).set({name,mobile,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});showToast('প্রোফাইল সংরক্ষিত হয়েছে');}
-  catch(e){showToast('প্রোফাইল সংরক্ষণ করা যায়নি');}
+  const name=(document.getElementById('e24-settings-name').value||'').trim(),mobile=(document.getElementById('e24-settings-mobile').value||'').trim(),organizationName=(document.getElementById('e24-settings-organization').value||'').trim();
+  try{
+    const profileData={name,mobile,organizationName,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+    if(e24PendingProfilePhoto)profileData.profilePhotoData=e24PendingProfilePhoto;
+    await e24Store.collection('users').doc(currentUser.uid).set(profileData,{merge:true});
+    window.e24OrgName=organizationName;
+    const homeTitle=document.getElementById('bar-title');if(homeTitle)homeTitle.textContent=organizationName||'E24 Hisab';
+    e24PendingProfilePhoto=null;showToast('প্রোফাইল সংরক্ষিত হয়েছে');
+  }catch(e){showToast('প্রোফাইল সংরক্ষণ করা যায়নি');}
 }
 async function e24ChangeEmail(){
   if(!currentUser)return;
@@ -1192,7 +1238,8 @@ async function e24RestoreBackup(e){
   finally{e.target.value='';}
 }
 
-function e24SetupAuthUI(){e24SetupSmsWalletUI();e24SetupSettings();const screen=document.getElementById('e24-auth-screen'),error=document.getElementById('e24-auth-error'),verifyPanel=document.getElementById('e24-verify-panel');document.getElementById('e24-auth-switch').addEventListener('click',()=>e24SetAuthMode(authMode==='login'?'register':'login'));document.querySelectorAll('[data-e24-toggle]').forEach(button=>button.addEventListener('click',()=>{const input=document.getElementById(button.dataset.e24Toggle);if(!input)return;input.type=input.type==='password'?'text':'password';button.textContent=input.type==='password'?'দেখুন':'লুকান';}));document.getElementById('e24-login-form').addEventListener('submit',async e=>{e.preventDefault();error.textContent='লগইন হচ্ছে...';try{const remember=document.getElementById('e24-remember-me').checked;await e24Auth.setPersistence(remember?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION);await e24Auth.signInWithEmailAndPassword(document.getElementById('e24-login-email').value.trim(),document.getElementById('e24-login-password').value);}catch(err){error.textContent=e24AuthMessage(err);}});document.getElementById('e24-register-form').addEventListener('submit',async e=>{e.preventDefault();const email=document.getElementById('e24-register-email').value.trim(),mobile=document.getElementById('e24-register-mobile').value.trim(),password=document.getElementById('e24-register-password').value,confirmPassword=document.getElementById('e24-register-confirm-password').value;if(password!==confirmPassword){error.textContent='দুইটি Password একই হতে হবে।';return;}if(mobile.length<7){error.textContent='সঠিক Mobile Number লিখুন।';return;}error.textContent='অ্যাকাউন্ট তৈরি হচ্ছে...';try{const c=await e24Auth.createUserWithEmailAndPassword(email,password);await e24Store.collection('users').doc(c.user.uid).set({email:c.user.email||email,mobile:mobile,emailVerified:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});e24ShowVerification(c.user);await e24SendEmailOtp();}catch(err){error.textContent=e24AuthMessage(err);}});document.getElementById('e24-resend-verification').addEventListener('click',e24SendEmailOtp);document.getElementById('e24-check-verification').addEventListener('click',e24VerifyEmailOtp);document.getElementById('e24-verify-logout').addEventListener('click',async()=>{await e24Auth.signOut();verifyPanel.hidden=true;e24SetAuthMode('login');error.textContent='লগআউট হয়েছে।';});e24Auth.onAuthStateChanged(async user=>{currentUser=user||null;if(!user){activeDataUid=null;isAdmin=false;db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি'};screen.hidden=false;verifyPanel.hidden=true;document.getElementById('e24-admin-panel').hidden=true;e24SetAuthMode('login');return;}isAdmin=user.uid===E24_ADMIN_UID;if(!user.emailVerified&&!isAdmin){activeDataUid=null;e24ShowVerification(user);return;}verifyPanel.hidden=true;screen.hidden=true;document.getElementById('e24-auth-switch').hidden=false;document.getElementById('e24-account-email').textContent=user.email||'';document.getElementById('e24-account-role').textContent=isAdmin?'Main Admin':'সাধারণ ব্যবহারকারী';document.getElementById('e24-admin-settings').hidden=!isAdmin;try{const profile=e24Store.collection('users').doc(user.uid),p=await profile.get();if(p.exists){const pd=p.data()||{};document.getElementById('e24-settings-name').value=pd.name||'';document.getElementById('e24-settings-mobile').value=pd.mobile||'';}if(!p.exists)await profile.set({email:user.email||'',emailVerified:!!user.emailVerified,createdAt:firebase.firestore.FieldValue.serverTimestamp()});else if(p.data().emailVerified!==!!user.emailVerified)await profile.update({emailVerified:!!user.emailVerified});await e24LoadData(user.uid);if(isAdmin)await e24RenderAdminUsers();else document.getElementById('e24-admin-panel').hidden=true;}catch(err){screen.hidden=false;error.textContent='ডেটা লোড হয়নি। Firestore Rules প্রকাশ হয়েছে কি না পরীক্ষা করুন।';}});}
+function e24SetupAuthUI(){e24SetupSmsWalletUI();e24SetupSettings();const screen=document.getElementById('e24-auth-screen'),error=document.getElementById('e24-auth-error'),verifyPanel=document.getElementById('e24-verify-panel');document.getElementById('e24-auth-switch').addEventListener('click',()=>e24SetAuthMode(authMode==='login'?'register':'login'));document.querySelectorAll('[data-e24-toggle]').forEach(button=>button.addEventListener('click',()=>{const input=document.getElementById(button.dataset.e24Toggle);if(!input)return;input.type=input.type==='password'?'text':'password';button.textContent=input.type==='password'?'দেখুন':'লুকান';}));document.getElementById('e24-login-form').addEventListener('submit',async e=>{e.preventDefault();error.textContent='লগইন হচ্ছে...';try{const remember=document.getElementById('e24-remember-me').checked;await e24Auth.setPersistence(remember?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION);await e24Auth.signInWithEmailAndPassword(document.getElementById('e24-login-email').value.trim(),document.getElementById('e24-login-password').value);}catch(err){error.textContent=e24AuthMessage(err);}});document.getElementById('e24-register-form').addEventListener('submit',async e=>{e.preventDefault();const email=document.getElementById('e24-register-email').value.trim(),mobile=document.getElementById('e24-register-mobile').value.trim(),password=document.getElementById('e24-register-password').value,confirmPassword=document.getElementById('e24-register-confirm-password').value;if(password!==confirmPassword){error.textContent='দুইটি Password একই হতে হবে।';return;}if(mobile.length<7){error.textContent='সঠিক Mobile Number লিখুন।';return;}error.textContent='অ্যাকাউন্ট তৈরি হচ্ছে...';try{const c=await e24Auth.createUserWithEmailAndPassword(email,password);await e24Store.collection('users').doc(c.user.uid).set({email:c.user.email||email,mobile:mobile,emailVerified:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});e24ShowVerification(c.user);await e24SendEmailOtp();}catch(err){error.textContent=e24AuthMessage(err);}});document.getElementById('e24-resend-verification').addEventListener('click',e24SendEmailOtp);document.getElementById('e24-check-verification').addEventListener('click',e24VerifyEmailOtp);document.getElementById('e24-verify-logout').addEventListener('click',async()=>{await e24Auth.signOut();verifyPanel.hidden=true;e24SetAuthMode('login');error.textContent='লগআউট হয়েছে।';});e24Auth.onAuthStateChanged(async user=>{currentUser=user||null;if(!user){activeDataUid=null;isAdmin=false;db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি'};screen.hidden=false;verifyPanel.hidden=true;document.getElementById('e24-admin-panel').hidden=true;e24SetAuthMode('login');return;}isAdmin=user.uid===E24_ADMIN_UID;if(!user.emailVerified&&!isAdmin){activeDataUid=null;e24ShowVerification(user);return;}verifyPanel.hidden=true;screen.hidden=true;document.getElementById('e24-auth-switch').hidden=false;document.getElementById('e24-account-email').textContent=user.email||'';document.getElementById('e24-account-role').textContent=isAdmin?'Main Admin':'সাধারণ ব্যবহারকারী';document.getElementById('e24-admin-settings').hidden=!isAdmin;try{const profile=e24Store.collection('users').doc(user.uid),p=await profile.get();if(p.exists){const pd=p.data()||{};document.getElementById('e24-settings-name').value=pd.name||'';document.getElementById('e24-settings-mobile').value=pd.mobile||'';document.getElementById('e24-settings-organization').value=pd.organizationName||'';window.e24OrgName=pd.organizationName||'';e24SetProfilePhotoPreview(pd.profilePhotoData||'');}else{window.e24OrgName='';e24SetProfilePhotoPreview('');}
+      const currentHomeTitle=document.getElementById('bar-title');if(currentHomeTitle)currentHomeTitle.textContent=window.e24OrgName||'E24 Hisab';if(!p.exists)await profile.set({email:user.email||'',emailVerified:!!user.emailVerified,createdAt:firebase.firestore.FieldValue.serverTimestamp()});else if(p.data().emailVerified!==!!user.emailVerified)await profile.update({emailVerified:!!user.emailVerified});await e24LoadData(user.uid);if(isAdmin)await e24RenderAdminUsers();else document.getElementById('e24-admin-panel').hidden=true;}catch(err){screen.hidden=false;error.textContent='ডেটা লোড হয়নি। Firestore Rules প্রকাশ হয়েছে কি না পরীক্ষা করুন।';}});}
 
 function e24Money(amount){return '৳ '+Number(amount||0).toLocaleString('en-BD',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function renderSmsWallet(){

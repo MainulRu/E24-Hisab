@@ -1225,8 +1225,15 @@ function e24SmsSelectedCustomer(){
 function e24RenderSmsCustomers(filter){
   const select=document.getElementById('sms-customer-select');if(!select)return;
   const q=String(filter||'').trim().toLowerCase(),old=select.value;
-  const matches=(db.customers||[]).filter(c=>!q||String(c.name||'').toLowerCase().includes(q)||String(c.phone||'').replace(/[\s-]/g,'').includes(q.replace(/[\s-]/g,'')));
-  select.innerHTML='<option value="">গ্রাহক তালিকা থেকে নির্বাচন করুন</option>'+matches.map(c=>'<option value="'+e24SmsEscape(c.id)+'">'+e24SmsEscape(c.name)+' — '+e24SmsEscape(c.phone||'নম্বর নেই')+'</option>').join('');
+  const matches=(db.customers||[]).filter(c=>{
+    const due=Number(customerTotals(c.id).due)||0;
+    if(due<=0)return false;
+    const nameMatch=String(c.name||'').toLowerCase().includes(q);
+    const phone=String(c.phone||'').replace(/[\\s-]/g,'');
+    const phoneMatch=!!phone&&phone.includes(q.replace(/[\\s-]/g,''));
+    return !q||nameMatch||phoneMatch;
+  });
+  select.innerHTML='<option value="">বকেয়া আছে এমন গ্রাহক নির্বাচন করুন</option>'+matches.map(c=>'<option value="'+e24SmsEscape(c.id)+'">'+e24SmsEscape(c.name)+(c.phone?' — '+e24SmsEscape(c.phone):'')+'</option>').join('');
   if(matches.some(c=>String(c.id)===old))select.value=old;
   else if(matches.length===1&&q)select.value=String(matches[0].id);
 }

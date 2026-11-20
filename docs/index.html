@@ -484,6 +484,36 @@
     .phone-screen.e24-dark .e24-settings-content{border-color:#46554a}
     .phone-screen.e24-dark .e24-settings-hint{color:#c0cbc2}
 
+
+    /* Responsive SMS center: adapt controls and cards to narrow and wide screens. */
+    .sms-wallet-panel{min-width:0;max-width:100%;overflow-wrap:anywhere}
+    .sms-wallet-panel .form-group{min-width:0}
+    #sms-customer-select,#sms-test-phone,#sms-test-message{min-width:0;max-width:100%}
+    #sms-test-message{resize:vertical;overflow-wrap:anywhere}
+    #sms-phonebook{flex:0 0 auto;min-height:44px}
+    @media(max-width:420px){
+      .sms-wallet-panel{padding:9px;margin:8px 0;border-radius:9px}
+      .sms-wallet-balance{align-items:flex-start;flex-wrap:wrap}
+      .sms-wallet-balance>div{min-width:0}
+      .sms-wallet-balance strong{font-size:clamp(18px,5vw,22px)}
+      #sms-customer-select{font-size:14px;padding:10px 8px}
+      #sms-test-phone{font-size:14px;padding:10px 8px}
+      #sms-phonebook{font-size:12px!important;padding:9px 10px!important}
+      #sms-test-message{font-size:14px;line-height:1.5}
+      .sms-wallet-actions{grid-template-columns:1fr}
+      .sms-history-item{flex-wrap:wrap;overflow-wrap:anywhere}
+    }
+    @media(max-width:340px){
+      #sms-test-phone{width:100%;flex:1 1 100%}
+      #sms-phonebook{width:100%!important;flex:1 1 100%;justify-content:center}
+      #sms-test-phone+ #sms-phonebook{margin-top:5px}
+      .sms-wallet-balance{display:grid;grid-template-columns:1fr 1fr}
+      .sms-wallet-balance>div:last-child{text-align:right}
+    }
+    @media(min-width:700px){
+      #page-6{width:100%;max-width:900px;margin:0 auto}
+      #page-6 .sms-wallet-panel{padding:16px}
+    }
 </style>
 </head>
 <body>

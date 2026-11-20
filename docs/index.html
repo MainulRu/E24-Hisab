@@ -1306,7 +1306,7 @@ function e24SetupSmsWalletUI(){
   window.e24SetPhoneBookContact=(name,phone)=>{
     const field=document.getElementById('sms-test-phone');
     const selectedPhone=String(phone||'').trim();
-    const normalize=value=>String(value||'').replace(/[\\s()+.-]/g,'').replace(/^\\+?88/,'0');
+    const normalize=value=>String(value||'').replace(/[\s()+.-]/g,'').replace(/^\+?88/,'0');
     const select=document.getElementById('sms-customer-select');
     const match=(db.customers||[]).find(c=>normalize(c.phone)===normalize(selectedPhone));
     if(match&&select){select.value=String(match.id);e24ApplySmsCustomer(match);}

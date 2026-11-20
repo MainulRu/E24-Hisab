@@ -510,11 +510,12 @@
     .customer-modal-actions button { font-size: 16px; }
 
     /* APK WebView safe-area and touch fixes */
-    .phone-screen { padding-top: env(safe-area-inset-top, 0px); }
+    /* Android already places the WebView below the system status bar; avoid adding a second top inset. */
+    .phone-screen { padding-top: 0 !important; }
     .app-bar {
-      min-height: 0;
-      height: auto;
-      padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+      min-height: 44px;
+      height: 44px;
+      padding: 4px max(16px, env(safe-area-inset-right, 0px)) 4px max(16px, env(safe-area-inset-left, 0px));
       box-sizing: border-box;
       display: flex; align-items: center;
       position: relative; z-index: 2;

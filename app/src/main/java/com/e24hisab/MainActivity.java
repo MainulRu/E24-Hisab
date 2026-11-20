@@ -17,11 +17,17 @@ import android.content.Context;
 import android.print.PrintManager;
 import android.print.PrintDocumentAdapter;
 import android.os.Build;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.ContactsContract;
+import org.json.JSONObject;
 
 public class MainActivity extends Activity {
     private WebView webView;
     private FrameLayout rootLayout;
     private View navigationBarBackground;
+    private static final int REQUEST_PICK_PHONE = 2401;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +70,7 @@ public class MainActivity extends Activity {
 
         webView.setWebChromeClient(new WebChromeClient());
         webView.addJavascriptInterface(new AndroidPrintBridge(this, webView), "AndroidPrint");
+        webView.addJavascriptInterface(new AndroidContactsBridge(this), "AndroidContacts");
         webView.setWebViewClient(new WebViewClient());
 
         FrameLayout.LayoutParams webParams = new FrameLayout.LayoutParams(
@@ -110,6 +117,62 @@ public class MainActivity extends Activity {
         setContentView(rootLayout);
         rootLayout.requestApplyInsets();
         webView.loadUrl("file:///android_asset/index.html");
+    }
+
+    private void openPhoneBook() {
+        try {
+            Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+            startActivityForResult(intent, REQUEST_PICK_PHONE);
+        } catch (Exception e) {
+            if (webView != null) webView.evaluateJavascript("showToast('ফোনবুক খোলা যায়নি')", null);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != REQUEST_PICK_PHONE || resultCode != RESULT_OK || data == null) return;
+        Uri contactUri = data.getData();
+        if (contactUri == null) return;
+        String name = "";
+        String phone = "";
+        Cursor cursor = null;
+        try {
+            cursor = getContentResolver().query(
+                contactUri,
+                new String[] {
+                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                    ContactsContract.CommonDataKinds.Phone.NUMBER
+                },
+                null, null, null
+            );
+            if (cursor != null && cursor.moveToFirst()) {
+                int nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+                int phoneIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                if (nameIndex >= 0) name = cursor.getString(nameIndex);
+                if (phoneIndex >= 0) phone = cursor.getString(phoneIndex);
+            }
+        } catch (Exception e) {
+            if (webView != null) webView.evaluateJavascript("showToast('কন্টাক্ট পড়া যায়নি')", null);
+            return;
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        if (webView != null && !phone.isEmpty()) {
+            webView.evaluateJavascript(
+                "window.e24SetPhoneBookContact(" + JSONObject.quote(name) + "," + JSONObject.quote(phone) + ")",
+                null
+            );
+        }
+    }
+
+    public static class AndroidContactsBridge {
+        private final MainActivity activity;
+        AndroidContactsBridge(MainActivity activity) { this.activity = activity; }
+        @JavascriptInterface
+        public void pickPhoneNumber() {
+            activity.runOnUiThread(activity::openPhoneBook);
+        }
     }
 
     public static class AndroidPrintBridge {

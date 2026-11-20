@@ -1221,7 +1221,7 @@ async function e24SaveProfile(){
     window.e24OrgName=organizationName;
     e24ApplyHomeHeaderName();
     e24PendingProfilePhoto=null;showToast('প্রোফাইল সংরক্ষিত হয়েছে');
-  }catch(e){showToast('প্রোফাইল সংরক্ষণ করা যায়নি');}
+  }catch(e){console.error('E24 profile save failed:',e);showToast('সংরক্ষণ ব্যর্থ: '+(e.code||e.message||'অজানা সমস্যা'));}
 }
 async function e24ChangeEmail(){
   if(!currentUser)return;

@@ -15,7 +15,7 @@ service cloud.firestore {
       allow get: if signedIn() && (request.auth.uid == userId || isMainAdmin());
       allow list: if isMainAdmin();
 
-      // A profile's verification flag must match Firebase's signed ID-token claim.
+      // Initial registration profile.
       allow create: if signedIn()
         && request.auth.uid == userId
         && request.resource.data.keys().hasOnly(['email', 'mobile', 'emailVerified', 'createdAt'])
@@ -23,13 +23,22 @@ service cloud.firestore {
         && request.resource.data.emailVerified == request.auth.token.email_verified
         && (!('mobile' in request.resource.data) || request.resource.data.mobile is string);
 
+      // Account owner can update only their own profile fields.
+      // Profile photo is stored as a compressed data URL with a size limit.
       allow update: if isMainAdmin()
         || (signedIn()
           && request.auth.uid == userId
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['email', 'mobile', 'emailVerified'])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'email', 'mobile', 'emailVerified',
+            'name', 'organizationName', 'profilePhotoData', 'updatedAt'
+          ])
           && request.resource.data.email is string
           && request.resource.data.emailVerified == request.auth.token.email_verified
-          && (!('mobile' in request.resource.data) || request.resource.data.mobile is string));
+          && (!('mobile' in request.resource.data) || request.resource.data.mobile is string)
+          && (!('name' in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() <= 100))
+          && (!('organizationName' in request.resource.data) || (request.resource.data.organizationName is string && request.resource.data.organizationName.size() <= 120))
+          && (!('profilePhotoData' in request.resource.data) || (request.resource.data.profilePhotoData is string && request.resource.data.profilePhotoData.size() <= 600000))
+          && (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is timestamp));
 
       allow delete: if isMainAdmin();
 

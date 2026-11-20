@@ -1504,8 +1504,9 @@ async function e24SaveProfile(){
     if(e24PendingProfilePhoto)profileData.profilePhotoData=e24PendingProfilePhoto;
     await e24Store.collection('users').doc(currentUser.uid).set(profileData,{merge:true});
     window.e24OrgName=organizationName;
-    e24ApplyHomeHeaderName();
-    e24PendingProfilePhoto=null;showToast('প্রোফাইল সংরক্ষিত হয়েছে');
+    e24PendingProfilePhoto=null;
+    switchPage('1');
+    showToast('প্রোফাইল সংরক্ষিত হয়েছে');
   }catch(e){console.error('E24 profile save failed:',e);showToast('সংরক্ষণ ব্যর্থ: '+(e.code||e.message||'অজানা সমস্যা'));}
 }
 async function e24ChangeEmail(){

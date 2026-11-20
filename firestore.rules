@@ -15,17 +15,21 @@ service cloud.firestore {
       allow get: if signedIn() && (request.auth.uid == userId || isMainAdmin());
       allow list: if isMainAdmin();
 
-      // A user may create/update only their basic profile fields.
-      // Admin status is never stored in an editable profile field.
+      // A profile's verification flag must match Firebase's signed ID-token claim.
       allow create: if signedIn()
         && request.auth.uid == userId
-        && request.resource.data.keys().hasOnly(['email', 'createdAt'])
-        && request.resource.data.email is string;
+        && request.resource.data.keys().hasOnly(['email', 'mobile', 'emailVerified', 'createdAt'])
+        && request.resource.data.email is string
+        && request.resource.data.emailVerified == request.auth.token.email_verified
+        && (!('mobile' in request.resource.data) || request.resource.data.mobile is string);
 
       allow update: if isMainAdmin()
         || (signedIn()
           && request.auth.uid == userId
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['email']));
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['email', 'mobile', 'emailVerified'])
+          && request.resource.data.email is string
+          && request.resource.data.emailVerified == request.auth.token.email_verified
+          && (!('mobile' in request.resource.data) || request.resource.data.mobile is string));
 
       allow delete: if isMainAdmin();
 

@@ -655,6 +655,25 @@
       .bottom-nav{justify-content:center}
       .nav-item{flex:0 1 112px;font-size:12px}
     }
+
+    /* Web View: render as a real responsive web app, not a fixed phone mockup. */
+    html,body{width:100%;min-width:0;min-height:100%;margin:0;padding:0;overflow-x:hidden}
+    body{min-height:100vh;min-height:100dvh;padding:0;display:flex;align-items:stretch;justify-content:flex-start}
+    .card-wrapper{display:flex;flex:1 1 auto;align-items:stretch;justify-content:flex-start;width:100%;max-width:none;min-width:0;min-height:100vh;min-height:100dvh;margin:0;padding:0}
+    .phone-screen{display:flex;flex:1 1 auto;width:100%;max-width:none;height:100vh;height:100dvh;min-height:100vh;min-height:100dvh;margin:0;border:0;border-radius:0;box-shadow:none;overflow:hidden}
+    .status-bar{display:none}
+    .app-bar{position:sticky;top:0;z-index:20;flex:0 0 auto}
+    .screen-body{flex:1 1 auto;width:100%;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+    .app-page{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+    .bottom-nav{position:relative;z-index:30;flex:0 0 auto;min-height:62px;padding-bottom:max(7px,env(safe-area-inset-bottom,0px))}
+    img,video,canvas,iframe{max-width:100%}
+    @media(min-width:700px){
+      .phone-screen{height:100vh;height:100dvh;min-height:100vh;min-height:100dvh}
+      .screen-body{padding:24px max(24px,calc((100% - 1080px)/2)) 28px}
+      .app-page{max-width:1080px;margin-left:auto;margin-right:auto}
+      .app-bar{padding-left:max(24px,calc((100% - 1080px)/2));padding-right:max(24px,calc((100% - 1080px)/2))}
+      .bottom-nav{justify-content:center}
+    }
 </style>
 </head>
 <body>

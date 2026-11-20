@@ -696,11 +696,6 @@
             <div class="sms-wallet-note">এটি পরীক্ষামূলক ব্যবস্থা। কোনো বাস্তব SMS পাঠানো হবে না। সফল Demo Send হলে ৳১ কাটা হবে।</div>
           </section>
           <div class="form-group">
-            <label class="form-label" for="sms-customer-search">গ্রাহক খুঁজুন (নাম বা মোবাইল নম্বর):</label>
-            <input id="sms-customer-search" type="search" class="form-input" placeholder="গ্রাহকের নাম / মোবাইল নম্বর লিখুন" autocomplete="off">
-            <select id="sms-customer-select" class="form-input" style="margin-top:6px"><option value="">গ্রাহক তালিকা থেকে নির্বাচন করুন</option></select>
-          </div>
-          <div class="form-group">
             <label class="form-label" for="sms-test-phone">প্রাপকের নম্বর:</label>
             <div style="display:flex;gap:6px;align-items:stretch">
               <input id="sms-test-phone" type="tel" class="form-input" placeholder="01XXXXXXXXX" inputmode="tel" style="flex:1;min-width:0">
@@ -1206,7 +1201,7 @@ function renderSmsWallet(){
   if(!Number.isFinite(Number(db.smsWalletBalance)))db.smsWalletBalance=500;
   if(!Array.isArray(db.smsHistory))db.smsHistory=[];
   if(!Array.isArray(db.smsRechargeRequests))db.smsRechargeRequests=[];
-  balanceEl.textContent=e24Money(db.smsWalletBalance);e24RenderSmsCustomers(document.getElementById('sms-customer-search')?.value||'');
+  balanceEl.textContent=e24Money(db.smsWalletBalance);e24RenderSmsCustomers();
   if(historyEl){const rows=db.smsHistory.slice().reverse().slice(0,20);historyEl.innerHTML=rows.length?rows.map(x=>'<div class="sms-history-item"><span><b>'+String(x.phone||'').replace(/[&<>"]/g,'')+'</b><br><span class="sms-wallet-note">'+String(x.date||'')+' · TEST MODE</span></span><span style="text-align:right"><b style="color:'+(x.status==='SUCCESS'?'var(--primary-green)':'var(--accent-red)')+'">'+(x.status==='SUCCESS'?'- ৳1.00':'ব্যর্থ')+'</b><br><span class="sms-wallet-note">'+(x.status==='SUCCESS'?'Demo সফল':'কাটা হয়নি')+'</span></span></div>').join(''):'<div class="sms-wallet-note">এখনো কোনো SMS পাঠানো হয়নি।</div>';}
   if(adminPanel){adminPanel.hidden=!isAdmin;}
   if(adminList&&isAdmin){const pending=db.smsRechargeRequests.filter(x=>x.status==='PENDING');adminList.innerHTML=pending.length?pending.map(x=>'<div class="sms-admin-request"><b>'+e24Money(x.amount)+'</b> · '+String(x.date||'')+'<br><span class="sms-wallet-note">TEST MODE · Pending</span><br><button type="button" class="btn btn-green" data-sms-approve="'+String(x.id)+'">Approve Test Recharge</button></div>').join(''):'<div class="sms-wallet-note" style="margin-top:7px">কোনো Pending Request নেই।</div>';}
@@ -1222,34 +1217,24 @@ function e24SmsSelectedCustomer(){
   const select=document.getElementById('sms-customer-select');
   return select&&select.value?db.customers.find(c=>String(c.id)===String(select.value)):null;
 }
-function e24RenderSmsCustomers(filter){
+function e24RenderSmsCustomers(){
   const select=document.getElementById('sms-customer-select');if(!select)return;
-  const q=String(filter||'').trim().toLowerCase(),old=select.value;
-  const matches=(db.customers||[]).filter(c=>{
-    const due=Number(customerTotals(c.id).due)||0;
-    if(due<=0)return false;
-    const nameMatch=String(c.name||'').toLowerCase().includes(q);
-    const phone=String(c.phone||'').replace(/[\\s-]/g,'');
-    const phoneMatch=!!phone&&phone.includes(q.replace(/[\\s-]/g,''));
-    return !q||nameMatch||phoneMatch;
-  });
-  select.innerHTML='<option value="">বকেয়া আছে এমন গ্রাহক নির্বাচন করুন</option>'+matches.map(c=>'<option value="'+e24SmsEscape(c.id)+'">'+e24SmsEscape(c.name)+(c.phone?' — '+e24SmsEscape(c.phone):'')+'</option>').join('');
+  const old=select.value;
+  const matches=(db.customers||[]).filter(c=>(Number(customerTotals(c.id).due)||0)>0);
+  select.innerHTML='<option value="">বকেয়া আছে এমন গ্রাহক নির্বাচন করুন</option>'+matches.map(c=>'<option value="'+e24SmsEscape(c.id)+'">'+e24SmsEscape(c.name)+'</option>').join('');
   if(matches.some(c=>String(c.id)===old))select.value=old;
-  else if(matches.length===1&&q)select.value=String(matches[0].id);
 }
 function e24ApplySmsCustomer(customer){
   if(!customer)return;
   const phone=document.getElementById('sms-test-phone'),search=document.getElementById('sms-customer-search');
   if(phone)phone.value=customer.phone||'';
-  if(search)search.value=customer.name||'';
   const message=document.getElementById('sms-test-message');
   if(message)message.placeholder=e24SmsDefaultMessage(customer);
 }
 function e24SetupSmsWalletUI(){
   const send=document.getElementById('sms-test-send'),request=document.getElementById('sms-recharge-request'),adminList=document.getElementById('sms-admin-recharge-list');
-  const customerSearch=document.getElementById('sms-customer-search'),customerSelect=document.getElementById('sms-customer-select'),defaultButton=document.getElementById('sms-use-default'),phonebook=document.getElementById('sms-phonebook');
+  const customerSelect=document.getElementById('sms-customer-select'),defaultButton=document.getElementById('sms-use-default'),phonebook=document.getElementById('sms-phonebook');
   e24RenderSmsCustomers('');
-  if(customerSearch)customerSearch.addEventListener('input',()=>e24RenderSmsCustomers(customerSearch.value));
   if(customerSelect)customerSelect.addEventListener('change',()=>e24ApplySmsCustomer(e24SmsSelectedCustomer()));
   if(defaultButton)defaultButton.addEventListener('click',()=>{const customer=e24SmsSelectedCustomer();const message=document.getElementById('sms-test-message');if(message)message.value=e24SmsDefaultMessage(customer);});
   if(phonebook)phonebook.addEventListener('click',()=>{
@@ -1258,8 +1243,6 @@ function e24SetupSmsWalletUI(){
   });
   window.e24SetPhoneBookContact=(name,phone)=>{
     const field=document.getElementById('sms-test-phone');if(field)field.value=phone||'';
-    const search=document.getElementById('sms-customer-search');if(search)search.value=name||'';
-    if(search)e24RenderSmsCustomers(search.value);
     const select=document.getElementById('sms-customer-select');
     const match=(db.customers||[]).find(c=>String(c.phone||'').replace(/[\\s-]/g,'')===String(phone||'').replace(/[\\s-]/g,''));
     if(match&&select){select.value=String(match.id);e24ApplySmsCustomer(match);}

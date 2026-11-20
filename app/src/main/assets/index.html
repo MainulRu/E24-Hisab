@@ -552,7 +552,7 @@
 
       <!-- App Bar -->
       <div class="app-bar" id="dynamic-app-bar">
-        <i class="fa-solid fa-bars interactive-icon" role="button" tabindex="0" aria-label="মেনু খুলুন" onclick="openSideMenu()"></i>
+        <i class="fa-solid fa-bars interactive-icon" role="button" tabindex="0" aria-label="মেনু খুলুন"></i>
         <span class="app-title" id="bar-title">E24 Hisab</span>
         <i class="fa-regular fa-bell interactive-icon"></i>
       </div>
@@ -1088,8 +1088,8 @@
         const y=reportCursor.getFullYear(),m=reportCursor.getMonth(),d=reportCursor.getDate();
         let start,end,label;
         if(reportMode==='daily'){start=new Date(y,m,d);end=new Date(y,m,d+1);label=reportCursor.toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'});}
-        else if(reportMode==='monthly'){start=new Date(y,m,1);end=new Date(y,m+1,1);label=reportMonthNames[m]+' '+String(y).replace(/\\d/g,n=>'০১২৩৪৫৬৭৮৯'[Number(n)]);}
-        else {start=new Date(y,0,1);end=new Date(y+1,0,1);label=String(y).replace(/\\d/g,n=>'০১২৩৪৫৬৭৮৯'[Number(n)]);}
+        else if(reportMode==='monthly'){start=new Date(y,m,1);end=new Date(y,m+1,1);label=reportMonthNames[m]+' '+String(y).replace(/\d/g,n=>'০১২৩৪৫৬৭৮৯'[Number(n)]);}
+        else {start=new Date(y,0,1);end=new Date(y+1,0,1);label=String(y).replace(/\d/g,n=>'০১২৩৪৫৬৭৮৯'[Number(n)]);}
         const labelEl=document.getElementById('report-period-label');if(labelEl)labelEl.innerHTML='<i class="fa-regular fa-calendar"></i> '+label;
         const rows=validTransactions().filter(t=>{const dt=reportDate(t.date);return dt&&dt>=start&&dt<end;}).sort((a,b)=>(reportDate(b.date)||0)-(reportDate(a.date)||0));
         const totals=rows.reduce((a,t)=>{if(t.type==='বাকি'){a.sales+=Number(t.amount)||0;a.paid+=Number(t.paid)||0;}else if(t.type==='জমা')a.paid+=Number(t.amount)||0;return a;},{sales:0,paid:0});

@@ -1394,11 +1394,15 @@ function e24SetupSmsWalletUI(){
     else showToast('Phone Book সুবিধা শুধু Android APK-তে পাওয়া যাবে');
   });
   window.e24SetPhoneBookContact=(name,phone)=>{
-    const field=document.getElementById('sms-test-phone');if(field)field.value=phone||'';
+    const field=document.getElementById('sms-test-phone');
+    const selectedPhone=String(phone||'').trim();
+    const normalize=value=>String(value||'').replace(/[\\s()+.-]/g,'').replace(/^\\+?88/,'0');
     const select=document.getElementById('sms-customer-select');
-    const match=(db.customers||[]).find(c=>String(c.phone||'').replace(/[\\s-]/g,'')===String(phone||'').replace(/[\\s-]/g,''));
+    const match=(db.customers||[]).find(c=>normalize(c.phone)===normalize(selectedPhone));
     if(match&&select){select.value=String(match.id);e24ApplySmsCustomer(match);}
-    showToast('Phone Book থেকে নম্বর নেওয়া হয়েছে');
+    // Set the picked number last so selecting a matching customer cannot overwrite it.
+    if(field){field.value=selectedPhone;field.dispatchEvent(new Event('input',{bubbles:true}));field.dispatchEvent(new Event('change',{bubbles:true}));field.focus();}
+    showToast(field&&selectedPhone?'Phone Book থেকে নম্বর যোগ হয়েছে':'ফোন নম্বর পাওয়া যায়নি');
   };
   if(send)send.addEventListener('click',async()=>{
     if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন');return;}

@@ -158,11 +158,16 @@ public class MainActivity extends Activity {
         } finally {
             if (cursor != null) cursor.close();
         }
-        if (webView != null && !phone.isEmpty()) {
-            webView.evaluateJavascript(
-                "window.e24SetPhoneBookContact(" + JSONObject.quote(name) + "," + JSONObject.quote(phone) + ")",
+        if (webView != null) {
+            final String pickedName = name;
+            final String pickedPhone = phone;
+            webView.post(() -> webView.evaluateJavascript(
+                "(function(){var n=" + JSONObject.quote(pickedName) + ";var p=" + JSONObject.quote(pickedPhone) + ";" +
+                "if(typeof window.e24SetPhoneBookContact==='function'){window.e24SetPhoneBookContact(n,p);}" +
+                "else{var f=document.getElementById('sms-test-phone');if(f){f.value=p;f.dispatchEvent(new Event('input',{bubbles:true}));f.dispatchEvent(new Event('change',{bubbles:true}));}}" +
+                "})()",
                 null
-            );
+            ));
         }
     }
 

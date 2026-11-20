@@ -459,7 +459,32 @@
     }
     .toast-msg.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .e24-auth-screen{position:fixed;inset:0;z-index:99999;background:linear-gradient(145deg,#e8f5ee,#fff);display:flex;align-items:center;justify-content:center;padding:20px}.e24-auth-card{width:min(100%,390px);background:#fff;border-radius:20px;padding:26px 22px;box-shadow:0 12px 40px #0002}.e24-auth-card h2{color:#005c2e;text-align:center;font-size:25px;margin-bottom:6px}.e24-auth-sub{color:#667085;text-align:center;font-size:13px;margin-bottom:20px}.e24-auth-card input{width:100%;height:48px;border:1px solid #d5ded8;border-radius:10px;padding:0 13px;margin:7px 0;font-size:15px}.e24-password-wrap{position:relative}.e24-password-wrap input{padding-right:76px}.e24-password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:#edf7f0;color:#087b45;border-radius:7px;padding:5px 9px;font-size:12px;font-weight:600;cursor:pointer}.e24-verify-panel input{margin-top:12px;text-align:center;letter-spacing:5px;font-size:22px;font-weight:700}.e24-auth-primary{width:100%;border:0;border-radius:10px;background:#008744;color:#fff;padding:12px;font-size:16px;font-weight:700;margin-top:12px}.e24-auth-switch{border:0;background:transparent;color:#087b45;text-decoration:underline;padding:12px 4px;width:100%;font-size:14px}.e24-auth-error{color:#c62828;font-size:13px;min-height:20px;margin-top:8px;text-align:center}.e24-verify-panel{text-align:center;color:#344054;font-size:14px}.e24-verify-panel p{line-height:1.6}.e24-verify-panel strong{display:block;overflow-wrap:anywhere;margin:12px 0;color:#087b45}.e24-auth-secondary{width:100%;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#087b45;padding:11px;font-size:14px;font-weight:600;margin-top:9px}.e24-account-panel,.e24-admin-panel{background:#f1f8f3;border:1px solid #d5e9dc;border-radius:12px;padding:14px;margin:0 0 14px}.e24-account-panel button{border:0;border-radius:8px;background:#008744;color:#fff;padding:9px 12px;margin-top:9px}.e24-account-email{font-size:13px;overflow-wrap:anywhere;color:#344054}.e24-admin-panel{background:#f8fafc;border-color:#dbe3ea}.e24-admin-panel select{width:100%;height:42px;border:1px solid #cbd5e1;border-radius:8px;padding:0 9px;margin-top:8px;background:white}.e24-admin-label{font-size:12px;color:#667085;margin-top:6px}[hidden]{display:none!important}
-  </style>
+  
+    /* E24 Settings refresh */
+    .e24-settings-list{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+    .e24-settings-card{background:#fff;border:1px solid var(--border-color);border-radius:11px;overflow:hidden}
+    .e24-settings-card>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:12px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text-dark)}
+    .e24-settings-card>summary::-webkit-details-marker{display:none}
+    .e24-settings-card>summary .e24-settings-icon{width:32px;height:32px;border-radius:9px;background:var(--light-green);color:var(--primary-green);display:grid;place-items:center;font-size:15px;flex:0 0 32px}
+    .e24-settings-card>summary .e24-settings-chevron{margin-left:auto;color:var(--text-muted);transition:transform .2s}
+    .e24-settings-card[open]>summary .e24-settings-chevron{transform:rotate(180deg)}
+    .e24-settings-content{border-top:1px solid #edf0ed;padding:12px;display:flex;flex-direction:column;gap:9px;font-size:11px}
+    .e24-settings-content label{font-weight:600;color:var(--text-dark)}
+    .e24-settings-content input,.e24-settings-content select{width:100%;min-height:38px;border:1px solid var(--border-color);border-radius:8px;padding:7px 9px;background:#fff;color:#202124;font-size:12px}
+    .e24-settings-content button{border:0;border-radius:8px;padding:9px 11px;background:var(--primary-green);color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+    .e24-settings-content button.secondary{background:#eef4ef;color:#17633b}
+    .e24-settings-hint{font-size:10px;color:var(--text-muted);line-height:1.5}
+    .e24-settings-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .e24-settings-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .e24-settings-actions button{flex:1}
+    .e24-settings-divider{height:1px;background:#edf0ed;margin:2px 0}
+    .phone-screen.e24-dark .screen-body{background:#202a24;color:#f2f5f2}
+    .phone-screen.e24-dark .e24-settings-card,.phone-screen.e24-dark .settings-app-info{background:#2d3931;border-color:#46554a}
+    .phone-screen.e24-dark .e24-settings-card>summary,.phone-screen.e24-dark .e24-settings-content label{color:#f2f5f2}
+    .phone-screen.e24-dark .e24-settings-content{border-color:#46554a}
+    .phone-screen.e24-dark .e24-settings-hint{color:#c0cbc2}
+
+</style>
 </head>
 <body>
 
@@ -743,22 +768,69 @@
 
         <!-- 8. SETTINGS PAGE -->
         <div class="app-page" id="page-8">
-          <div class="e24-account-panel"><div class="setting-title">অ্যাকাউন্ট</div><div class="e24-account-email" id="e24-account-email">লগইন হয়নি</div><div class="e24-admin-label" id="e24-account-role">—</div><button type="button" onclick="window.e24Logout()">লগ আউট</button></div><div class="e24-admin-panel" id="e24-admin-panel" hidden><div class="setting-title">Main Admin — ব্যবহারকারী ব্যবস্থাপনা</div><div class="e24-admin-label">যার হিসাব পরিচালনা করবেন তাকে নির্বাচন করুন</div><select id="e24-admin-user-select"></select><div class="e24-admin-label" id="e24-admin-current"></div></div><div class="settings-app-info">
+          <div class="settings-app-info">
             <div class="app-logo inline-logo"><i class="fa-solid fa-book-bookmark"></i><span>E24</span></div>
-            <div>
-              <div class="setting-title">E24 Hisab</div>
-              <div class="setting-sub">Version 1.0.0</div>
-            </div>
+            <div><div class="setting-title">E24 Hisab</div><div class="setting-sub">Version 1.0.0</div></div>
           </div>
-          <ul class="settings-menu">
-            <li class="setting-item" onclick="showToast('ব্যাকআপ সফল')"><i class="fa-solid fa-database menu-icon"></i><span>ডাটা ব্যাকআপ ও রিস্টোর</span><i class="fa-solid fa-chevron-right"></i></li>
-            <li class="setting-item" onclick="switchPage('5')"><i class="fa-solid fa-credit-card menu-icon pink-icon"></i><div><span>পেমেন্ট সেটিংস</span><div class="sub-desc">(bKash / Nagad)</div></div><i class="fa-solid fa-chevron-right"></i></li>
-            <li class="setting-item" onclick="switchPage('6')"><i class="fa-solid fa-comments menu-icon green-icon"></i><div><span>মেসেজ সেটিংস</span><div class="sub-desc">(SMS / WhatsApp)</div></div><i class="fa-solid fa-chevron-right"></i></li>
-            <li class="setting-item" onclick="showToast('ভাষা পরিবর্তন')"><i class="fa-solid fa-globe menu-icon"></i><span>ভাষা নির্বাচন (বাংলা)</span><i class="fa-solid fa-chevron-right"></i></li>
-          </ul>
-          <button class="btn btn-logout shadow-btn" style="margin-top: 6px;" onclick="window.e24Logout()">
-            <i class="fa-solid fa-right-from-bracket"></i> লগ আউট
-          </button>
+          <div class="e24-settings-list">
+            <details class="e24-settings-card" open>
+              <summary><span class="e24-settings-icon"><i class="fa-solid fa-user"></i></span> অ্যাকাউন্ট সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
+              <div class="e24-settings-content">
+                <div class="e24-settings-hint">আপনার অ্যাকাউন্টের তথ্য</div>
+                <label>নাম / প্রোফাইল</label><input id="e24-settings-name" type="text" placeholder="আপনার নাম">
+                <label>মোবাইল নম্বর</label><input id="e24-settings-mobile" type="tel" placeholder="মোবাইল নম্বর">
+                <div class="e24-settings-actions"><button type="button" onclick="e24SaveProfile()">প্রোফাইল সংরক্ষণ</button></div>
+                <div class="e24-settings-divider"></div>
+                <label>বর্তমান Email</label><div class="e24-account-email" id="e24-account-email">লগইন হয়নি</div>
+                <div class="e24-settings-actions"><button class="secondary" type="button" onclick="e24ChangeEmail()">Email পরিবর্তন</button><button class="secondary" type="button" onclick="e24ResetPassword()">Password Reset</button></div>
+                <div class="e24-admin-label" id="e24-account-role">—</div>
+                <button type="button" onclick="window.e24Logout()">লগ আউট</button>
+              </div>
+            </details>
+            <details class="e24-settings-card">
+              <summary><span class="e24-settings-icon"><i class="fa-solid fa-sliders"></i></span> অ্যাপ সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
+              <div class="e24-settings-content">
+                <label for="e24-settings-language">ভাষা</label><select id="e24-settings-language"><option value="bn">বাংলা</option><option value="en" disabled>English (শীঘ্রই)</option></select>
+                <div class="e24-settings-row"><label for="e24-settings-dark">ডার্ক থিম</label><input id="e24-settings-dark" type="checkbox" style="width:20px;min-height:20px"></div>
+                <div class="e24-settings-row"><label for="e24-settings-notifications">নোটিফিকেশন পছন্দ</label><input id="e24-settings-notifications" type="checkbox" style="width:20px;min-height:20px"></div>
+                <div class="e24-settings-hint">নোটিফিকেশন পছন্দ সংরক্ষিত হবে। Push notification সেবা আলাদাভাবে চালু করতে হবে।</div>
+              </div>
+            </details>
+            <details class="e24-settings-card">
+              <summary><span class="e24-settings-icon"><i class="fa-solid fa-database"></i></span> ডাটা সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
+              <div class="e24-settings-content">
+                <div class="e24-settings-hint">আপনার বর্তমান হিসাব JSON ফাইলে Backup নিন। Restore করলে বর্তমান ডাটার জায়গায় Backup-এর ডাটা বসবে।</div>
+                <div class="e24-settings-actions"><button type="button" onclick="e24ExportBackup()">Backup Download</button><button class="secondary" type="button" onclick="document.getElementById('e24-restore-file').click()">Backup Restore</button></div>
+                <input id="e24-restore-file" type="file" accept="application/json,.json" hidden>
+              </div>
+            </details>
+            <details class="e24-settings-card">
+              <summary><span class="e24-settings-icon"><i class="fa-solid fa-credit-card"></i></span> পেমেন্ট সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
+              <div class="e24-settings-content">
+                <div class="e24-settings-hint">bKash / Nagad / Bank Payment Gateway Configuration এখানে ভবিষ্যতে যুক্ত হবে। এখনো কোনো বাস্তব Gateway সংযুক্ত নেই।</div>
+                <button class="secondary" type="button" onclick="switchPage('5')">পেমেন্ট পেজ দেখুন</button>
+              </div>
+            </details>
+            <details class="e24-settings-card">
+              <summary><span class="e24-settings-icon"><i class="fa-solid fa-comments"></i></span> মেসেজ সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
+              <div class="e24-settings-content">
+                <div class="e24-settings-hint">SMS ও WhatsApp-এর সেটআপ, সার্ভিস স্ট্যাটাস এবং ভবিষ্যৎ Gateway Configuration।</div>
+                <button class="secondary" type="button" onclick="switchPage('6')">মেসেজ সেন্টার খুলুন</button>
+              </div>
+            </details>
+            <details class="e24-settings-card" id="e24-admin-settings" hidden>
+              <summary><span class="e24-settings-icon"><i class="fa-solid fa-user-shield"></i></span> অ্যাডমিন সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
+              <div class="e24-settings-content">
+                <div class="e24-admin-panel" id="e24-admin-panel" hidden>
+                  <div class="setting-title">Main Admin — ব্যবহারকারী ব্যবস্থাপনা</div>
+                  <div class="e24-admin-label">যার হিসাব পরিচালনা করবেন তাকে নির্বাচন করুন</div>
+                  <select id="e24-admin-user-select"></select>
+                  <div class="e24-admin-label" id="e24-admin-current"></div>
+                </div>
+                <div class="e24-settings-hint">এই বিভাগটি শুধু Main Admin দেখতে পারবেন।</div>
+              </div>
+            </details>
+          </div>
         </div>
 
       </div>
@@ -1079,7 +1151,53 @@ function e24ShowVerification(user){const screen=document.getElementById('e24-aut
 async function e24OtpRequest(path,payload){const user=e24Auth.currentUser;if(!user)throw new Error('আবার লগইন করুন।');const token=await user.getIdToken();const response=await fetch(E24_OTP_API+path,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(payload||{})});let data={};try{data=await response.json();}catch(_){}if(!response.ok)throw new Error(data.error||data.message||'অনুরোধটি সম্পন্ন হয়নি। পরে আবার চেষ্টা করুন।');return data;}
 async function e24SendEmailOtp(){const button=document.getElementById('e24-resend-verification');if(button)button.disabled=true;const error=document.getElementById('e24-auth-error');try{await e24OtpRequest('/send-email-otp',{});error.textContent='আপনার Gmail-এ ৬ সংখ্যার OTP পাঠানো হয়েছে। Inbox ও Spam folder দেখুন।';}catch(err){error.textContent=err.message||'OTP পাঠানো যায়নি। আবার চেষ্টা করুন।';}finally{if(button)button.disabled=false;}}
 async function e24VerifyEmailOtp(){const user=e24Auth.currentUser,field=document.getElementById('e24-otp-code'),button=document.getElementById('e24-check-verification'),error=document.getElementById('e24-auth-error');if(!user){error.textContent='আবার লগইন করুন।';return;}const otp=(field.value||'').trim();if(!/^[0-9]{6}$/.test(otp)){error.textContent='৬ সংখ্যার OTP লিখুন।';field.focus();return;}button.disabled=true;error.textContent='OTP যাচাই হচ্ছে...';try{await e24OtpRequest('/verify-email-otp',{otp:otp});await user.reload();await user.getIdToken(true);await user.reload();if(user.emailVerified){error.textContent='Email সফলভাবে Verify হয়েছে। অ্যাপ খুলছে...';location.reload();}else{error.textContent='OTP গ্রহণ করা হয়েছে, কিন্তু Firebase verification status এখনো আপডেট হয়নি। আবার চেষ্টা করুন।';}}catch(err){error.textContent=err.message||'OTP যাচাই করা যায়নি।';}finally{button.disabled=false;}}
-function e24SetupAuthUI(){e24SetupSmsWalletUI();const screen=document.getElementById('e24-auth-screen'),error=document.getElementById('e24-auth-error'),verifyPanel=document.getElementById('e24-verify-panel');document.getElementById('e24-auth-switch').addEventListener('click',()=>e24SetAuthMode(authMode==='login'?'register':'login'));document.querySelectorAll('[data-e24-toggle]').forEach(button=>button.addEventListener('click',()=>{const input=document.getElementById(button.dataset.e24Toggle);if(!input)return;input.type=input.type==='password'?'text':'password';button.textContent=input.type==='password'?'দেখুন':'লুকান';}));document.getElementById('e24-login-form').addEventListener('submit',async e=>{e.preventDefault();error.textContent='লগইন হচ্ছে...';try{const remember=document.getElementById('e24-remember-me').checked;await e24Auth.setPersistence(remember?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION);await e24Auth.signInWithEmailAndPassword(document.getElementById('e24-login-email').value.trim(),document.getElementById('e24-login-password').value);}catch(err){error.textContent=e24AuthMessage(err);}});document.getElementById('e24-register-form').addEventListener('submit',async e=>{e.preventDefault();const email=document.getElementById('e24-register-email').value.trim(),mobile=document.getElementById('e24-register-mobile').value.trim(),password=document.getElementById('e24-register-password').value,confirmPassword=document.getElementById('e24-register-confirm-password').value;if(password!==confirmPassword){error.textContent='দুইটি Password একই হতে হবে।';return;}if(mobile.length<7){error.textContent='সঠিক Mobile Number লিখুন।';return;}error.textContent='অ্যাকাউন্ট তৈরি হচ্ছে...';try{const c=await e24Auth.createUserWithEmailAndPassword(email,password);await e24Store.collection('users').doc(c.user.uid).set({email:c.user.email||email,mobile:mobile,emailVerified:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});e24ShowVerification(c.user);await e24SendEmailOtp();}catch(err){error.textContent=e24AuthMessage(err);}});document.getElementById('e24-resend-verification').addEventListener('click',e24SendEmailOtp);document.getElementById('e24-check-verification').addEventListener('click',e24VerifyEmailOtp);document.getElementById('e24-verify-logout').addEventListener('click',async()=>{await e24Auth.signOut();verifyPanel.hidden=true;e24SetAuthMode('login');error.textContent='লগআউট হয়েছে।';});e24Auth.onAuthStateChanged(async user=>{currentUser=user||null;if(!user){activeDataUid=null;isAdmin=false;db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি'};screen.hidden=false;verifyPanel.hidden=true;document.getElementById('e24-admin-panel').hidden=true;e24SetAuthMode('login');return;}isAdmin=user.uid===E24_ADMIN_UID;if(!user.emailVerified&&!isAdmin){activeDataUid=null;e24ShowVerification(user);return;}verifyPanel.hidden=true;screen.hidden=true;document.getElementById('e24-auth-switch').hidden=false;document.getElementById('e24-account-email').textContent=user.email||'';document.getElementById('e24-account-role').textContent=isAdmin?'Main Admin':'সাধারণ ব্যবহারকারী';try{const profile=e24Store.collection('users').doc(user.uid),p=await profile.get();if(!p.exists)await profile.set({email:user.email||'',emailVerified:!!user.emailVerified,createdAt:firebase.firestore.FieldValue.serverTimestamp()});else if(p.data().emailVerified!==!!user.emailVerified)await profile.update({emailVerified:!!user.emailVerified});await e24LoadData(user.uid);if(isAdmin)await e24RenderAdminUsers();else document.getElementById('e24-admin-panel').hidden=true;}catch(err){screen.hidden=false;error.textContent='ডেটা লোড হয়নি। Firestore Rules প্রকাশ হয়েছে কি না পরীক্ষা করুন।';}});}
+
+function e24ReadSettings(){try{return JSON.parse(localStorage.getItem('e24-app-settings')||'{}')}catch(_){return {}}}
+function e24SetupSettings(){
+  const s=e24ReadSettings(),dark=document.getElementById('e24-settings-dark'),notice=document.getElementById('e24-settings-notifications'),language=document.getElementById('e24-settings-language'),restore=document.getElementById('e24-restore-file');
+  if(dark){dark.checked=!!s.dark;dark.onchange=()=>{const v=e24ReadSettings();v.dark=dark.checked;localStorage.setItem('e24-app-settings',JSON.stringify(v));document.querySelector('.phone-screen')?.classList.toggle('e24-dark',dark.checked);};}
+  if(notice){notice.checked=s.notifications!==false;notice.onchange=()=>{const v=e24ReadSettings();v.notifications=notice.checked;localStorage.setItem('e24-app-settings',JSON.stringify(v));showToast('নোটিফিকেশন পছন্দ সংরক্ষিত হয়েছে');};}
+  if(language){language.value='bn';language.onchange=()=>showToast('বর্তমানে বাংলা ভাষা চালু আছে');}
+  document.querySelector('.phone-screen')?.classList.toggle('e24-dark',!!s.dark);
+  if(restore)restore.addEventListener('change',e24RestoreBackup);
+}
+async function e24SaveProfile(){
+  if(!currentUser)return showToast('আগে লগইন করুন');
+  const name=(document.getElementById('e24-settings-name').value||'').trim(),mobile=(document.getElementById('e24-settings-mobile').value||'').trim();
+  try{await e24Store.collection('users').doc(currentUser.uid).set({name,mobile,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});showToast('প্রোফাইল সংরক্ষিত হয়েছে');}
+  catch(e){showToast('প্রোফাইল সংরক্ষণ করা যায়নি');}
+}
+async function e24ChangeEmail(){
+  if(!currentUser)return;
+  const email=prompt('নতুন Email address লিখুন:');if(!email)return;
+  try{await currentUser.updateEmail(email.trim());await e24Store.collection('users').doc(currentUser.uid).set({email:email.trim()},{merge:true});document.getElementById('e24-account-email').textContent=email.trim();showToast('Email পরিবর্তন হয়েছে। নতুন Email যাচাই করুন।');}
+  catch(e){showToast(e.code==='auth/requires-recent-login'?'নিরাপত্তার জন্য লগআউট করে আবার লগইন করে চেষ্টা করুন।':'Email পরিবর্তন করা যায়নি। Email সঠিক কি না দেখুন।');}
+}
+async function e24ResetPassword(){
+  const email=currentUser?.email;if(!email)return showToast('অ্যাকাউন্ট Email পাওয়া যায়নি');
+  try{await e24Auth.sendPasswordResetEmail(email);showToast('Password Reset link আপনার Email-এ পাঠানো হয়েছে');}
+  catch(e){showToast('Password Reset Email পাঠানো যায়নি');}
+}
+function e24ExportBackup(){
+  if(!currentUser||!db)return showToast('আগে লগইন করুন');
+  const payload={app:'E24 Hisab',version:1,exportedAt:new Date().toISOString(),data:db};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='e24-hisab-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);showToast('Backup ডাউনলোড শুরু হয়েছে');
+}
+async function e24RestoreBackup(e){
+  const file=e.target.files&&e.target.files[0];if(!file)return;
+  try{
+    const parsed=JSON.parse(await file.text()),data=parsed.data||parsed;
+    if(!Array.isArray(data.customers)||!Array.isArray(data.transactions))throw new Error('INVALID');
+    if(!confirm('বর্তমান হিসাবের ডাটা Backup-এর ডাটা দিয়ে প্রতিস্থাপন করবেন? আগে Backup রাখা ভালো।')){e.target.value='';return;}
+    const clean={...data,customers:data.customers,transactions:data.transactions,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+    await e24Store.collection('users').doc(currentUser.uid).collection('data').doc('main').set(clean,{merge:false});
+    db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি',...data};refreshAll();renderSmsWallet();showToast('Backup Restore সম্পন্ন হয়েছে');
+  }catch(err){showToast('Backup ফাইলটি সঠিক নয় অথবা Restore করা যায়নি');}
+  finally{e.target.value='';}
+}
+
+function e24SetupAuthUI(){e24SetupSmsWalletUI();e24SetupSettings();const screen=document.getElementById('e24-auth-screen'),error=document.getElementById('e24-auth-error'),verifyPanel=document.getElementById('e24-verify-panel');document.getElementById('e24-auth-switch').addEventListener('click',()=>e24SetAuthMode(authMode==='login'?'register':'login'));document.querySelectorAll('[data-e24-toggle]').forEach(button=>button.addEventListener('click',()=>{const input=document.getElementById(button.dataset.e24Toggle);if(!input)return;input.type=input.type==='password'?'text':'password';button.textContent=input.type==='password'?'দেখুন':'লুকান';}));document.getElementById('e24-login-form').addEventListener('submit',async e=>{e.preventDefault();error.textContent='লগইন হচ্ছে...';try{const remember=document.getElementById('e24-remember-me').checked;await e24Auth.setPersistence(remember?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION);await e24Auth.signInWithEmailAndPassword(document.getElementById('e24-login-email').value.trim(),document.getElementById('e24-login-password').value);}catch(err){error.textContent=e24AuthMessage(err);}});document.getElementById('e24-register-form').addEventListener('submit',async e=>{e.preventDefault();const email=document.getElementById('e24-register-email').value.trim(),mobile=document.getElementById('e24-register-mobile').value.trim(),password=document.getElementById('e24-register-password').value,confirmPassword=document.getElementById('e24-register-confirm-password').value;if(password!==confirmPassword){error.textContent='দুইটি Password একই হতে হবে।';return;}if(mobile.length<7){error.textContent='সঠিক Mobile Number লিখুন।';return;}error.textContent='অ্যাকাউন্ট তৈরি হচ্ছে...';try{const c=await e24Auth.createUserWithEmailAndPassword(email,password);await e24Store.collection('users').doc(c.user.uid).set({email:c.user.email||email,mobile:mobile,emailVerified:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});e24ShowVerification(c.user);await e24SendEmailOtp();}catch(err){error.textContent=e24AuthMessage(err);}});document.getElementById('e24-resend-verification').addEventListener('click',e24SendEmailOtp);document.getElementById('e24-check-verification').addEventListener('click',e24VerifyEmailOtp);document.getElementById('e24-verify-logout').addEventListener('click',async()=>{await e24Auth.signOut();verifyPanel.hidden=true;e24SetAuthMode('login');error.textContent='লগআউট হয়েছে।';});e24Auth.onAuthStateChanged(async user=>{currentUser=user||null;if(!user){activeDataUid=null;isAdmin=false;db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি'};screen.hidden=false;verifyPanel.hidden=true;document.getElementById('e24-admin-panel').hidden=true;e24SetAuthMode('login');return;}isAdmin=user.uid===E24_ADMIN_UID;if(!user.emailVerified&&!isAdmin){activeDataUid=null;e24ShowVerification(user);return;}verifyPanel.hidden=true;screen.hidden=true;document.getElementById('e24-auth-switch').hidden=false;document.getElementById('e24-account-email').textContent=user.email||'';document.getElementById('e24-account-role').textContent=isAdmin?'Main Admin':'সাধারণ ব্যবহারকারী';document.getElementById('e24-admin-settings').hidden=!isAdmin;try{const profile=e24Store.collection('users').doc(user.uid),p=await profile.get();if(p.exists){const pd=p.data()||{};document.getElementById('e24-settings-name').value=pd.name||'';document.getElementById('e24-settings-mobile').value=pd.mobile||'';}if(!p.exists)await profile.set({email:user.email||'',emailVerified:!!user.emailVerified,createdAt:firebase.firestore.FieldValue.serverTimestamp()});else if(p.data().emailVerified!==!!user.emailVerified)await profile.update({emailVerified:!!user.emailVerified});await e24LoadData(user.uid);if(isAdmin)await e24RenderAdminUsers();else document.getElementById('e24-admin-panel').hidden=true;}catch(err){screen.hidden=false;error.textContent='ডেটা লোড হয়নি। Firestore Rules প্রকাশ হয়েছে কি না পরীক্ষা করুন।';}});}
 
 function e24Money(amount){return '৳ '+Number(amount||0).toLocaleString('en-BD',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function renderSmsWallet(){

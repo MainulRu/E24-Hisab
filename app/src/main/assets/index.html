@@ -777,68 +777,6 @@
       color:#fff !important;
     }
 
-    /* SMS Center: keep the screen fixed and give remaining space to the history list. */
-    .screen-body.sms-fixed-mode{
-      display:flex !important;
-      flex:1 1 0px !important;
-      min-height:0 !important;
-      height:0 !important;
-      box-sizing:border-box !important;
-      overflow:hidden !important;
-      overscroll-behavior:none;
-    }
-    #page-6.active-page{
-      display:flex !important;
-      flex:1 1 0px !important;
-      height:0 !important;
-      min-height:0 !important;
-      max-height:none !important;
-      box-sizing:border-box !important;
-      flex-direction:column !important;
-      overflow:hidden !important;
-      gap:3px !important;
-      padding:0 0 2px !important;
-    }
-    #page-6.active-page > :not(.sms-history-panel){flex:0 0 auto !important;min-height:0 !important}
-    #page-6 .sms-wallet-panel{padding:6px !important;margin:2px 0 !important}
-    #page-6 .form-group{margin:1px 0 !important}
-    #page-6 .form-label{margin-bottom:1px !important}
-    #page-6 #sms-test-message{height:42px !important;min-height:42px !important;max-height:42px !important;resize:none !important}
-    #page-6 #sms-phonebook{min-height:36px !important}
-    #page-6 #sms-test-send{min-height:36px !important;padding-top:6px !important;padding-bottom:6px !important}
-    #page-6 .sms-history-panel{
-      display:flex !important;
-      flex:1 1 0px !important;
-      flex-direction:column !important;
-      min-height:0 !important;
-      height:0 !important;
-      max-height:none !important;
-      box-sizing:border-box !important;
-      overflow:hidden !important;
-      margin:2px 0 0 !important;
-      padding:6px !important;
-    }
-    #page-6 #sms-history-list{
-      display:block !important;
-      flex:1 1 0px !important;
-      min-height:0 !important;
-      height:0 !important;
-      max-height:none !important;
-      overflow-x:hidden !important;
-      overflow-y:auto !important;
-      overscroll-behavior:contain;
-      -webkit-overflow-scrolling:touch;
-      touch-action:pan-y;
-      scrollbar-width:thin;
-      padding:4px 3px 4px 0;
-    }
-    #page-6 .sms-history-item{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--border-color)}
-    @media(max-height:620px){
-      #page-6 .sms-wallet-panel{padding:5px !important;margin:1px 0 !important}
-      #page-6 #sms-test-message{height:38px !important;min-height:38px !important;max-height:38px !important}
-      #page-6 .form-group{margin:0 !important}
-      #page-6 .sms-history-panel{padding:5px !important}
-    }
     </style>
 </head>
 <body>
@@ -1327,9 +1265,6 @@
       const targetNav = document.getElementById('nav-' + pageKey);
       if (targetPage) targetPage.classList.add('active-page');
       if (targetNav) targetNav.classList.add('active');
-      const screenBody = document.querySelector('.screen-body');
-      if (screenBody) screenBody.classList.toggle('sms-fixed-mode', String(pageKey) === '6');
-
       // Update Header Title
       const dynamicBar = document.getElementById('dynamic-app-bar');
       const titles = {

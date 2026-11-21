@@ -294,7 +294,7 @@ async function handleIpn(request, env) {
   const validation = await response.json();
   const paidAmount = Number(validation.amount);
   if (!response.ok || !["VALID", "VALIDATED"].includes(String(validation.status || "").toUpperCase()) ||
-      String(validation.tran_id) !== tranId || String(validation.currency) !== "BDT" ||
+      String(validation.tran_id) !== tranId || String(validation.currency) !== "BDT" || String(validation.currency_type) !== "BDT" ||
       Math.abs(paidAmount - Number(session.amount)) > 0.001 || String(validation.risk_level || "0") !== "0") {
     return json({ error: "PAYMENT_VALIDATION_FAILED" }, 400);
   }
@@ -331,9 +331,9 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     const url = new URL(request.url);
     try {
-      if (request.method === "GET" && url.pathname === "/callback/success") return callbackPage("success");
-      if (request.method === "GET" && url.pathname === "/callback/fail") return callbackPage("fail");
-      if (request.method === "GET" && url.pathname === "/callback/cancel") return callbackPage("cancel");
+      if ((request.method === "GET" || request.method === "POST") && url.pathname === "/callback/success") return callbackPage("success");
+      if ((request.method === "GET" || request.method === "POST") && url.pathname === "/callback/fail") return callbackPage("fail");
+      if ((request.method === "GET" || request.method === "POST") && url.pathname === "/callback/cancel") return callbackPage("cancel");
       if (request.method === "POST" && url.pathname === "/ipn") {
         const result = await handleIpn(request, env);
         return new Response(await result.text(), { status: result.status, headers: { ...cors, ...JSON_HEADERS } });

@@ -1461,11 +1461,7 @@ const e24Auth=firebase.auth(),e24Store=firebase.firestore();
 window.e24Logout=()=>e24Auth.signOut().catch(()=>showToast('লগআউট করা যায়নি'));
 function e24AuthMessage(err){const m={'auth/email-already-in-use':'এই Email দিয়ে আগে থেকেই অ্যাকাউন্ট আছে।','auth/invalid-email':'সঠিক Email address লিখুন।','auth/weak-password':'Password কমপক্ষে ৬ অক্ষরের হতে হবে।','auth/user-not-found':'এই Email দিয়ে কোনো অ্যাকাউন্ট পাওয়া যায়নি।','auth/wrong-password':'Password সঠিক নয়।','auth/invalid-credential':'Email অথবা Password সঠিক নয়।','auth/too-many-requests':'অনেকবার চেষ্টা হয়েছে। পরে চেষ্টা করুন।','auth/network-request-failed':'ইন্টারনেট সংযোগ পরীক্ষা করুন।'};return m[err&&err.code]||'কাজটি সম্পন্ন হয়নি। আবার চেষ্টা করুন।';}
 function e24SetAuthMode(mode){authMode=mode;document.getElementById('e24-login-form').hidden=mode!=='login';document.getElementById('e24-register-form').hidden=mode!=='register';document.getElementById('e24-verify-panel').hidden=true;document.getElementById('e24-auth-switch').hidden=false;document.getElementById('e24-auth-subtitle').textContent=mode==='login'?'আপনার হিসাব নিরাপদে সংরক্ষণ করতে লগইন করুন':'নতুন E24 Hisab অ্যাকাউন্ট তৈরি করুন';document.getElementById('e24-auth-switch').textContent=mode==='login'?'নতুন অ্যাকাউন্ট তৈরি করবেন?':'আগে অ্যাকাউন্ট আছে? লগইন করুন';document.getElementById('e24-auth-error').textContent='';}
-async function e24LoadData(uid){
-  activeDataUid=uid;
-  const ref=e24Store.collection('users').doc(uid).collection('data').doc('main');
-  let cached=null;
-  try{cached=await ref.get({source:'cache'});}catch(_){}
+async function e24LoadData(uid){activeDataUid=uid;const ref=e24Store.collection('users').doc(uid).collection('data').doc('main'),snap=await ref.get();if(snap.exists)db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি',...snap.data()});}catch(_){}
   if(cached&&cached.exists){
     db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি',...cached.data()};
     refreshAll();renderSmsWallet();

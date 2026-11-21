@@ -20,6 +20,8 @@ import android.os.Build;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import android.provider.ContactsContract;
 import org.json.JSONObject;
 
@@ -28,6 +30,8 @@ public class MainActivity extends Activity {
     private FrameLayout rootLayout;
     private View navigationBarBackground;
     private static final int REQUEST_PICK_PHONE = 2401;
+    private static final int REQUEST_SAVE_BACKUP = 2402;
+    private String pendingBackupJson;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +75,7 @@ public class MainActivity extends Activity {
         webView.setWebChromeClient(new WebChromeClient());
         webView.addJavascriptInterface(new AndroidPrintBridge(this, webView), "AndroidPrint");
         webView.addJavascriptInterface(new AndroidContactsBridge(this), "AndroidContacts");
+        webView.addJavascriptInterface(new AndroidBackupBridge(this), "AndroidBackup");
         webView.setWebViewClient(new WebViewClient());
 
         FrameLayout.LayoutParams webParams = new FrameLayout.LayoutParams(
@@ -128,9 +133,40 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void createBackupFile(String json, String filename) {
+        pendingBackupJson = json;
+        try {
+            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("application/json");
+            intent.putExtra(Intent.EXTRA_TITLE, filename);
+            startActivityForResult(intent, REQUEST_SAVE_BACKUP);
+        } catch (Exception e) {
+            pendingBackupJson = null;
+            if (webView != null) webView.evaluateJavascript("showToast('Backup সংরক্ষণের জায়গা খোলা যায়নি')", null);
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_SAVE_BACKUP) {
+            String json = pendingBackupJson;
+            pendingBackupJson = null;
+            if (resultCode != RESULT_OK || data == null || data.getData() == null) {
+                if (webView != null) webView.evaluateJavascript("showToast('Backup সংরক্ষণ বাতিল হয়েছে')", null);
+                return;
+            }
+            try (OutputStream output = getContentResolver().openOutputStream(data.getData())) {
+                if (output == null || json == null) throw new IllegalStateException("Backup output unavailable");
+                output.write(json.getBytes(StandardCharsets.UTF_8));
+                output.flush();
+                if (webView != null) webView.evaluateJavascript("showToast('Backup ফাইল সফলভাবে সংরক্ষিত হয়েছে')", null);
+            } catch (Exception e) {
+                if (webView != null) webView.evaluateJavascript("showToast('Backup ফাইল সংরক্ষণ করা যায়নি')", null);
+            }
+            return;
+        }
         if (requestCode != REQUEST_PICK_PHONE || resultCode != RESULT_OK || data == null) return;
         Uri contactUri = data.getData();
         if (contactUri == null) return;
@@ -168,6 +204,15 @@ public class MainActivity extends Activity {
                 "})()",
                 null
             ));
+        }
+    }
+
+    public static class AndroidBackupBridge {
+        private final MainActivity activity;
+        AndroidBackupBridge(MainActivity activity) { this.activity = activity; }
+        @JavascriptInterface
+        public void saveBackup(String json, String filename) {
+            activity.runOnUiThread(() -> activity.createBackupFile(json, filename));
         }
     }
 

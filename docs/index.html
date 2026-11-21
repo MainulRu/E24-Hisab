@@ -522,49 +522,38 @@
       #page-6 .sms-wallet-panel{padding:16px}
     }
 
-    /* Message Center: keep controls visible and give SMS History its own real scroll area. */
-    .screen-body.sms-scroll-mode{
-      display:flex !important;
-      flex:1 1 0% !important;
-      flex-direction:column !important;
-      min-height:0 !important;
-      overflow:hidden !important;
-    }
+    /* SMS Center: allow the whole page to reach History; scroll long history within its own list. */
     #page-6.active-page{
       display:flex !important;
-      flex:1 1 0% !important;
       flex-direction:column !important;
       height:auto !important;
-      min-height:0 !important;
-      overflow:hidden !important;
+      min-height:100% !important;
+      flex:0 0 auto !important;
+      overflow:visible !important;
     }
-    #page-6.active-page > :not(.sms-history-panel){flex:0 0 auto}
     #page-6 .sms-history-panel{
-      display:flex !important;
-      flex:1 1 0% !important;
-      flex-direction:column !important;
-      min-height:125px !important;
+      display:block !important;
+      flex:0 0 auto !important;
+      height:auto !important;
+      min-height:120px !important;
       max-height:none !important;
-      overflow:hidden !important;
+      overflow:visible !important;
+      margin-bottom:12px !important;
     }
     #page-6 #sms-history-list{
-      display:flex !important;
-      flex:1 1 0% !important;
-      flex-direction:column !important;
-      min-height:70px !important;
-      max-height:190px !important;
+      display:block !important;
+      height:auto !important;
+      min-height:55px !important;
+      max-height:240px !important;
       overflow-x:hidden !important;
       overflow-y:auto !important;
       overscroll-behavior:contain;
       -webkit-overflow-scrolling:touch;
-      scrollbar-width:thin;
       touch-action:pan-y;
+      scrollbar-width:thin;
+      padding:6px 3px 6px 0;
     }
-    @media(max-height:620px){
-      #page-6 .sms-history-panel{min-height:105px !important}
-      #page-6 #sms-history-list{max-height:145px !important}
-      #page-6 #sms-test-message{min-height:48px}
-    }
+    #page-6 .sms-history-item{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--border-color)}
 </style>
 </head>
 <body>
@@ -1053,8 +1042,6 @@
       const targetNav = document.getElementById('nav-' + pageKey);
       if (targetPage) targetPage.classList.add('active-page');
       if (targetNav) targetNav.classList.add('active');
-      const screenBody = document.querySelector('.screen-body');
-      if (screenBody) screenBody.classList.toggle('sms-scroll-mode', String(pageKey) === '6');
 
       // Update Header Title
       const dynamicBar = document.getElementById('dynamic-app-bar');

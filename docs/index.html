@@ -866,6 +866,10 @@
             <strong><i class="fa-solid fa-circle-plus"></i> SMS Wallet Recharge</strong>
             <div class="sms-wallet-note" style="margin-top:7px">বিকাশ অথবা নগদে Send Money করে নিচের Transaction ID জমা দিন। টাকা যাচাই করে Admin অনুমোদন করবেন।</div>
             <div class="form-group" style="margin-top:8px"><label class="form-label" for="sms-recharge-amount">রিচার্জের পরিমাণ (৳):</label><input id="sms-recharge-amount" type="number" class="form-input" min="10" step="10" inputmode="decimal" placeholder="যেমন 100"></div>
+            <div class="form-group" style="margin-top:8px">
+              <button id="sms-auto-recharge" type="button" class="btn btn-green" style="width:100%">SSLCOMMERZ দিয়ে Automatic Recharge (Sandbox)</button>
+              <div class="sms-wallet-note" style="margin-top:5px">এটি Sandbox Test Payment। কোনো আসল টাকা কাটবে না। সফল পেমেন্ট যাচাই হলে Wallet-এ টাকা যোগ হবে।</div>
+            </div>
             <div class="form-group"><label class="form-label" for="sms-recharge-method">পেমেন্ট মাধ্যম:</label><select id="sms-recharge-method" class="form-input"><option value="bKash">বিকাশ</option><option value="Nagad">নগদ</option></select></div>
             <div class="form-group"><label class="form-label">Send Money নম্বর:</label><div style="display:flex;gap:8px;align-items:center"><input id="sms-recharge-pay-number" class="form-input" value="01737-537688" readonly><button type="button" class="secondary" onclick="document.getElementById('sms-recharge-pay-number').select();document.execCommand('copy');showToast('নম্বর কপি হয়েছে')">কপি</button></div></div>
             <div class="form-group"><label class="form-label" for="sms-recharge-trxid">Transaction ID:</label><input id="sms-recharge-trxid" type="text" class="form-input" maxlength="80" autocomplete="off" placeholder="পেমেন্টের TrxID লিখুন"></div>
@@ -1220,6 +1224,7 @@
 const E24_ADMIN_UID='exITNpwyRNaWpoMW6BgMcMGbf2';
 const E24_FIREBASE_CONFIG={"apiKey":"AIzaSyCQbMapGDCxtxukp6ao92Bi8di5qer2gS4","authDomain":"e24-hisab.firebaseapp.com","projectId":"e24-hisab","storageBucket":"e24-hisab.firebasestorage.app","messagingSenderId":"186986158022","appId":"1:186986158022:web:abe1e7a90ee7fb64a0c4c7","measurementId":"G-GX018MK85M"};
 const E24_OTP_API='https://floral-mouse-c0eae24-hisab-otp.ah0788767.workers.dev';
+const E24_PAYMENT_API='https://e24-sms-wallet-payment.ah0788767.workers.dev';
 let currentUser=null,activeDataUid=null,isAdmin=false,authMode='login';
 if(!firebase.apps.length)firebase.initializeApp(E24_FIREBASE_CONFIG);
 const e24Auth=firebase.auth(),e24Store=firebase.firestore();
@@ -1383,6 +1388,24 @@ function e24ApplySmsCustomer(customer){
 }
 function e24SetupSmsWalletUI(){
 const send=document.getElementById('sms-test-send'),request=document.getElementById('sms-recharge-request'),adminList=document.getElementById('sms-admin-recharge-list'),customerSelect=document.getElementById('sms-customer-select'),defaultButton=document.getElementById('sms-use-default'),phonebook=document.getElementById('sms-phonebook');e24RenderSmsCustomers('');
+const autoRecharge=document.getElementById('sms-auto-recharge');
+if(autoRecharge)autoRecharge.addEventListener('click',async()=>{
+ if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন');return;}
+ if(isAdmin&&activeDataUid!==currentUser.uid){showToast('Admin হিসেবে অন্য ব্যবহারকারীর Wallet Recharge বন্ধ');return;}
+ const amount=Number(document.getElementById('sms-recharge-amount')?.value);
+ if(!Number.isFinite(amount)||amount<10||amount>10000||Math.round(amount*100)!==amount*100){showToast('১০ থেকে ১০,০০০ টাকার মধ্যে সঠিক পরিমাণ লিখুন');return;}
+ autoRecharge.disabled=true;const oldText=autoRecharge.textContent;autoRecharge.textContent='পেমেন্ট সেশন তৈরি হচ্ছে...';
+ try{
+  const token=await currentUser.getIdToken();
+  const response=await fetch(E24_PAYMENT_API+'/create-session',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({amount})});
+  const result=await response.json();
+  if(!response.ok||!result.gatewayPageURL){
+   const messages={PROFILE_PHONE_REQUIRED:'আপনার Account Settings-এ সঠিক Mobile Number যোগ করুন।',INVALID_AMOUNT:'রিচার্জের পরিমাণ সঠিক নয়।',GATEWAY_SESSION_FAILED:'SSLCOMMERZ Sandbox Session তৈরি হয়নি। Store Settings পরীক্ষা করুন।'};
+   throw new Error(messages[result.error]||'Automatic Recharge শুরু করা যায়নি।');
+  }
+  window.location.href=result.gatewayPageURL;
+ }catch(err){showToast(err.message||'পেমেন্ট শুরু করা যায়নি।');autoRecharge.disabled=false;autoRecharge.textContent=oldText;}
+});
 if(customerSelect)customerSelect.addEventListener('change',()=>e24ApplySmsCustomer(e24SmsSelectedCustomer()));if(defaultButton)defaultButton.addEventListener('click',()=>{const m=document.getElementById('sms-test-message');if(m)m.value=e24SmsDefaultMessage(e24SmsSelectedCustomer());});
 if(phonebook)phonebook.addEventListener('click',()=>{if(window.AndroidContacts&&typeof window.AndroidContacts.pickPhoneNumber==='function')window.AndroidContacts.pickPhoneNumber();else showToast('Phone Book সুবিধা শুধু Android APK-তে পাওয়া যাবে');});
 window.e24SetPhoneBookContact=(name,phone)=>{const f=document.getElementById('sms-test-phone'),v=String(phone||'').trim(),norm=x=>String(x||'').replace(/[\s()+.-]/g,'').replace(/^\+?88/,'0'),sel=document.getElementById('sms-customer-select'),match=(db.customers||[]).find(c=>norm(c.phone)===norm(v));if(match&&sel){sel.value=String(match.id);e24ApplySmsCustomer(match);}if(f){f.value=v;f.dispatchEvent(new Event('input',{bubbles:true}));f.dispatchEvent(new Event('change',{bubbles:true}));f.focus();}showToast(f&&v?'Phone Book থেকে নম্বর যোগ হয়েছে':'ফোন নম্বর পাওয়া যায়নি');};

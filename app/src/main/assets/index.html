@@ -1571,9 +1571,26 @@ async function e24ResetPassword(){
 }
 function e24ExportBackup(){
   if(!currentUser||!db)return showToast('আগে লগইন করুন');
-  const payload={app:'E24 Hisab',version:1,exportedAt:new Date().toISOString(),data:db};
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download='e24-hisab-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);showToast('Backup ডাউনলোড শুরু হয়েছে');
+  try{
+    const payload={app:'E24 Hisab',version:1,exportedAt:new Date().toISOString(),data:db};
+    const json=JSON.stringify(payload,null,2);
+    const filename='e24-hisab-backup-'+new Date().toISOString().slice(0,10)+'.json';
+    // Android WebView downloads Blob URLs unreliably; use the native save-file picker.
+    if(window.AndroidBackup&&typeof window.AndroidBackup.saveBackup==='function'){
+      window.AndroidBackup.saveBackup(json,filename);
+      return;
+    }
+    const blob=new Blob([json],{type:'application/json;charset=utf-8'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=filename;a.style.display='none';a.rel='noopener';
+    document.body.appendChild(a);a.click();a.remove();
+    // Do not revoke the Blob URL immediately; mobile browsers need time to start the download.
+    window.setTimeout(()=>URL.revokeObjectURL(url),30000);
+    showToast('Backup ফাইল ডাউনলোড শুরু হয়েছে');
+  }catch(err){
+    console.error('E24 backup export failed:',err);
+    showToast('Backup তৈরি করা যায়নি। আবার চেষ্টা করুন।');
+  }
 }
 async function e24RestoreBackup(e){
   const file=e.target.files&&e.target.files[0];if(!file)return;

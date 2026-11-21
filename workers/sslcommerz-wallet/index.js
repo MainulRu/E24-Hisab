@@ -273,6 +273,8 @@ async function commitValidatedPayment(env, session, validation) {
 }
 async function handleIpn(request, env) {
   const form = await request.formData();
+  const ipnStatus = String(form.get("status") || "").toUpperCase();
+  if (ipnStatus !== "VALID") return json({ status: "IGNORED_NON_VALID_STATUS" });
   const valId = String(form.get("val_id") || "");
   const tranId = String(form.get("tran_id") || "");
   if (!valId || !tranId) return json({ error: "MISSING_PAYMENT_REFERENCE" }, 400);

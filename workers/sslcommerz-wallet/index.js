@@ -240,6 +240,9 @@ async function commitValidatedPayment(env, session, validation) {
           updatedAt: { timestampValue: now }
         }
       },
+      updateMask: {
+        fieldPaths: ["smsWalletBalance", "smsWalletTransactions", "updatedAt"]
+      },
       currentDocument: { updateTime: mainDoc.updateTime }
     },
     {
@@ -253,6 +256,9 @@ async function commitValidatedPayment(env, session, validation) {
           paidAt: { timestampValue: now },
           riskLevel: firestoreValue(String(validation.risk_level || "0"))
         }
+      },
+      updateMask: {
+        fieldPaths: ["status", "credited", "valId", "bankTranId", "paidAt", "riskLevel"]
       },
       currentDocument: { updateTime: paymentDoc.updateTime }
     }

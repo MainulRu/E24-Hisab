@@ -739,6 +739,22 @@
           </div>
           <button id="sms-test-send" type="button" class="btn btn-green shadow-btn"><i class="fa-solid fa-paper-plane"></i> Test SMS পাঠান — ৳১</button>
           
+          <section class="sms-wallet-panel" aria-label="SMS Wallet">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+              <strong><i class="fa-solid fa-wallet"></i> SMS Wallet</strong>
+              <span class="sms-test-badge">TEST MODE</span>
+            </div>
+            <div class="sms-wallet-balance">
+              <div><div class="sms-wallet-note">আপনার ওয়ালেট ব্যালেন্স</div><strong id="sms-wallet-balance">৳ 0.00</strong></div>
+              <div style="text-align:right"><div class="sms-wallet-note">প্রতি SMS</div><b>৳ 1.00</b></div>
+            </div>
+            <div class="sms-wallet-note">এটি পরীক্ষামূলক ব্যবস্থা। কোনো বাস্তব SMS পাঠানো হবে না। সফল Demo Send হলে ৳১ কাটা হবে।</div>
+          </section>
+          <section class="sms-wallet-panel">
+            <strong><i class="fa-solid fa-clock-rotate-left"></i> SMS History</strong>
+            <div id="sms-history-list" class="sms-history-list"><div class="sms-wallet-note">এখনো কোনো SMS পাঠানো হয়নি।</div></div>
+          </section>
+          
           
           
           
@@ -834,18 +850,8 @@
             <details class="e24-settings-card">
               <summary><span class="e24-settings-icon"><i class="fa-solid fa-comments"></i></span> মেসেজ সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
               <div class="e24-settings-content">
-                <div class="e24-settings-hint">SMS পাঠানোর মূল্য ৳১। এটি TEST MODE—এখনো কোনো বাস্তব SMS পাঠানো হয় না। নিচে আপনার Wallet, Recharge Request, SMS History ও Wallet লেনদেনের হিসাব থাকবে।</div>
-<section class="sms-wallet-panel" aria-label="SMS Wallet">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
-              <strong><i class="fa-solid fa-wallet"></i> SMS Wallet</strong>
-              <span class="sms-test-badge">TEST MODE</span>
-            </div>
-            <div class="sms-wallet-balance">
-              <div><div class="sms-wallet-note">আপনার ওয়ালেট ব্যালেন্স</div><strong id="sms-wallet-balance">৳ 0.00</strong></div>
-              <div style="text-align:right"><div class="sms-wallet-note">প্রতি SMS</div><b>৳ 1.00</b></div>
-            </div>
-            <div class="sms-wallet-note">এটি পরীক্ষামূলক ব্যবস্থা। কোনো বাস্তব SMS পাঠানো হবে না। সফল Demo Send হলে ৳১ কাটা হবে।</div>
-          </section>
+                <div class="e24-settings-hint">SMS Recharge Request ও Wallet লেনদেনের হিসাব এখানে থাকবে। SMS পাঠানো ও SMS History দেখতে Message Center ব্যবহার করুন।</div>
+
 <section class="sms-wallet-panel">
             <strong><i class="fa-solid fa-circle-plus"></i> Wallet Recharge Request</strong>
             <div class="form-group" style="margin-top:8px">
@@ -855,10 +861,7 @@
             <button id="sms-recharge-request" type="button" class="btn btn-blue">রিচার্জ রিকোয়েস্ট পাঠান</button>
             <div class="sms-wallet-note" style="margin-top:5px">TEST MODE-এ Admin অনুমোদন করলে পরীক্ষামূলক ব্যালেন্স যোগ হবে।</div>
           </section>
-<section class="sms-wallet-panel">
-            <strong><i class="fa-solid fa-clock-rotate-left"></i> SMS History</strong>
-            <div id="sms-history-list" class="sms-history-list"><div class="sms-wallet-note">এখনো কোনো SMS পাঠানো হয়নি।</div></div>
-          </section>
+
 <section class="sms-wallet-panel">
             <strong><i class="fa-solid fa-wallet"></i> Wallet লেনদেনের ইতিহাস</strong>
             <div id="sms-wallet-transactions" class="sms-history-list"><div class="sms-wallet-note">এখনো কোনো Wallet লেনদেন নেই।</div></div>

@@ -972,21 +972,7 @@
 
         <!-- 6. MESSAGE CENTER: TEST MODE SMS WALLET -->
         <div class="app-page" id="page-6">
-          <div class="msg-type-toggle">
-            <button class="msg-tab active" type="button"><i class="fa-solid fa-comment-sms"></i> SMS</button>
-            <button class="msg-tab green-tab" type="button" onclick="showToast('WhatsApp সুবিধা পরে চালু হবে')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
-          </div>
-          <section class="sms-wallet-panel" aria-label="SMS Wallet">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
-              <strong><i class="fa-solid fa-wallet"></i> SMS Wallet</strong>
-              <span class="sms-test-badge">TEST MODE</span>
-            </div>
-            <div class="sms-wallet-balance">
-              <div><div class="sms-wallet-note">আপনার ওয়ালেট ব্যালেন্স</div><strong id="sms-wallet-balance">৳ 0.00</strong></div>
-              <div style="text-align:right"><div class="sms-wallet-note">প্রতি SMS</div><b>৳ 1.00</b></div>
-            </div>
-            <div class="sms-wallet-note">এটি পরীক্ষামূলক ব্যবস্থা। কোনো বাস্তব SMS পাঠানো হবে না। সফল Demo Send হলে ৳১ কাটা হবে।</div>
-          </section>
+          
           <div class="form-group">
             <label class="form-label" for="sms-customer-select">বকেয়া আছে এমন গ্রাহক:</label>
             <select id="sms-customer-select" class="form-input">
@@ -1007,28 +993,10 @@
             <div class="sms-wallet-note" style="margin-top:4px">উপরের Default SMS বাটনে চাপলে নির্বাচিত গ্রাহকের নাম ও বকেয়া বসবে। চাইলে বক্সে নিজের Custom Message লিখুন।</div>
           </div>
           <button id="sms-test-send" type="button" class="btn btn-green shadow-btn"><i class="fa-solid fa-paper-plane"></i> Test SMS পাঠান — ৳১</button>
-          <section class="sms-wallet-panel">
-            <strong><i class="fa-solid fa-circle-plus"></i> Wallet Recharge Request</strong>
-            <div class="form-group" style="margin-top:8px">
-              <label class="form-label" for="sms-recharge-amount">রিচার্জের পরিমাণ (৳):</label>
-              <input id="sms-recharge-amount" type="number" class="form-input" min="10" step="10" placeholder="যেমন 100">
-            </div>
-            <button id="sms-recharge-request" type="button" class="btn btn-blue">রিচার্জ রিকোয়েস্ট পাঠান</button>
-            <div class="sms-wallet-note" style="margin-top:5px">TEST MODE-এ Admin অনুমোদন করলে পরীক্ষামূলক ব্যালেন্স যোগ হবে।</div>
-          </section>
-          <section class="sms-wallet-panel">
-            <strong><i class="fa-solid fa-clock-rotate-left"></i> SMS History</strong>
-            <div id="sms-history-list" class="sms-history-list"><div class="sms-wallet-note">এখনো কোনো SMS পাঠানো হয়নি।</div></div>
-          </section>
-          <section class="sms-wallet-panel">
-            <strong><i class="fa-solid fa-wallet"></i> Wallet লেনদেনের ইতিহাস</strong>
-            <div id="sms-wallet-transactions" class="sms-history-list"><div class="sms-wallet-note">এখনো কোনো Wallet লেনদেন নেই।</div></div>
-          </section>
-          <section class="sms-wallet-panel" id="sms-admin-recharge-panel" hidden>
-            <strong><i class="fa-solid fa-user-shield"></i> Admin: Recharge Requests</strong>
-            <div class="sms-wallet-note">Admin Settings থেকে যে ব্যবহারকারী নির্বাচন করবেন, তার রিকোয়েস্ট এখানে দেখা যাবে।</div>
-            <div id="sms-admin-recharge-list"></div>
-          </section>
+          
+          
+          
+          
         </div>
 
         <!-- 7. REPORT PAGE -->
@@ -1121,7 +1089,35 @@
             <details class="e24-settings-card">
               <summary><span class="e24-settings-icon"><i class="fa-solid fa-comments"></i></span> মেসেজ সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
               <div class="e24-settings-content">
-                <div class="e24-settings-hint">SMS ও WhatsApp-এর সেটআপ, সার্ভিস স্ট্যাটাস এবং ভবিষ্যৎ Gateway Configuration।</div>
+                <div class="e24-settings-hint">SMS পাঠানোর মূল্য ৳১। এটি TEST MODE—এখনো কোনো বাস্তব SMS পাঠানো হয় না। নিচে আপনার Wallet, Recharge Request, SMS History ও Wallet লেনদেনের হিসাব থাকবে।</div>
+<section class="sms-wallet-panel" aria-label="SMS Wallet">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+              <strong><i class="fa-solid fa-wallet"></i> SMS Wallet</strong>
+              <span class="sms-test-badge">TEST MODE</span>
+            </div>
+            <div class="sms-wallet-balance">
+              <div><div class="sms-wallet-note">আপনার ওয়ালেট ব্যালেন্স</div><strong id="sms-wallet-balance">৳ 0.00</strong></div>
+              <div style="text-align:right"><div class="sms-wallet-note">প্রতি SMS</div><b>৳ 1.00</b></div>
+            </div>
+            <div class="sms-wallet-note">এটি পরীক্ষামূলক ব্যবস্থা। কোনো বাস্তব SMS পাঠানো হবে না। সফল Demo Send হলে ৳১ কাটা হবে।</div>
+          </section>
+<section class="sms-wallet-panel">
+            <strong><i class="fa-solid fa-circle-plus"></i> Wallet Recharge Request</strong>
+            <div class="form-group" style="margin-top:8px">
+              <label class="form-label" for="sms-recharge-amount">রিচার্জের পরিমাণ (৳):</label>
+              <input id="sms-recharge-amount" type="number" class="form-input" min="10" step="10" placeholder="যেমন 100">
+            </div>
+            <button id="sms-recharge-request" type="button" class="btn btn-blue">রিচার্জ রিকোয়েস্ট পাঠান</button>
+            <div class="sms-wallet-note" style="margin-top:5px">TEST MODE-এ Admin অনুমোদন করলে পরীক্ষামূলক ব্যালেন্স যোগ হবে।</div>
+          </section>
+<section class="sms-wallet-panel">
+            <strong><i class="fa-solid fa-clock-rotate-left"></i> SMS History</strong>
+            <div id="sms-history-list" class="sms-history-list"><div class="sms-wallet-note">এখনো কোনো SMS পাঠানো হয়নি।</div></div>
+          </section>
+<section class="sms-wallet-panel">
+            <strong><i class="fa-solid fa-wallet"></i> Wallet লেনদেনের ইতিহাস</strong>
+            <div id="sms-wallet-transactions" class="sms-history-list"><div class="sms-wallet-note">এখনো কোনো Wallet লেনদেন নেই।</div></div>
+          </section>
                 <button class="secondary" type="button" onclick="switchPage('6')">মেসেজ সেন্টার খুলুন</button>
               </div>
             </details>
@@ -1135,6 +1131,11 @@
                   <div class="e24-admin-label" id="e24-admin-current"></div>
                 </div>
                 <div class="e24-settings-hint">এই বিভাগটি শুধু Main Admin দেখতে পারবেন।</div>
+<section class="sms-wallet-panel" id="sms-admin-recharge-panel" hidden>
+            <strong><i class="fa-solid fa-user-shield"></i> Admin: Recharge Requests</strong>
+            <div class="sms-wallet-note">Admin Settings থেকে যে ব্যবহারকারী নির্বাচন করবেন, তার রিকোয়েস্ট এখানে দেখা যাবে।</div>
+            <div id="sms-admin-recharge-list"></div>
+          </section>
               </div>
             </details>
           </div>

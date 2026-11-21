@@ -1593,7 +1593,7 @@ async function e24RenderAdminRechargeRequests(){
    (Array.isArray(data.smsRechargeRequests)?data.smsRechargeRequests:[]).filter(x=>x.status==='PENDING').forEach(req=>pending.push({uid:userDoc.id,email:(userDoc.data()||{}).email||'User '+userDoc.id.slice(0,8),...req}));
   }));
   pending.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
-  list.innerHTML=pending.length?pending.map(x=>'<div class="sms-admin-request"><b>'+e24Money(x.amount)+'</b> · '+e24SmsEscape(x.date||'')+'<br><span class="sms-wallet-note">'+e24SmsEscape(x.email)+' · TEST MODE · Pending</span><br><button type="button" class="btn btn-green" data-sms-approve="'+e24SmsEscape(x.id)+'" data-sms-owner="'+e24SmsEscape(x.uid)+'">Approve Test Recharge</button></div>').join(''):'<div class="sms-wallet-note" style="margin-top:7px">কোনো Pending Request নেই।</div>';
+  list.innerHTML=pending.length?pending.map(x=>'<div class="sms-admin-request"><b>'+e24Money(x.amount)+'</b> · '+e24SmsEscape(x.date||'')+'<br><span class="sms-wallet-note">'+e24SmsEscape(x.email)+' · TEST MODE · Pending</span><br><button type="button" class="btn btn-green" data-sms-approve="'+e24SmsEscape(x.id)+'" data-sms-owner="'+e24SmsEscape(x.uid)+'">অনুমোদন করুন</button> <button type="button" class="btn btn-danger" data-sms-remove="'+e24SmsEscape(x.id)+'" data-sms-owner="'+e24SmsEscape(x.uid)+'">রিকোয়েস্ট মুছুন</button></div>').join(''):'<div class="sms-wallet-note" style="margin-top:7px">কোনো Pending Request নেই।</div>';
  }catch(err){console.error('Admin recharge requests load failed:',err);list.innerHTML='<div class="sms-wallet-note">Recharge Request লোড হয়নি। Firestore Rules পরীক্ষা করুন।</div>';}
 }
 
@@ -1634,17 +1634,23 @@ db.smsWalletBalance=next;db.smsHistory=(db.smsHistory||[]).concat([{id:smsId,pho
 if(request)request.addEventListener('click',async()=>{if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন');return;}if(isAdmin&&activeDataUid!==currentUser.uid){showToast('Recharge request দিতে নিজের অ্যাকাউন্ট নির্বাচন করুন');return;}const field=document.getElementById('sms-recharge-amount'),amount=Number(field?.value);if(!Number.isFinite(amount)||amount<10||amount>10000||Math.round(amount*100)!==amount*100){showToast('১০ থেকে ১০,০০০ টাকার মধ্যে সঠিক পরিমাণ লিখুন');return;}const req={id:id(),amount:Number(amount.toFixed(2)),status:'PENDING',date:new Date().toLocaleString('bn-BD'),mode:'TEST'};request.disabled=true;
 try{const ref=e24Store.collection('users').doc(currentUser.uid).collection('data').doc('main');await e24Store.runTransaction(async tx=>{const snap=await tx.get(ref),data=snap.exists?snap.data():{},list=Array.isArray(data.smsRechargeRequests)?data.smsRechargeRequests:[];if(list.some(x=>x.id===req.id))throw new Error('DUPLICATE');list.push(req);tx.set(ref,{...data,smsRechargeRequests:list.slice(-100),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});});db.smsRechargeRequests=(db.smsRechargeRequests||[]).concat([req]);field.value='';renderSmsWallet();showToast('TEST MODE: Recharge Request Admin-এর কাছে পাঠানো হয়েছে।');}catch(err){showToast('Recharge Request পাঠানো যায়নি। আবার চেষ্টা করুন।');}finally{request.disabled=false;}});
 if(adminList)adminList.addEventListener('click',async e=>{
- const button=e.target.closest('[data-sms-approve]');if(!button||!isAdmin)return;
- const reqId=button.getAttribute('data-sms-approve'),ownerUid=button.getAttribute('data-sms-owner');if(!ownerUid)return;
+ const button=e.target.closest('[data-sms-approve], [data-sms-remove]');if(!button||!isAdmin)return;
+ const reqId=button.getAttribute('data-sms-approve')||button.getAttribute('data-sms-remove'),ownerUid=button.getAttribute('data-sms-owner'),remove=button.hasAttribute('data-sms-remove');if(!ownerUid||!reqId)return;
+ if(remove&&!confirm('এই Recharge Request মুছে ফেলবেন? Wallet Balance পরিবর্তন হবে না।'))return;
  button.disabled=true;
  try{
   const ref=e24Store.collection('users').doc(ownerUid).collection('data').doc('main');
   let amount=0,balanceAfter=0,approvedAt=new Date().toLocaleString('bn-BD');
   await e24Store.runTransaction(async tx=>{
    const snap=await tx.get(ref);if(!snap.exists)throw new Error('NOT_FOUND');
-   const data=snap.data(),requests=Array.isArray(data.smsRechargeRequests)?data.smsRechargeRequests:[],req=requests.find(x=>x.id===reqId);
-   if(!req||req.status!=='PENDING')throw new Error('ALREADY_DONE');
-   const current=Number.isFinite(Number(data.smsWalletBalance))?Number(data.smsWalletBalance):0;
+   const data=snap.data(),requests=Array.isArray(data.smsRechargeRequests)?data.smsRechargeRequests:[],reqIndex=requests.findIndex(x=>x.id===reqId);
+   if(reqIndex<0||requests[reqIndex].status!=='PENDING')throw new Error('ALREADY_DONE');
+   if(remove){
+    const updated=requests.filter(x=>x.id!==reqId);
+    tx.set(ref,{...data,smsRechargeRequests:updated,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    return;
+   }
+   const req=requests[reqIndex],current=Number.isFinite(Number(data.smsWalletBalance))?Number(data.smsWalletBalance):0;
    amount=Number(req.amount);if(!Number.isFinite(amount)||amount<=0)throw new Error('INVALID_AMOUNT');
    balanceAfter=Number((current+amount).toFixed(2));req.status='APPROVED';req.approvedAt=approvedAt;
    const ledger=Array.isArray(data.smsWalletTransactions)?data.smsWalletTransactions:[];
@@ -1652,11 +1658,10 @@ if(adminList)adminList.addEventListener('click',async e=>{
    tx.set(ref,{...data,smsWalletBalance:balanceAfter,smsRechargeRequests:requests,smsWalletTransactions:ledger.slice(-300),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
   });
   if(activeDataUid===ownerUid){await e24LoadData(ownerUid);}else{await e24RenderAdminRechargeRequests();}
-  showToast('TEST MODE: Wallet Recharge Approved।');
- }catch(err){console.error('Recharge approval failed:',err);showToast(err.message==='ALREADY_DONE'?'রিকোয়েস্টটি আগেই অনুমোদিত হয়েছে।':'রিকোয়েস্টটি অনুমোদন করা যায়নি। আবার লোড করুন।');}
+  showToast(remove?'Recharge Request মুছে ফেলা হয়েছে। Wallet Balance অপরিবর্তিত আছে।':'TEST MODE: Wallet Recharge Approved।');
+ }catch(err){console.error('Recharge request action failed:',err);showToast(err.message==='ALREADY_DONE'?'রিকোয়েস্টটি আগেই অনুমোদিত বা মুছে ফেলা হয়েছে।':'রিকোয়েস্টের কাজটি করা যায়নি। আবার লোড করুন।');}
  finally{button.disabled=false;}
 });
-}
 
 const e24BootStartedAt=performance.now();
 document.addEventListener('DOMContentLoaded',e24SetupAuthUI);

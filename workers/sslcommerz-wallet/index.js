@@ -236,13 +236,10 @@ async function commitValidatedPayment(env, session, validation) {
         name: mainName,
         fields: {
           smsWalletBalance: firestoreValue(nextBalance),
+          smsWalletTransactions: firestoreValue((Array.isArray(main.smsWalletTransactions) ? main.smsWalletTransactions : []).concat([ledger]).slice(-300)),
           updatedAt: { timestampValue: now }
         }
       },
-      updateTransforms: [{
-        fieldPath: "smsWalletTransactions",
-        appendMissingElements: { values: [firestoreValue(ledger)] }
-      }],
       currentDocument: { updateTime: mainDoc.updateTime }
     },
     {

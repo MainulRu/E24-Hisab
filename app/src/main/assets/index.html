@@ -1054,7 +1054,7 @@
             <div><div class="setting-title">E24 Hisab</div><div class="setting-sub">Version 1.0.0</div></div>
           </div>
           <div class="e24-settings-list">
-            <details class="e24-settings-card" open>
+            <details class="e24-settings-card">
               <summary><span class="e24-settings-icon"><i class="fa-solid fa-user"></i></span> অ্যাকাউন্ট সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
               <div class="e24-settings-content">
                 <div class="e24-settings-hint">আপনার অ্যাকাউন্টের তথ্য</div>
@@ -1119,7 +1119,7 @@
 
 <section class="sms-wallet-panel">
             <strong><i class="fa-solid fa-wallet"></i> Wallet লেনদেনের ইতিহাস</strong>
-            <div id="sms-wallet-transactions" class="sms-history-list"><div class="sms-wallet-note">এখনো কোনো Wallet লেনদেন নেই।</div></div>
+            <div id="sms-wallet-transactions" class="sms-history-list"><div class="sms-wallet-note">এখনো কোনো Admin অনুমোদিত Test Recharge নেই।</div></div>
           </section>
                 <button class="secondary" type="button" onclick="switchPage('6')">মেসেজ সেন্টার খুলুন</button>
               </div>
@@ -1580,7 +1580,7 @@ const b=document.getElementById('sms-wallet-balance'),h=document.getElementById(
 if(!Number.isFinite(Number(db.smsWalletBalance)))db.smsWalletBalance=0;if(!Array.isArray(db.smsHistory))db.smsHistory=[];if(!Array.isArray(db.smsRechargeRequests))db.smsRechargeRequests=[];if(!Array.isArray(db.smsWalletTransactions))db.smsWalletTransactions=[];
 b.textContent=e24Money(db.smsWalletBalance);e24RenderSmsCustomers();
 if(h){const rows=db.smsHistory.slice().reverse().slice(0,20);h.innerHTML=rows.length?rows.map(x=>'<div class="sms-history-item"><span><b>'+e24SmsEscape(x.phone||'')+'</b><br><span class="sms-wallet-note">'+e24SmsEscape(x.date||'')+' · TEST MODE</span><br><span class="sms-wallet-note">'+e24SmsEscape((x.message||'').slice(0,90))+'</span></span><span style="text-align:right"><b style="color:'+(x.status==='SUCCESS'?'var(--primary-green)':'var(--accent-red)')+'">'+(x.status==='SUCCESS'?'- '+e24Money(x.cost||1):'ব্যর্থ')+'</b><br><span class="sms-wallet-note">'+(x.status==='SUCCESS'?'Demo সফল · টাকা কাটা হয়েছে':'কাটা হয়নি')+'</span></span></div>').join(''):'<div class="sms-wallet-note">এখনো কোনো SMS পাঠানো হয়নি।</div>';}
-if(l){const rows=db.smsWalletTransactions.slice().reverse().slice(0,30);l.innerHTML=rows.length?rows.map(x=>'<div class="sms-history-item"><span><b>'+e24SmsEscape(x.title||'Wallet লেনদেন')+'</b><br><span class="sms-wallet-note">'+e24SmsEscape(x.date||'')+' · TEST MODE</span><br><span class="sms-wallet-note">রেফারেন্স: '+e24SmsEscape(x.id||'-')+'</span></span><span style="text-align:right"><b style="color:'+(x.type==='CREDIT'?'var(--primary-green)':'var(--accent-red)')+'">'+(x.type==='CREDIT'?'+ ':'- ')+e24Money(x.amount)+'</b><br><span class="sms-wallet-note">ব্যালেন্স: '+e24Money(x.balanceAfter)+'</span></span></div>').join(''):'<div class="sms-wallet-note">এখনো কোনো Wallet লেনদেন নেই।</div>';}
+if(l){const rows=db.smsWalletTransactions.filter(x=>x&&x.type==='CREDIT'&&x.mode==='TEST'&&String(x.title||'').includes('Admin অনুমোদিত Test Recharge')).slice().reverse().slice(0,30);l.innerHTML=rows.length?rows.map(x=>'<div class="sms-history-item"><span><b>'+e24SmsEscape(x.title||'Wallet লেনদেন')+'</b><br><span class="sms-wallet-note">'+e24SmsEscape(x.date||'')+' · TEST MODE</span><br><span class="sms-wallet-note">রেফারেন্স: '+e24SmsEscape(x.id||'-')+'</span></span><span style="text-align:right"><b style="color:'+(x.type==='CREDIT'?'var(--primary-green)':'var(--accent-red)')+'">'+(x.type==='CREDIT'?'+ ':'- ')+e24Money(x.amount)+'</b><br><span class="sms-wallet-note">ব্যালেন্স: '+e24Money(x.balanceAfter)+'</span></span></div>').join(''):'<div class="sms-wallet-note">এখনো কোনো Wallet লেনদেন নেই।</div>';}
 if(p)p.hidden=!isAdmin;if(a&&isAdmin)e24RenderAdminRechargeRequests();
 }
 

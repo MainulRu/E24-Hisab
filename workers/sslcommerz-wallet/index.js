@@ -1,6 +1,22 @@
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
-const SANDBOX_SESSION_URL = "https://sandbox.sslcommerz.com/gwprocess/v4/api.php";
-const SANDBOX_VALIDATE_URL = "https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php";
+const PAYMENT_ENDPOINTS = {
+  SANDBOX: {
+    session: "https://sandbox.sslcommerz.com/gwprocess/v4/api.php",
+    validate: "https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php"
+  },
+  LIVE: {
+    session: "https://securepay.sslcommerz.com/gwprocess/v4/api.php",
+    validate: "https://securepay.sslcommerz.com/validator/api/validationserverAPI.php"
+  }
+};
+function paymentConfig(env, mode = String(env.SSLCOMMERZ_MODE || "SANDBOX").toUpperCase()) {
+  if (!["SANDBOX", "LIVE"].includes(mode)) throw new Error("PAYMENT_MODE_INVALID");
+  const live = mode === "LIVE";
+  const storeId = live ? env.SSLCOMMERZ_LIVE_STORE_ID : env.SSLCOMMERZ_STORE_ID;
+  const storePassword = live ? env.SSLCOMMERZ_LIVE_STORE_PASSWORD : env.SSLCOMMERZ_STORE_PASSWORD;
+  if (!storeId || !storePassword) throw new Error(live ? "LIVE_CREDENTIALS_MISSING" : "SANDBOX_CREDENTIALS_MISSING");
+  return { mode, storeId, storePassword, ...PAYMENT_ENDPOINTS[mode] };
+}
 
 function json(data, status = 200, headers = {}) {
   return new Response(JSON.stringify(data), { status, headers: { ...JSON_HEADERS, ...headers } });
@@ -161,11 +177,12 @@ async function createSession(request, env, user) {
   const phone = String(profile.mobile || "").replace(/[\s()+.-]/g, "");
   if (!/^01[3-9]\d{8}$/.test(phone)) return json({ error: "PROFILE_PHONE_REQUIRED" }, 400);
 
+  const config = paymentConfig(env);
   const tranId = "E24S" + Date.now().toString(36).toUpperCase() + crypto.randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase();
   const base = new URL(request.url).origin;
   const form = new URLSearchParams({
-    store_id: env.SSLCOMMERZ_STORE_ID,
-    store_passwd: env.SSLCOMMERZ_STORE_PASSWORD,
+    store_id: config.storeId,
+    store_passwd: config.storePassword,
     total_amount: amount.toFixed(2),
     currency: "BDT",
     tran_id: tranId,
@@ -188,7 +205,7 @@ async function createSession(request, env, user) {
     value_a: user.uid,
     value_b: "SMS_WALLET"
   });
-  const gatewayResponse = await fetch(SANDBOX_SESSION_URL, {
+  const gatewayResponse = await fetch(config.session, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body: form
@@ -199,9 +216,9 @@ async function createSession(request, env, user) {
   }
   await savePendingSession(env, tranId, {
     uid: user.uid, amount, currency: "BDT", tranId, sessionKey: gateway.sessionkey || "",
-    status: "PENDING", credited: false, mode: "SANDBOX", createdAt: new Date().toISOString()
+    status: "PENDING", credited: false, mode: config.mode, createdAt: new Date().toISOString()
   });
-  return json({ gatewayPageURL: gateway.GatewayPageURL, tranId });
+  return json({ gatewayPageURL: gateway.GatewayPageURL, tranId, mode: config.mode });
 }
 async function commitValidatedPayment(env, session, validation) {
   const uid = session.uid;
@@ -221,11 +238,11 @@ async function commitValidatedPayment(env, session, validation) {
   const ledger = {
     id: "SSLCOMMERZ-" + tranId,
     type: "CREDIT",
-    title: "SSLCOMMERZ Sandbox Recharge",
+    title: session.mode === "LIVE" ? "SSLCOMMERZ Live Recharge" : "SSLCOMMERZ Sandbox Recharge",
     amount,
     balanceAfter: nextBalance,
     date: new Date().toLocaleString("en-GB", { timeZone: "Asia/Dhaka" }),
-    mode: "SANDBOX",
+    mode: session.mode || "SANDBOX",
     referenceId: tranId
   };
   const mainName = mainDoc.name;
@@ -288,11 +305,12 @@ async function handleIpn(request, env) {
   if (!doc) return json({ error: "UNKNOWN_TRANSACTION" }, 404);
   const session = fieldsToObject(doc.fields);
   if (session.status === "PAID" && session.credited) return json({ status: "ALREADY_CREDITED" });
-  const url = new URL(SANDBOX_VALIDATE_URL);
+  const config = paymentConfig(env, session.mode || "SANDBOX");
+  const url = new URL(config.validate);
   url.search = new URLSearchParams({
     val_id: valId,
-    store_id: env.SSLCOMMERZ_STORE_ID,
-    store_passwd: env.SSLCOMMERZ_STORE_PASSWORD,
+    store_id: config.storeId,
+    store_passwd: config.storePassword,
     format: "json"
   }).toString();
   const response = await fetch(url.toString());

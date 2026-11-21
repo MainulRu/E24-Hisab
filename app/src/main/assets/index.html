@@ -973,6 +973,17 @@
         <!-- 6. MESSAGE CENTER: TEST MODE SMS WALLET -->
         <div class="app-page" id="page-6">
           
+          <section class="sms-wallet-panel" aria-label="SMS Wallet">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+              <strong><i class="fa-solid fa-wallet"></i> SMS Wallet</strong>
+              <span class="sms-test-badge">TEST MODE</span>
+            </div>
+            <div class="sms-wallet-balance">
+              <div><div class="sms-wallet-note">আপনার ওয়ালেট ব্যালেন্স</div><strong id="sms-wallet-balance">৳ 0.00</strong></div>
+              <div style="text-align:right"><div class="sms-wallet-note">প্রতি SMS</div><b>৳ 1.00</b></div>
+            </div>
+            <div class="sms-wallet-note">এটি পরীক্ষামূলক ব্যবস্থা। কোনো বাস্তব SMS পাঠানো হবে না। সফল Demo Send হলে ৳১ কাটা হবে।</div>
+          </section>
           <div class="form-group">
             <label class="form-label" for="sms-customer-select">বকেয়া আছে এমন গ্রাহক:</label>
             <select id="sms-customer-select" class="form-input">
@@ -994,17 +1005,6 @@
           </div>
           <button id="sms-test-send" type="button" class="btn btn-green shadow-btn"><i class="fa-solid fa-paper-plane"></i> Test SMS পাঠান — ৳১</button>
           
-          <section class="sms-wallet-panel" aria-label="SMS Wallet">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
-              <strong><i class="fa-solid fa-wallet"></i> SMS Wallet</strong>
-              <span class="sms-test-badge">TEST MODE</span>
-            </div>
-            <div class="sms-wallet-balance">
-              <div><div class="sms-wallet-note">আপনার ওয়ালেট ব্যালেন্স</div><strong id="sms-wallet-balance">৳ 0.00</strong></div>
-              <div style="text-align:right"><div class="sms-wallet-note">প্রতি SMS</div><b>৳ 1.00</b></div>
-            </div>
-            <div class="sms-wallet-note">এটি পরীক্ষামূলক ব্যবস্থা। কোনো বাস্তব SMS পাঠানো হবে না। সফল Demo Send হলে ৳১ কাটা হবে।</div>
-          </section>
           <section class="sms-wallet-panel">
             <strong><i class="fa-solid fa-clock-rotate-left"></i> SMS History</strong>
             <div id="sms-history-list" class="sms-history-list"><div class="sms-wallet-note">এখনো কোনো SMS পাঠানো হয়নি।</div></div>

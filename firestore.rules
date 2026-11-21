@@ -48,10 +48,36 @@ service cloud.firestore {
 
       allow delete: if isMainAdmin();
 
+      function ownerWalletBalanceCannotIncrease() {
+        return !('smsWalletBalance' in resource.data)
+          ? (!('smsWalletBalance' in request.resource.data)
+              || request.resource.data.smsWalletBalance == 0)
+          : ('smsWalletBalance' in request.resource.data
+              && request.resource.data.smsWalletBalance is number
+              && request.resource.data.smsWalletBalance <= resource.data.smsWalletBalance);
+      }
+
       match /data/{documentId} {
-        // Every account reads/writes its own ledger. Main Admin can manage all ledgers.
-        allow read, write: if signedIn()
+        // Account owners may read their own ledger. Main Admin can read all ledgers.
+        allow read: if signedIn()
           && (request.auth.uid == userId || isMainAdmin());
+
+        // A new main ledger starts with zero SMS Wallet balance.
+        allow create: if isMainAdmin()
+          || (signedIn()
+            && request.auth.uid == userId
+            && (documentId != 'main'
+              || !('smsWalletBalance' in request.resource.data)
+              || request.resource.data.smsWalletBalance == 0));
+
+        // Client-side writes may debit the wallet (e.g. SMS usage), but can never
+        // increase its balance. Trusted payment backend uses Firebase Admin credentials.
+        allow update: if isMainAdmin()
+          || (signedIn()
+            && request.auth.uid == userId
+            && (documentId != 'main' || ownerWalletBalanceCannotIncrease()));
+
+        allow delete: if isMainAdmin();
       }
     }
   }

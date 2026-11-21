@@ -1122,8 +1122,8 @@
             <div class="sms-wallet-note" style="margin-top:7px">বিকাশ অথবা নগদে Send Money করে নিচের Transaction ID জমা দিন। টাকা যাচাই করে Admin অনুমোদন করবেন।</div>
             <div class="form-group" style="margin-top:8px"><label class="form-label" for="sms-recharge-amount">রিচার্জের পরিমাণ (৳):</label><input id="sms-recharge-amount" type="number" class="form-input" min="10" step="10" inputmode="decimal" placeholder="যেমন 100"></div>
             <div class="form-group" style="margin-top:8px">
-              <button id="sms-auto-recharge" type="button" class="btn btn-green" style="width:100%">SSLCOMMERZ দিয়ে Automatic Recharge (Sandbox)</button>
-              <div class="sms-wallet-note" style="margin-top:5px">এটি Sandbox Test Payment। কোনো আসল টাকা কাটবে না। সফল পেমেন্ট যাচাই হলে Wallet-এ টাকা যোগ হবে।</div>
+              <button id="sms-auto-recharge" type="button" class="btn btn-green" style="width:100%">SSLCOMMERZ দিয়ে Automatic Recharge</button>
+              <div class="sms-wallet-note" style="margin-top:5px">পেমেন্ট সম্পন্ন হলে SSLCOMMERZ-এর সার্ভার থেকে যাচাই করে Wallet-এ টাকা যোগ হবে।</div>
             </div>
             <div class="form-group"><label class="form-label" for="sms-recharge-method">পেমেন্ট মাধ্যম:</label><select id="sms-recharge-method" class="form-input"><option value="bKash">বিকাশ</option><option value="Nagad">নগদ</option></select></div>
             <div class="form-group"><label class="form-label">Send Money নম্বর:</label><div style="display:flex;gap:8px;align-items:center"><input id="sms-recharge-pay-number" class="form-input" value="01737-537688" readonly><button type="button" class="secondary" onclick="document.getElementById('sms-recharge-pay-number').select();document.execCommand('copy');showToast('নম্বর কপি হয়েছে')">কপি</button></div></div>
@@ -1655,7 +1655,7 @@ if(autoRecharge)autoRecharge.addEventListener('click',async()=>{
   const response=await fetch(E24_PAYMENT_API+'/create-session',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({amount})});
   const result=await response.json();
   if(!response.ok||!result.gatewayPageURL){
-   const messages={PROFILE_PHONE_REQUIRED:'আপনার Account Settings-এ সঠিক Mobile Number যোগ করুন।',INVALID_AMOUNT:'রিচার্জের পরিমাণ সঠিক নয়।',GATEWAY_SESSION_FAILED:'SSLCOMMERZ Sandbox Session তৈরি হয়নি। Store Settings পরীক্ষা করুন।'};
+   const messages={PROFILE_PHONE_REQUIRED:'আপনার Account Settings-এ সঠিক Mobile Number যোগ করুন।',INVALID_AMOUNT:'রিচার্জের পরিমাণ সঠিক নয়।',GATEWAY_SESSION_FAILED:'SSLCOMMERZ Payment Session তৈরি হয়নি। Store Configuration পরীক্ষা করুন।'};
    throw new Error(messages[result.error]||'Automatic Recharge শুরু করা যায়নি।');
   }
   window.location.href=result.gatewayPageURL;

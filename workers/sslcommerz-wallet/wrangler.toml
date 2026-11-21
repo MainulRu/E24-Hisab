@@ -1,0 +1,8 @@
+name = "e24-sms-wallet-payment"
+main = "index.js"
+compatibility_date = "2026-11-21"
+
+[vars]
+FIREBASE_PROJECT_ID = "e24-hisab"
+FIREBASE_API_KEY = "AIzaSyCQbMapGDCxtxukp6ao92Bi8di5qer2gS4"
+ALLOWED_ORIGINS = "https://mainulru.github.io,null"

@@ -1337,6 +1337,9 @@ function e24ExportBackup(){
     showToast('Backup তৈরি করা যায়নি। আবার চেষ্টা করুন।');
   }
 }
+// Expose this IIFE-scoped handler for the Data Settings inline button.
+window.e24ExportBackup=e24ExportBackup;
+
 async function e24RestoreBackup(e){
   const file=e.target.files&&e.target.files[0];if(!file)return;
   try{

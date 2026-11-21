@@ -7,7 +7,13 @@ service cloud.firestore {
 
     function isMainAdmin() {
       return signedIn()
-        && request.auth.uid == 'exITNpwyRNaWpoMW6BgMcMGbf2';
+        && (
+          request.auth.uid == 'exITNpwyRNaWpoMWpW6BgMcMGbf2'
+          || (
+            request.auth.token.email == 'mainul.ru.ac.bd@gmail.com'
+            && request.auth.token.email_verified == true
+          )
+        );
     }
 
     match /users/{userId} {

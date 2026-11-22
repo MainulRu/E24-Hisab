@@ -162,7 +162,20 @@ async function route(request, env) {
     "Vary": "Origin"
   }});
   const url = new URL(request.url);
-  if (url.pathname === "/health" && request.method === "GET") return reply({ success: true, service: "e24-hisab-admin" }, 200, allowedOrigin);
+  if (url.pathname === "/health" && request.method === "GET") {
+    let serviceAccountConfigured = false;
+    try {
+      const account = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT || "{}");
+      serviceAccountConfigured = !!(account.client_email && account.private_key);
+    } catch (_) {}
+    const configured = {
+      firebaseApiKey: !!env.FIREBASE_API_KEY,
+      firebaseProjectId: !!env.FIREBASE_PROJECT_ID,
+      serviceAccount: serviceAccountConfigured
+    };
+    const ready = Object.values(configured).every(Boolean);
+    return reply({ success: ready, service: "e24-hisab-admin", configured }, ready ? 200 : 503, allowedOrigin);
+  }
 
   try {
     if (!env.FIREBASE_API_KEY || !env.FIREBASE_PROJECT_ID || !env.FIREBASE_SERVICE_ACCOUNT) {

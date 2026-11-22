@@ -122,7 +122,7 @@ async function getAdmin(env, token, caller) {
   }
   if (!caller.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
   const role = await getRole(env, token, caller.uid);
-  if (!role || role.active === false || !["limited", "full"].includes(role.role)) throw new Error("ADMIN_REQUIRED");
+  if (!role || role.active !== true || !["limited", "full"].includes(role.role)) throw new Error("ADMIN_REQUIRED");
   return { role: role.role, managedUsers: Array.isArray(role.managedUsers) ? role.managedUsers : [] };
 }
 async function listDocs(env, token, path) {
@@ -191,6 +191,7 @@ async function route(request, env) {
     }
 
     if (url.pathname === "/admin/users" && request.method === "GET") {
+      if (admin.role === "limited") throw new Error("USER_MANAGEMENT_REQUIRED");
       let uids;
       if (admin.role === "limited") uids = admin.managedUsers.slice(0, 100);
       else uids = (await listDocs(env, token, "users")).map(d => d.name.split("/").pop());
@@ -253,7 +254,7 @@ async function route(request, env) {
       const uid = String(body.uid || "");
       const requestId = String(body.requestId || "");
       const action = String(body.action || "");
-      if (!uid || !requestId || !["approve", "remove"].includes(action)) throw new Error("INVALID_REQUEST");
+      if (!uid || !requestId || !["approve", "cancel"].includes(action)) throw new Error("INVALID_REQUEST");
       if (admin.role === "limited" && !admin.managedUsers.includes(uid)) throw new Error("USER_NOT_ASSIGNED");
       const path = "users/" + encodeURIComponent(uid) + "/data/main";
       const doc = await fs(env, token, path);
@@ -277,12 +278,12 @@ async function route(request, env) {
         });
         items[i] = { ...req, status: "APPROVED", approvedAt, approvedBy: caller.uid };
       } else {
-        // Legacy Remove behavior: delete only the request; never change wallet balance.
-        items.splice(i, 1);
+        const cancelledAt = new Date().toLocaleString("bn-BD");
+        items[i] = { ...req, status: "CANCELLED", cancelledAt, cancelledBy: caller.uid };
       }
       data.smsRechargeRequests = items;
       await fs(env, token, path, { method: "PATCH", currentDocumentUpdateTime: doc.data.updateTime, body: { fields: encodeFields(data) } });
-      return reply({ success: true, message: action === "approve" ? "RECHARGE_APPROVED" : "REQUEST_REMOVED" }, 200, allowedOrigin);
+      return reply({ success: true, message: action === "approve" ? "RECHARGE_APPROVED" : "REQUEST_CANCELLED" }, 200, allowedOrigin);
     }
 
     const del = url.pathname.match(/^\/admin\/users\/([^/]+)$/);
@@ -311,10 +312,10 @@ async function route(request, env) {
 
     return reply({ success: false, error: "NOT_FOUND" }, 404, allowedOrigin);
   } catch (e) {
-    const allowed = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED","ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","INVALID_ROLE_INPUT","USER_NOT_ASSIGNED","INVALID_REQUEST","REQUEST_NOT_PENDING","INVALID_RECHARGE_AMOUNT","CANNOT_DELETE_MAIN_ADMIN","AUTH_USER_DELETE_FAILED"];
+    const allowed = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED","ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","INVALID_ROLE_INPUT","USER_NOT_ASSIGNED","USER_MANAGEMENT_REQUIRED","INVALID_REQUEST","REQUEST_NOT_PENDING","INVALID_RECHARGE_AMOUNT","CANNOT_DELETE_MAIN_ADMIN","AUTH_USER_DELETE_FAILED"];
     const message = allowed.includes(e.message) ? e.message : "ADMIN_API_ERROR";
     const status = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED"].includes(message) ? 401 :
-      ["ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","USER_NOT_ASSIGNED"].includes(message) ? 403 : 400;
+      ["ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","USER_MANAGEMENT_REQUIRED","USER_NOT_ASSIGNED"].includes(message) ? 403 : 400;
     return reply({ success: false, error: message }, status, allowedOrigin);
   }
 }

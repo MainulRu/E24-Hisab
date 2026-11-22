@@ -904,8 +904,7 @@
                   <select id="e24-admin-role-user" aria-label="Admin Role-এর জন্য ব্যবহারকারী নির্বাচন"><option value="">ব্যবহারকারী নির্বাচন করুন</option></select>
                   <label class="e24-admin-label" for="e24-admin-role-choice">Admin Role</label>
                   <select id="e24-admin-role-choice"><option value="none">সাধারণ User</option><option value="limited">Limited Admin</option><option value="full">Full Admin</option></select>
-                  <div class="e24-admin-label">Limited Admin-এর জন্য নির্ধারিত ব্যবহারকারী</div>
-                  <div id="e24-admin-managed-users" style="max-height:180px;overflow:auto;padding:8px;border:1px solid var(--border-color);border-radius:8px"></div>
+                  <div class="sms-wallet-note">Limited Admin শুধু নিজের হিসাব ও Recharge Request দেখতে এবং পরিচালনা করতে পারবে।</div>
                   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
                     <button type="button" class="btn btn-green" onclick="e24SaveAdminRole()">Save Admin Role</button>
                     <button type="button" class="btn btn-logout" onclick="e24DeleteSelectedUser()">Remove User</button>
@@ -1437,34 +1436,26 @@ async function e24RenderAdminRechargeRequests(){
 }
 async function e24RenderAdminRoleManager(){
  const wrap=document.getElementById('e24-admin-role-manager');if(!wrap||!isMainAdmin)return;wrap.hidden=false;
- const userSelect=document.getElementById('e24-admin-role-user'),roleSelect=document.getElementById('e24-admin-role-choice'),assigned=document.getElementById('e24-admin-managed-users'),status=document.getElementById('e24-admin-role-status');
+ const userSelect=document.getElementById('e24-admin-role-user'),roleSelect=document.getElementById('e24-admin-role-choice'),status=document.getElementById('e24-admin-role-status');
  try{
   const [usersResult,rolesResult]=await Promise.all([e24AdminApi('/admin/users'),e24AdminApi('/admin/roles')]);
   const users=usersResult.users||[],roles=rolesResult.roles||[];
   e24AdminUsersCache=users.map(u=>({uid:u.uid,data:u.profile||{}}));
   const selectableUsers=users.filter(u=>u.uid!==currentUser.uid&&u.uid!==E24_ADMIN_UID);
   userSelect.innerHTML='<option value="">ব্যবহারকারী নির্বাচন করুন</option>'+selectableUsers.map(u=>'<option value="'+e24SmsEscape(u.uid)+'">'+e24SmsEscape((u.profile||{}).name||(u.profile||{}).email||u.uid)+'</option>').join('');
-  assigned.innerHTML=users.filter(u=>u.uid!==currentUser.uid&&u.uid!==E24_ADMIN_UID).map(u=>'<label style="display:flex;gap:7px;align-items:center;margin:5px 0"><input type="checkbox" value="'+e24SmsEscape(u.uid)+'"> '+e24SmsEscape((u.profile||{}).name||(u.profile||{}).email||u.uid)+'</label>').join('')||'<div class="sms-wallet-note">নির্ধারণ করার মতো কোনো ব্যবহারকারী পাওয়া যায়নি।</div>';
-  userSelect.onchange=()=>{
-   const role=roles.find(r=>r.uid===userSelect.value);
-   roleSelect.value=role?.role||'none';
-   const selected=new Set(role?.managedUsers||[]);
-   Array.from(assigned.querySelectorAll('input[type="checkbox"]')).forEach(c=>c.checked=selected.has(c.value));
-  };
+  userSelect.onchange=()=>{ const role=roles.find(r=>r.uid===userSelect.value); roleSelect.value=role?.role||'none'; };
   const box=document.getElementById('e24-admin-role-list');
-  if(box)box.innerHTML=roles.length?roles.map(r=>'<div class="sms-history-item" style="gap:8px;align-items:center"><span style="flex:1;min-width:0"><b>'+e24SmsEscape(e24AdminRoleName(r.role))+'</b><br><span class="sms-wallet-note">'+e24SmsEscape((users.find(u=>u.uid===r.uid)?.profile||{}).email||r.uid)+'</span></span><span style="white-space:nowrap">'+e24SmsEscape(r.role==='limited'?(r.managedUsers||[]).length+' জন নির্ধারিত':'সব ব্যবহারকারী')+'</span></div>').join(''):'<div class="sms-wallet-note">এখনো কোনো Admin তৈরি করা হয়নি।</div>';
+  if(box)box.innerHTML=roles.length?roles.map(r=>'<div class="sms-history-item" style="gap:8px;align-items:center"><span style="flex:1;min-width:0"><b>'+e24SmsEscape(e24AdminRoleName(r.role))+'</b><br><span class="sms-wallet-note">'+e24SmsEscape((users.find(u=>u.uid===r.uid)?.profile||{}).email||r.uid)+'</span></span><span style="white-space:nowrap">'+e24SmsEscape(r.role==='limited'?'শুধু নিজের হিসাব':'সব ব্যবহারকারী')+'</span></div>').join(''):'<div class="sms-wallet-note">এখনো কোনো Admin তৈরি করা হয়নি।</div>';
   if(status)status.textContent='Admin তালিকা লোড হয়েছে।';
  }catch(err){console.error('Admin roles load failed:',err);if(status)status.textContent='Admin তালিকা লোড হয়নি: '+err.message;}
 }
 async function e24SaveAdminRole(){
  const uid=document.getElementById('e24-admin-role-user')?.value,role=document.getElementById('e24-admin-role-choice')?.value,status=document.getElementById('e24-admin-role-status');
  if(!uid){showToast('ব্যবহারকারী নির্বাচন করুন');return;}
- const managedUsers=Array.from(document.querySelectorAll('#e24-admin-managed-users input[type="checkbox"]:checked')).map(x=>x.value);
- if(role==='limited'&&!managedUsers.length){showToast('Limited Admin-এর জন্য অন্তত একজন ব্যবহারকারী নির্ধারণ করুন।');if(status)status.textContent='কমপক্ষে একজন ব্যবহারকারী নির্বাচন করে আবার Save করুন।';return;}
- try{
+ const managedUsers=[];
+try{
   const result=await e24AdminApi('/admin/roles',{method:'PUT',body:{uid,role,managedUsers}});
-  const savedCount=Number.isFinite(Number(result.managedUsersCount))?Number(result.managedUsersCount):(role==='limited'?managedUsers.length:0);
-  if(status)status.textContent='Admin Role সংরক্ষিত হয়েছে। '+(role==='limited'?savedCount+' জন ব্যবহারকারী নির্ধারিত।':'');
+  if(status)status.textContent='Admin Role সংরক্ষিত হয়েছে। '+(role==='limited'?'শুধু নিজের হিসাবের অনুমতি দেওয়া হয়েছে।':'');
   showToast('Admin Role সফলভাবে সংরক্ষিত হয়েছে।');
   await e24RenderAdminRoleManager();
   const refreshedSelect=document.getElementById('e24-admin-role-user');

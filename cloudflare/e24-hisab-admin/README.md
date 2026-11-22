@@ -2,15 +2,15 @@
 
 This is the source for the separate Cloudflare Worker named `e24-hisab-admin`.
 
-## Required Worker secrets / variables
+## Required Worker variables / secret
 
-- `FIREBASE_API_KEY` — Text variable from the Firebase web app config.
+- `FIREBASE_API_KEY` — public Firebase web-app config key; declared in `wrangler.toml`.
 - `FIREBASE_PROJECT_ID` — Text variable: `e24-hisab`.
-- `FIREBASE_SERVICE_ACCOUNT` — Secret containing the complete service-account JSON.
+- `FIREBASE_SERVICE_ACCOUNT` — encrypted Secret containing the complete service-account JSON.
 
-Never commit the service-account JSON, private key, Firebase API key, or any user credentials to GitHub.
+Never commit the service-account JSON, private key, or any user credentials to GitHub. The Firebase web API key is a public client configuration value; access control is enforced by Firebase Authentication, Firestore Rules, and this Worker.
 
-## Planned API contract
+## API routes
 
 All protected routes require `Authorization: Bearer <Firebase ID token>`.
 
@@ -34,3 +34,16 @@ All protected routes require `Authorization: Bearer <Firebase ID token>`.
 | Permanently delete users | No | No | Yes |
 
 The Worker must be deployed separately from the existing payment and OTP Workers. Do not replace or edit those Workers.
+
+
+## Deploy this Worker
+
+From the repository root, run:
+
+```powershell
+npx wrangler deploy --config cloudflare/e24-hisab-admin/wrangler.toml
+```
+
+The Worker name is `e24-hisab-admin`. Keep the existing encrypted `FIREBASE_SERVICE_ACCOUNT` secret in Cloudflare. After deployment, check `https://e24-hisab-admin.ah0788767.workers.dev/health` and confirm it returns `success: true`. Do not deploy or modify the separate OTP or payment Workers.
+
+The Android WebView may send an opaque `null` Origin; the Worker permits that origin only for requests that still pass Firebase ID-token authentication.

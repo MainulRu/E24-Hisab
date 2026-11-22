@@ -1251,7 +1251,7 @@ const E24_OTP_API='https://floral-mouse-c0eae24-hisab-otp.ah0788767.workers.dev'
 const E24_PAYMENT_API='https://e24-sms-wallet-payment.ah0788767.workers.dev';
 
 const E24_ADMIN_API='https://e24-hisab-admin.ah0788767.workers.dev';
-let currentUser=null,activeDataUid=null,isAdmin=false,isMainAdmin=false,e24AdminRole='user',e24AdminUsersCache=[],authMode='login';
+let currentUser=null,activeDataUid=null,isAdmin=false,isMainAdmin=false,e24AdminRole='user',authMode='login';
 async function e24AdminApi(path,options={}){
  if(!e24Auth.currentUser)throw new Error('AUTH_REQUIRED');
  const token=await e24Auth.currentUser.getIdToken();

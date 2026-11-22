@@ -1512,7 +1512,7 @@ async function e24AdminApi(path,options={}){
  const token=await e24Auth.currentUser.getIdToken();
  const response=await fetch(E24_ADMIN_API+path,{method:options.method||'GET',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:options.body?JSON.stringify(options.body):undefined});
  let result={};try{result=await response.json();}catch(_){}
- if(!response.ok)throw new Error(result.error||'ADMIN_API_ERROR');
+ if(!response.ok||result.success!==true)throw new Error(result.error||'ADMIN_API_NOT_READY');
  return result;
 }
 function e24AdminRoleName(role){return role==='main'?'Main Admin':role==='full'?'Full Admin':role==='limited'?'Limited Admin':'সাধারণ ব্যবহারকারী';}

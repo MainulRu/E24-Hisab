@@ -67,8 +67,7 @@ service cloud.firestore {
 
       // Account owner can update only their own profile fields.
       // Profile photo is stored as a compressed data URL with a size limit.
-      allow update: if canManageUser(userId)
-        || (signedIn()
+      allow update: if signedIn()
           && request.auth.uid == userId
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
             'email', 'mobile', 'emailVerified',

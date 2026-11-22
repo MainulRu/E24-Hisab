@@ -4,6 +4,7 @@ compatibility_date = "2026-11-22"
 
 [vars]
 FIREBASE_PROJECT_ID = "e24-hisab"
+FIREBASE_API_KEY = "AIzaSyCQbMapGDCxtxukp6ao92Bi8di5qer2gS4"
 
 # Add FIREBASE_API_KEY as a Worker variable and FIREBASE_SERVICE_ACCOUNT
 # as an encrypted Worker secret in Cloudflare. Never commit their values here.

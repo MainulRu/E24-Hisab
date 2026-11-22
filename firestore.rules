@@ -113,7 +113,7 @@ service cloud.firestore {
             && request.auth.uid == userId
             && (documentId != 'main' || ownerWalletBalanceCannotIncrease()));
 
-        allow delete: if isFullAdmin();
+        allow delete: if canManageUser(userId);
       }
     }
   }

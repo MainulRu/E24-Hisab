@@ -1526,7 +1526,7 @@ function e24FilterAdminUsers(){
 function e24AdminUpdateSummary(){
  const box=document.getElementById('e24-admin-user-summary');if(!box||!isAdmin)return;
  const user=e24AdminUsersCache.find(u=>u.uid===activeDataUid),d=user?.data||{},sales=(db.customers||[]).reduce((n,c)=>n+customerTotals(c.id).sales,0),paid=(db.customers||[]).reduce((n,c)=>n+customerTotals(c.id).paid,0),due=(db.customers||[]).reduce((n,c)=>n+customerTotals(c.id).due,0);
- box.innerHTML='<strong>বর্তমানে খোলা হিসাব</strong><div class="e24-admin-summary-name">'+esc(d.name||d.email||'ব্যবহারকারী')+'</div><div class="e24-admin-summary-email">'+esc(d.email||'')+'</div><div class="e24-admin-summary-grid"><span>গ্রাহক<strong>'+db.customers.length+'</strong></span><span>লেনদেন<strong>'+db.transactions.length+'</strong></span><span>মোট বাকি<strong>'+money(sales)+'</strong></span><span>জমা<strong>'+money(paid)+'</strong></span><span>বর্তমান বকেয়া<strong>'+money(due)+'</strong></span></div>';
+ box.innerHTML='<strong>বর্তমানে খোলা হিসাব</strong><div class="e24-admin-summary-name">'+esc(d.name||d.email||'ব্যবহারকারী')+'</div><div class="e24-admin-summary-email">'+esc(d.email||'')+'</div><div class="e24-admin-summary-grid"><span>গ্রাহক<strong>'+db.customers.length+'</strong></span><span>লেনদেন<strong>'+db.transactions.length+'</strong></span><span>মোট বাকিতে বিক্রি<strong>'+money(sales)+'</strong></span><span>জমা<strong>'+money(paid)+'</strong></span><span>বর্তমান বকেয়া<strong>'+money(due)+'</strong></span></div>';
  const current=document.getElementById('e24-admin-current');if(current)current.textContent=(d.email||activeDataUid||'')+(activeDataUid===currentUser?.uid?' · নিজের হিসাব':' · অন্য ব্যবহারকারীর হিসাব');
 }
 async function e24AdminOpenUser(uid){

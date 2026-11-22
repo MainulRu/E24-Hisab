@@ -1690,7 +1690,7 @@ async function e24RenderAdminRechargeRequests(){
  }catch(err){console.error('Admin recharge requests load failed:',err);list.innerHTML='<div class="sms-wallet-note">Recharge Request লোড হয়নি। Admin API সংযোগ ও অনুমতি পরীক্ষা করুন।</div>';}
 }
 async function e24RenderAdminRoleManager(){
- const wrap=document.getElementById('e24-admin-role-manager');if(!wrap||!isMainAdmin)return;wrap.hidden=false;
+ const wrap=document.getElementById('e24-admin-role-manager');if(!wrap)return;if(!isMainAdmin){wrap.hidden=true;return;}wrap.hidden=false;
  const userSelect=document.getElementById('e24-admin-role-user'),roleSelect=document.getElementById('e24-admin-role-choice'),status=document.getElementById('e24-admin-role-status');
  try{
   const [usersResult,rolesResult]=await Promise.all([e24AdminApi('/admin/users'),e24AdminApi('/admin/roles')]);
@@ -1705,6 +1705,7 @@ async function e24RenderAdminRoleManager(){
  }catch(err){console.error('Admin roles load failed:',err);if(status)status.textContent='Admin তালিকা লোড হয়নি: '+err.message;}
 }
 async function e24SaveAdminRole(){
+ if(!isMainAdmin){showToast('শুধু Main Admin এই কাজ করতে পারবেন।');return;}
  const uid=document.getElementById('e24-admin-role-user')?.value,role=document.getElementById('e24-admin-role-choice')?.value,status=document.getElementById('e24-admin-role-status');
  if(!uid){showToast('ব্যবহারকারী নির্বাচন করুন');return;}
  const managedUsers=[];
@@ -1718,6 +1719,7 @@ try{
  }catch(err){showToast('Role সংরক্ষণ হয়নি: '+err.message);if(status)status.textContent='Role সংরক্ষণ হয়নি: '+err.message;}
 }
 async function e24DeleteSelectedUser(){
+ if(!isMainAdmin){showToast('শুধু Main Admin এই কাজ করতে পারবেন।');return;}
  const uid=document.getElementById('e24-admin-role-user')?.value;if(!uid){showToast('ব্যবহারকারী নির্বাচন করুন');return;}
  const u=e24AdminUsersCache.find(x=>x.uid===uid),label=u?.data?.email||u?.data?.name||uid;
  if(!(await showAppConfirm('সতর্কতা: '+label+'-এর Firebase Login, গ্রাহক, লেনদেন, খাতা ও সংরক্ষিত User Data স্থায়ীভাবে মুছে ফেলার অনুরোধ করা হবে। এই কাজ ফেরানো যাবে না।','ব্যবহারকারী স্থায়ীভাবে মুছবেন?')))return;

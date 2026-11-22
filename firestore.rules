@@ -16,10 +16,46 @@ service cloud.firestore {
         );
     }
 
+    function adminRolePath() {
+      return /databases/$(database)/documents/adminRoles/$(request.auth.uid);
+    }
+
+    function hasAdminRole(roleName) {
+      return signedIn()
+        && exists(adminRolePath())
+        && get(adminRolePath()).data.role == roleName
+        && get(adminRolePath()).data.active == true
+        && request.auth.token.email_verified == true;
+    }
+
+    function isFullAdmin() {
+      return isMainAdmin() || hasAdminRole('full');
+    }
+
+    function isLimitedAdmin() {
+      return hasAdminRole('limited');
+    }
+
+    function canManageUser(userId) {
+      return isFullAdmin()
+        || (isLimitedAdmin()
+          && exists(adminRolePath())
+          && get(adminRolePath()).data.managedUsers is list
+          && get(adminRolePath()).data.managedUsers.hasAny([userId]));
+    }
+
+    // Admin role records are private. Only the trusted Admin Worker uses the
+    // service account to read/write them; browser clients cannot alter roles.
+    match /adminRoles/{adminUid} {
+      allow read, write: if false;
+    }
+
     match /users/{userId} {
-      // Users can read their own profile; only Main Admin can list all profiles.
-      allow get: if signedIn() && (request.auth.uid == userId || isMainAdmin());
-      allow list: if isMainAdmin();
+      // Assigned Limited Admins may open only assigned user profiles.
+      allow get: if signedIn() && (request.auth.uid == userId || canManageUser(userId));
+      // Listing all profiles is reserved for Full and Main Admin. Limited
+      // Admin obtains their assigned list from the trusted Worker API.
+      allow list: if isFullAdmin();
 
       // Initial registration profile.
       allow create: if signedIn()
@@ -31,7 +67,7 @@ service cloud.firestore {
 
       // Account owner can update only their own profile fields.
       // Profile photo is stored as a compressed data URL with a size limit.
-      allow update: if isMainAdmin()
+      allow update: if canManageUser(userId)
         || (signedIn()
           && request.auth.uid == userId
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
@@ -60,10 +96,10 @@ service cloud.firestore {
       match /data/{documentId} {
         // Account owners may read their own ledger. Main Admin can read all ledgers.
         allow read: if signedIn()
-          && (request.auth.uid == userId || isMainAdmin());
+          && (request.auth.uid == userId || canManageUser(userId));
 
         // A new main ledger starts with zero SMS Wallet balance.
-        allow create: if isMainAdmin()
+        allow create: if canManageUser(userId)
           || (signedIn()
             && request.auth.uid == userId
             && (documentId != 'main'
@@ -72,12 +108,12 @@ service cloud.firestore {
 
         // Client-side writes may debit the wallet (e.g. SMS usage), but can never
         // increase its balance. Trusted payment backend uses Firebase Admin credentials.
-        allow update: if isMainAdmin()
+        allow update: if canManageUser(userId)
           || (signedIn()
             && request.auth.uid == userId
             && (documentId != 'main' || ownerWalletBalanceCannotIncrease()));
 
-        allow delete: if isMainAdmin();
+        allow delete: if isFullAdmin();
       }
     }
   }

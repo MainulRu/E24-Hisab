@@ -485,6 +485,9 @@
     .e24-settings-actions{display:flex;gap:8px;flex-wrap:wrap}
     .e24-settings-actions button{flex:1}
     .e24-settings-divider{height:1px;background:#edf0ed;margin:2px 0}
+    .e24-settings-logout-wrap{margin:12px 0 4px}
+    .e24-settings-logout{width:100%;min-height:44px;border:0;border-radius:10px;background:#dc3545;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer}
+    .e24-settings-logout:active{filter:brightness(.92)}
     .phone-screen.e24-dark .screen-body{background:#202a24;color:#f2f5f2}
     .phone-screen.e24-dark .e24-settings-card,.phone-screen.e24-dark .settings-app-info{background:#2d3931;border-color:#46554a}
     .phone-screen.e24-dark .e24-settings-card>summary,.phone-screen.e24-dark .e24-settings-content label{color:#f2f5f2}
@@ -830,7 +833,6 @@
                 <label>বর্তমান Email</label><div class="e24-account-email" id="e24-account-email">লগইন হয়নি</div>
                 <div class="e24-settings-actions"><button class="secondary" type="button" onclick="e24ChangeEmail()">Email পরিবর্তন</button><button class="secondary" type="button" onclick="e24ResetPassword()">Password Reset</button></div>
                 <div class="e24-admin-label" id="e24-account-role">—</div>
-                <button type="button" onclick="window.e24Logout()">লগ আউট</button>
               </div>
             </details>
             <details class="e24-settings-card">
@@ -903,6 +905,9 @@
           </section>
               </div>
             </details>
+          </div>
+          <div class="e24-settings-logout-wrap">
+            <button type="button" class="e24-settings-logout" onclick="window.e24Logout()"><i class="fa-solid fa-right-from-bracket"></i> লগ আউট</button>
           </div>
         </div>
 

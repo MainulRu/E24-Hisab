@@ -1789,7 +1789,7 @@ This is a documented future integration point; it is intentionally not executabl
 */
 if(adminList)adminList.addEventListener('click',async e=>{
  const button=e.target.closest('[data-sms-approve],[data-sms-remove]');if(!button||!isAdmin)return;
- const action=button.hasAttribute('data-sms-remove')?'remove':'approve';
+ const action=button.hasAttribute('data-sms-approve')?'approve':'remove';
  const requestId=button.getAttribute(action==='remove'?'data-sms-remove':'data-sms-approve'),uid=button.getAttribute('data-sms-owner');if(!uid||!requestId)return;
  if(action==='remove'&&!(await showAppConfirm('এই Recharge Request স্থায়ীভাবে বাতিল করবেন? Wallet Balance-এ কোনো পরিবর্তন হবে না।','রিকোয়েস্ট মুছবেন?')))return;
  if(action==='approve'&&!(await showAppConfirm('পেমেন্ট যাচাই করে এই Recharge Request অনুমোদন করবেন?','Recharge Approve')))return;

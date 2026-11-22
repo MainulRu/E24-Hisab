@@ -277,7 +277,8 @@ async function route(request, env) {
         });
         items[i] = { ...req, status: "APPROVED", approvedAt, approvedBy: caller.uid };
       } else {
-        items[i] = { ...req, status: "REMOVED", removedAt: new Date().toISOString(), removedBy: caller.uid };
+        // Legacy Remove behavior: delete only the request; never change wallet balance.
+        items.splice(i, 1);
       }
       data.smsRechargeRequests = items;
       await fs(env, token, path, { method: "PATCH", currentDocumentUpdateTime: doc.data.updateTime, body: { fields: encodeFields(data) } });

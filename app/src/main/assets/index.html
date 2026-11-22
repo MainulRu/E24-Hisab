@@ -1687,7 +1687,7 @@ async function e24RenderAdminRechargeRequests(){
  try{
   const result=await e24AdminApi('/admin/recharge');
   const pending=result.requests||[];
-  list.innerHTML=pending.length?pending.map(x=>'<div class="sms-admin-request"><b>'+e24Money(x.amount)+'</b> · '+e24SmsEscape(x.date||'')+'<br><span class="sms-wallet-note">'+e24SmsEscape(x.email||'')+' · '+e24SmsEscape(x.paymentMethod||'Payment')+' · Pending</span><br><span class="sms-wallet-note">প্রাপক: '+e24SmsEscape(x.receiverNumber||'01737-537688')+'<br>TrxID: <b>'+e24SmsEscape(x.transactionId||'-')+'</b></span><br><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px"><button type="button" class="btn btn-green" data-sms-approve="'+e24SmsEscape(x.id)+'" data-sms-owner="'+e24SmsEscape(x.uid)+'">টাকা যাচাই করে Approve</button><button type="button" class="btn btn-logout" data-sms-remove="'+e24SmsEscape(x.id)+'" data-sms-owner="'+e24SmsEscape(x.uid)+'">রিকোয়েস্ট মুছুন</button></div></div>').join(''):'<div class="sms-wallet-note" style="margin-top:7px">কোনো Pending Request নেই।</div>';
+  list.innerHTML=pending.length?pending.map(x=>'<div class="sms-admin-request"><b>'+e24Money(x.amount)+'</b> · '+e24SmsEscape(x.date||'')+'<br><span class="sms-wallet-note">'+e24SmsEscape(x.email||'')+' · '+e24SmsEscape(x.paymentMethod||'Payment')+' · Pending</span><br><span class="sms-wallet-note">প্রাপক: '+e24SmsEscape(x.receiverNumber||'01737-537688')+'<br>TrxID: <b>'+e24SmsEscape(x.transactionId||'-')+'</b></span><br><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px"><button type="button" class="btn btn-green" data-sms-action="approve" data-sms-approve="'+e24SmsEscape(x.id)+'" data-sms-owner="'+e24SmsEscape(x.uid)+'">টাকা যাচাই করে Approve</button><button type="button" class="btn btn-logout" data-sms-action="remove" data-sms-remove="'+e24SmsEscape(x.id)+'" data-sms-owner="'+e24SmsEscape(x.uid)+'">রিকোয়েস্ট মুছুন</button></div></div>').join(''):'<div class="sms-wallet-note" style="margin-top:7px">কোনো Pending Request নেই।</div>';
  }catch(err){console.error('Admin recharge requests load failed:',err);list.innerHTML='<div class="sms-wallet-note">Recharge Request লোড হয়নি। Admin API সংযোগ ও অনুমতি পরীক্ষা করুন।</div>';}
 }
 async function e24RenderAdminRoleManager(){
@@ -1788,9 +1788,11 @@ Keep all API credentials in backend Secrets, never in HTML, APK, or public GitHu
 This is a documented future integration point; it is intentionally not executable.
 */
 if(adminList)adminList.addEventListener('click',async e=>{
- const button=e.target.closest('[data-sms-approve],[data-sms-remove]');if(!button||!isAdmin)return;
- const action=button.hasAttribute('data-sms-approve')?'approve':'remove';
- const requestId=button.getAttribute(action==='remove'?'data-sms-remove':'data-sms-approve'),uid=button.getAttribute('data-sms-owner');if(!uid||!requestId)return;
+ const button=e.target.closest('button[data-sms-action]');if(!button||!isAdmin)return;
+ const action=button.getAttribute('data-sms-action');
+ if(action!=='approve'&&action!=='remove')return;
+ const requestId=button.getAttribute(action==='approve'?'data-sms-approve':'data-sms-remove'),uid=button.getAttribute('data-sms-owner');if(!uid||!requestId)return;
+ console.info('[E24 Admin Recharge] action:',action,'request:',requestId);
  if(action==='remove'&&!(await showAppConfirm('এই Recharge Request স্থায়ীভাবে বাতিল করবেন? Wallet Balance-এ কোনো পরিবর্তন হবে না।','রিকোয়েস্ট মুছবেন?')))return;
  if(action==='approve'&&!(await showAppConfirm('পেমেন্ট যাচাই করে এই Recharge Request অনুমোদন করবেন?','Recharge Approve')))return;
  button.disabled=true;

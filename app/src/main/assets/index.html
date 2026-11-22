@@ -1511,8 +1511,8 @@ async function e24RenderAdminUsers(){
 }
 function e24AdminUpdateSummary(){
  const box=document.getElementById('e24-admin-user-summary');if(!box||!isAdmin)return;
- const user=e24AdminUsersCache.find(u=>u.uid===activeDataUid),d=user?.data||{},sales=(db.customers||[]).reduce((n,c)=>n+customerTotals(c.id).sales,0),paid=(db.customers||[]).reduce((n,c)=>n+customerTotals(c.id).paid,0),due=(db.customers||[]).reduce((n,c)=>n+customerTotals(c.id).due,0);
- box.innerHTML='<div class="e24-admin-summary-name">'+esc(d.name||d.email||'ব্যবহারকারী')+'</div><div class="e24-admin-summary-email">'+esc(d.email||'')+'</div><div class="e24-admin-summary-grid"><span>গ্রাহক<strong>'+db.customers.length+'</strong></span><span>লেনদেন<strong>'+db.transactions.length+'</strong></span><span>মোট বাকিতে বিক্রি<strong>'+money(sales)+'</strong></span><span>জমা<strong>'+money(paid)+'</strong></span><span>বর্তমান বকেয়া<strong>'+money(due)+'</strong></span></div>';
+ const user=e24AdminUsersCache.find(u=>u.uid===activeDataUid),d=user?.data||{},saleTransactions=(db.transactions||[]).filter(t=>t.type==='বাকি'),sales=saleTransactions.reduce((n,t)=>n+(Number(t.amount)||0),0),creditSales=saleTransactions.reduce((n,t)=>n+Math.max(0,(Number(t.amount)||0)-(Number(t.paid)||0)),0),paid=(db.customers||[]).reduce((n,c)=>n+customerTotals(c.id).paid,0),due=(db.customers||[]).reduce((n,c)=>n+customerTotals(c.id).due,0);
+ box.innerHTML='<div class="e24-admin-summary-name">'+esc(d.name||d.email||'ব্যবহারকারী')+'</div><div class="e24-admin-summary-email">'+esc(d.email||'')+'</div><div class="e24-admin-summary-grid"><span>গ্রাহক<strong>'+db.customers.length+'</strong></span><span>লেনদেন<strong>'+db.transactions.length+'</strong></span><span>মোট বিক্রি<strong>'+money(sales)+'</strong></span><span>বাকিতে বিক্রি<strong>'+money(creditSales)+'</strong></span><span>জমা<strong>'+money(paid)+'</strong></span><span>বর্তমান বকেয়া<strong>'+money(due)+'</strong></span></div>';
 }
 async function e24AdminOpenUser(uid){
  if(!isAdmin||!uid)return;const select=document.getElementById('e24-admin-user-select');if(select)select.disabled=true;

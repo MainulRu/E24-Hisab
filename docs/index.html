@@ -1442,29 +1442,34 @@ async function e24RenderAdminRoleManager(){
   const [usersResult,rolesResult]=await Promise.all([e24AdminApi('/admin/users'),e24AdminApi('/admin/roles')]);
   const users=usersResult.users||[],roles=rolesResult.roles||[];
   e24AdminUsersCache=users.map(u=>({uid:u.uid,data:u.profile||{}}));
-  userSelect.innerHTML='<option value="">ব্যবহারকারী নির্বাচন করুন</option>'+users.filter(u=>u.uid!==currentUser.uid&&u.uid!==E24_ADMIN_UID).map(u=>'<option value="'+e24SmsEscape(u.uid)+'">'+e24SmsEscape((u.profile||{}).name||(u.profile||{}).email||u.uid)+'</option>').join('');
-  assigned.innerHTML=users.filter(u=>u.uid!==currentUser.uid).map(u=>'<label style="display:flex;gap:7px;align-items:center;margin:5px 0"><input type="checkbox" value="'+e24SmsEscape(u.uid)+'"> '+e24SmsEscape((u.profile||{}).name||(u.profile||{}).email||u.uid)+'</label>').join('');
-  const renderRoleList=()=>{
-   const box=document.getElementById('e24-admin-role-list');
-   if(!box)return;
-   box.innerHTML=roles.length?roles.map(r=>'<div class="sms-history-item" style="gap:8px;align-items:center"><span style="flex:1;min-width:0"><b>'+e24SmsEscape(e24AdminRoleName(r.role))+'</b><br><span class="sms-wallet-note">'+e24SmsEscape((users.find(u=>u.uid===r.uid)?.profile||{}).email||r.uid)+'</span></span><span style="white-space:nowrap">'+e24SmsEscape(r.role==='limited'?(r.managedUsers||[]).length+' জন নির্ধারিত':'সব ব্যবহারকারী')+'</span><button type="button" class="btn btn-green" style="padding:4px 9px;font-size:10px;min-width:48px" data-e24-edit-admin="'+e24SmsEscape(r.uid)+'">Edit</button></div>').join(''):'<div class="sms-wallet-note">এখনো কোনো Admin তৈরি করা হয়নি।</div>';
-   box.querySelectorAll('[data-e24-edit-admin]').forEach(button=>button.addEventListener('click',()=>{
-    userSelect.value=button.getAttribute('data-e24-edit-admin');
-    userSelect.dispatchEvent(new Event('change'));
-    document.getElementById('e24-admin-role-user')?.scrollIntoView({behavior:'smooth',block:'center'});
-    if(status)status.textContent='নির্বাচিত Admin-এর Role ও Assigned Users পরিবর্তন করে Save করুন।';
-   }));
+  const selectableUsers=users.filter(u=>u.uid!==currentUser.uid&&u.uid!==E24_ADMIN_UID);
+  userSelect.innerHTML='<option value="">ব্যবহারকারী নির্বাচন করুন</option>'+selectableUsers.map(u=>'<option value="'+e24SmsEscape(u.uid)+'">'+e24SmsEscape((u.profile||{}).name||(u.profile||{}).email||u.uid)+'</option>').join('');
+  assigned.innerHTML=users.filter(u=>u.uid!==currentUser.uid&&u.uid!==E24_ADMIN_UID).map(u=>'<label style="display:flex;gap:7px;align-items:center;margin:5px 0"><input type="checkbox" value="'+e24SmsEscape(u.uid)+'"> '+e24SmsEscape((u.profile||{}).name||(u.profile||{}).email||u.uid)+'</label>').join('')||'<div class="sms-wallet-note">নির্ধারণ করার মতো কোনো ব্যবহারকারী পাওয়া যায়নি।</div>';
+  userSelect.onchange=()=>{
+   const role=roles.find(r=>r.uid===userSelect.value);
+   roleSelect.value=role?.role||'none';
+   const selected=new Set(role?.managedUsers||[]);
+   Array.from(assigned.querySelectorAll('input[type="checkbox"]')).forEach(c=>c.checked=selected.has(c.value));
   };
-  userSelect.onchange=()=>{const role=roles.find(r=>r.uid===userSelect.value);roleSelect.value=role?.role||'none';Array.from(assigned.querySelectorAll('input')).forEach(c=>c.checked=(role?.managedUsers||[]).includes(c.value));};
-  renderRoleList();
+  const box=document.getElementById('e24-admin-role-list');
+  if(box)box.innerHTML=roles.length?roles.map(r=>'<div class="sms-history-item" style="gap:8px;align-items:center"><span style="flex:1;min-width:0"><b>'+e24SmsEscape(e24AdminRoleName(r.role))+'</b><br><span class="sms-wallet-note">'+e24SmsEscape((users.find(u=>u.uid===r.uid)?.profile||{}).email||r.uid)+'</span></span><span style="white-space:nowrap">'+e24SmsEscape(r.role==='limited'?(r.managedUsers||[]).length+' জন নির্ধারিত':'সব ব্যবহারকারী')+'</span></div>').join(''):'<div class="sms-wallet-note">এখনো কোনো Admin তৈরি করা হয়নি।</div>';
   if(status)status.textContent='Admin তালিকা লোড হয়েছে।';
  }catch(err){console.error('Admin roles load failed:',err);if(status)status.textContent='Admin তালিকা লোড হয়নি: '+err.message;}
 }
 async function e24SaveAdminRole(){
  const uid=document.getElementById('e24-admin-role-user')?.value,role=document.getElementById('e24-admin-role-choice')?.value,status=document.getElementById('e24-admin-role-status');
  if(!uid){showToast('ব্যবহারকারী নির্বাচন করুন');return;}
- const managedUsers=Array.from(document.querySelectorAll('#e24-admin-managed-users input:checked')).map(x=>x.value);
- try{await e24AdminApi('/admin/roles',{method:'PUT',body:{uid,role,managedUsers}});if(status)status.textContent='Admin Role সফলভাবে আপডেট হয়েছে।';showToast('Admin Role আপডেট হয়েছে।');await e24RenderAdminRoleManager();}catch(err){showToast('Role আপডেট হয়নি: '+err.message);if(status)status.textContent='Role আপডেট হয়নি: '+err.message;}
+ const managedUsers=Array.from(document.querySelectorAll('#e24-admin-managed-users input[type="checkbox"]:checked')).map(x=>x.value);
+ if(role==='limited'&&!managedUsers.length){showToast('Limited Admin-এর জন্য অন্তত একজন ব্যবহারকারী নির্ধারণ করুন।');if(status)status.textContent='কমপক্ষে একজন ব্যবহারকারী নির্বাচন করে আবার Save করুন।';return;}
+ try{
+  const result=await e24AdminApi('/admin/roles',{method:'PUT',body:{uid,role,managedUsers}});
+  const savedCount=Number.isFinite(Number(result.managedUsersCount))?Number(result.managedUsersCount):(role==='limited'?managedUsers.length:0);
+  if(status)status.textContent='Admin Role সংরক্ষিত হয়েছে। '+(role==='limited'?savedCount+' জন ব্যবহারকারী নির্ধারিত।':'');
+  showToast('Admin Role সফলভাবে সংরক্ষিত হয়েছে।');
+  await e24RenderAdminRoleManager();
+  const refreshedSelect=document.getElementById('e24-admin-role-user');
+  if(refreshedSelect){refreshedSelect.value=uid;refreshedSelect.dispatchEvent(new Event('change'));}
+ }catch(err){showToast('Role সংরক্ষণ হয়নি: '+err.message);if(status)status.textContent='Role সংরক্ষণ হয়নি: '+err.message;}
 }
 async function e24DeleteSelectedUser(){
  const uid=document.getElementById('e24-admin-role-user')?.value;if(!uid){showToast('ব্যবহারকারী নির্বাচন করুন');return;}

@@ -90,7 +90,8 @@ async function verifyCaller(request, env) {
 }
 
 async function fs(env, token, path, options = {}) {
-  const url = "https://firestore.googleapis.com/v1/projects/" + env.FIREBASE_PROJECT_ID + "/databases/(default)/documents/" + path;
+  let url = "https://firestore.googleapis.com/v1/projects/" + env.FIREBASE_PROJECT_ID + "/databases/(default)/documents/" + path;
+  if (options.currentDocumentUpdateTime) url += "?currentDocument.updateTime=" + encodeURIComponent(options.currentDocumentUpdateTime);
   const res = await fetch(url, {
     method: options.method || "GET",
     headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
@@ -234,7 +235,7 @@ async function route(request, env) {
         items[i] = { ...req, status: "REMOVED", removedAt: new Date().toISOString(), removedBy: caller.uid };
       }
       data.smsRechargeRequests = items;
-      await fs(env, token, path, { method: "PATCH", body: { fields: encodeFields(data), currentDocument: { updateTime: doc.data.updateTime } } });
+      await fs(env, token, path, { method: "PATCH", currentDocumentUpdateTime: doc.data.updateTime, body: { fields: encodeFields(data) } });
       return reply({ success: true, message: action === "approve" ? "RECHARGE_APPROVED" : "REQUEST_REMOVED" }, 200, allowedOrigin);
     }
 

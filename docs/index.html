@@ -894,7 +894,7 @@
               <div class="e24-settings-content">
                 <section class="sms-wallet-panel" id="sms-admin-recharge-panel" hidden>
                   <strong><i class="fa-solid fa-user-shield"></i> Admin: Recharge Requests</strong>
-                  <div class="sms-wallet-note">Limited Admin শুধু নির্ধারিত ব্যবহারকারীদের এবং Full/Main Admin সব ব্যবহারকারীর Pending Recharge Request Approve বা Cancel করতে পারবেন। Full/Main Admin ব্যবহারকারী ব্যবস্থাপনাও দেখতে পারবেন।</div>
+                  <div class="sms-wallet-note">Limited Admin ও Full/Main Admin সব ব্যবহারকারীর Pending Recharge Request দেখতে এবং Approve/Cancel করতে পারবেন। Full/Main Admin ব্যবহারকারী ব্যবস্থাপনাও দেখতে পারবেন।</div>
                   <div id="sms-admin-recharge-list"></div>
                 </section>
                 <section class="sms-wallet-panel" id="e24-admin-role-manager" hidden>
@@ -904,7 +904,7 @@
                   <select id="e24-admin-role-user" aria-label="Admin Role-এর জন্য ব্যবহারকারী নির্বাচন"><option value="">ব্যবহারকারী নির্বাচন করুন</option></select>
                   <label class="e24-admin-label" for="e24-admin-role-choice">Admin Role</label>
                   <select id="e24-admin-role-choice"><option value="none">সাধারণ User</option><option value="limited">Limited Admin</option><option value="full">Full Admin</option></select>
-                  <div class="sms-wallet-note">Limited Admin শুধু নিজের হিসাব ও Recharge Request দেখতে এবং পরিচালনা করতে পারবে।</div>
+                  <div class="sms-wallet-note">Limited Admin সব ব্যবহারকারীর Recharge Request দেখতে এবং Approve/Cancel করতে পারবে; ব্যবহারকারী ব্যবস্থাপনা দেখতে পারবে না।</div>
                   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
                     <button type="button" class="btn btn-green" onclick="e24SaveAdminRole()">Save Admin Role</button>
                     <button type="button" class="btn btn-logout" onclick="e24DeleteSelectedUser()">Remove User</button>
@@ -1445,7 +1445,7 @@ async function e24RenderAdminRoleManager(){
   userSelect.innerHTML='<option value="">ব্যবহারকারী নির্বাচন করুন</option>'+selectableUsers.map(u=>'<option value="'+e24SmsEscape(u.uid)+'">'+e24SmsEscape((u.profile||{}).name||(u.profile||{}).email||u.uid)+'</option>').join('');
   userSelect.onchange=()=>{ const role=roles.find(r=>r.uid===userSelect.value); roleSelect.value=role?.role||'none'; };
   const box=document.getElementById('e24-admin-role-list');
-  if(box)box.innerHTML=roles.length?roles.map(r=>'<div class="sms-history-item" style="gap:8px;align-items:center"><span style="flex:1;min-width:0"><b>'+e24SmsEscape(e24AdminRoleName(r.role))+'</b><br><span class="sms-wallet-note">'+e24SmsEscape((users.find(u=>u.uid===r.uid)?.profile||{}).email||r.uid)+'</span></span><span style="white-space:nowrap">'+e24SmsEscape(r.role==='limited'?'শুধু নিজের হিসাব':'সব ব্যবহারকারী')+'</span></div>').join(''):'<div class="sms-wallet-note">এখনো কোনো Admin তৈরি করা হয়নি।</div>';
+  if(box)box.innerHTML=roles.length?roles.map(r=>'<div class="sms-history-item" style="gap:8px;align-items:center"><span style="flex:1;min-width:0"><b>'+e24SmsEscape(e24AdminRoleName(r.role))+'</b><br><span class="sms-wallet-note">'+e24SmsEscape((users.find(u=>u.uid===r.uid)?.profile||{}).email||r.uid)+'</span></span><span style="white-space:nowrap">'+e24SmsEscape(r.role==='limited'?'সব Recharge Request':'সব ব্যবহারকারী')+'</span></div>').join(''):'<div class="sms-wallet-note">এখনো কোনো Admin তৈরি করা হয়নি।</div>';
   if(status)status.textContent='Admin তালিকা লোড হয়েছে।';
  }catch(err){console.error('Admin roles load failed:',err);if(status)status.textContent='Admin তালিকা লোড হয়নি: '+err.message;}
 }
@@ -1455,7 +1455,7 @@ async function e24SaveAdminRole(){
  const managedUsers=[];
 try{
   const result=await e24AdminApi('/admin/roles',{method:'PUT',body:{uid,role,managedUsers}});
-  if(status)status.textContent='Admin Role সংরক্ষিত হয়েছে। '+(role==='limited'?'শুধু নিজের হিসাবের অনুমতি দেওয়া হয়েছে।':'');
+  if(status)status.textContent='Admin Role সংরক্ষিত হয়েছে। '+(role==='limited'?'সব Recharge Request পরিচালনার অনুমতি দেওয়া হয়েছে; ব্যবহারকারী ব্যবস্থাপনা বন্ধ।':'');
   showToast('Admin Role সফলভাবে সংরক্ষিত হয়েছে।');
   await e24RenderAdminRoleManager();
   const refreshedSelect=document.getElementById('e24-admin-role-user');

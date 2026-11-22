@@ -1551,6 +1551,7 @@ if(adminList)adminList.addEventListener('click',async e=>{
   showToast(err.message==='REQUEST_NOT_PENDING'?'রিকোয়েস্টটি আগেই অনুমোদিত বা মুছে ফেলা হয়েছে।':'রিকোয়েস্টের কাজটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।');
  }finally{button.disabled=false;}
 });
+}
 
 const e24BootStartedAt=performance.now();
 document.addEventListener('DOMContentLoaded',e24SetupAuthUI);

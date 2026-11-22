@@ -1790,34 +1790,22 @@ This is a documented future integration point; it is intentionally not executabl
 if(adminList)adminList.addEventListener('click',async e=>{
  const button=e.target.closest('[data-sms-approve],[data-sms-remove]');if(!button||!isAdmin)return;
  const isRemove=button.hasAttribute('data-sms-remove');
- const reqId=button.getAttribute(isRemove?'data-sms-remove':'data-sms-approve'),ownerUid=button.getAttribute('data-sms-owner');if(!ownerUid||!reqId)return;
+ const action=isRemove?'remove':'approve';
+ const reqId=button.getAttribute(isRemove?'data-sms-remove':'data-sms-approve');
+ const ownerUid=button.getAttribute('data-sms-owner');
+ if(!ownerUid||!reqId)return;
  if(isRemove&&!(await showAppConfirm('এই Recharge Request স্থায়ীভাবে মুছে ফেলবেন? Wallet Balance-এ কোনো পরিবর্তন হবে না।','রিকোয়েস্ট মুছবেন?')))return;
  button.disabled=true;
  try{
-  const ref=e24Store.collection('users').doc(ownerUid).collection('data').doc('main');
-  let amount=0,balanceAfter=0,approvedAt=new Date().toLocaleString('bn-BD');
-  await e24Store.runTransaction(async tx=>{
-   const snap=await tx.get(ref);if(!snap.exists)throw new Error('NOT_FOUND');
-   const data=snap.data(),requests=Array.isArray(data.smsRechargeRequests)?data.smsRechargeRequests:[],req=requests.find(x=>x.id===reqId);
-   if(!req||req.status!=='PENDING')throw new Error('ALREADY_DONE');
-   if(isRemove){
-    const remaining=requests.filter(x=>x.id!==reqId);
-    tx.set(ref,{...data,smsRechargeRequests:remaining,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-    return;
-   }
-   const current=Number.isFinite(Number(data.smsWalletBalance))?Number(data.smsWalletBalance):0;
-   amount=Number(req.amount);if(!Number.isFinite(amount)||amount<=0)throw new Error('INVALID_AMOUNT');
-   balanceAfter=Number((current+amount).toFixed(2));req.status='APPROVED';req.approvedAt=approvedAt;
-   const ledger=Array.isArray(data.smsWalletTransactions)?data.smsWalletTransactions:[];
-   ledger.push({id:'RECHARGE-'+reqId,type:'CREDIT',title:'Admin অনুমোদিত Manual Recharge',amount,balanceAfter,date:approvedAt,mode:req.mode==='MANUAL'?'MANUAL':'TEST',referenceId:reqId});
-   tx.set(ref,{...data,smsWalletBalance:balanceAfter,smsRechargeRequests:requests,smsWalletTransactions:ledger.slice(-300),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-  });
-  if(activeDataUid===ownerUid){await e24LoadData(ownerUid);}else{await e24RenderAdminRechargeRequests();}
+  await e24AdminApi('/admin/recharge/action',{method:'POST',body:{uid:ownerUid,requestId:reqId,action}});
+  if(activeDataUid===ownerUid)await e24LoadData(ownerUid);
+  await e24RenderAdminRechargeRequests();
   showToast(isRemove?'Recharge Request মুছে ফেলা হয়েছে। Wallet Balance অপরিবর্তিত আছে।':'Wallet Recharge অনুমোদিত হয়েছে।');
- }catch(err){console.error('Recharge request action failed:',err);showToast(err.message==='ALREADY_DONE'?'রিকোয়েস্টটি আগেই অনুমোদিত বা মুছে ফেলা হয়েছে।':'রিকোয়েস্টের কাজটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।');}
- finally{button.disabled=false;}
+ }catch(err){
+  console.error('Recharge request action failed:',err);
+  showToast(err.message==='REQUEST_NOT_PENDING'?'রিকোয়েস্টটি আগেই অনুমোদিত বা মুছে ফেলা হয়েছে।':'রিকোয়েস্টের কাজটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।');
+ }finally{button.disabled=false;}
 });
-}
 
 const e24BootStartedAt=performance.now();
 document.addEventListener('DOMContentLoaded',e24SetupAuthUI);

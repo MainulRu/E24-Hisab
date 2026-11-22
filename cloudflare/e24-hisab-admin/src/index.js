@@ -241,7 +241,7 @@ async function route(request, env) {
           const profile = await fs(env, token, "users/" + encodeURIComponent(uid));
           (Array.isArray(data.smsRechargeRequests) ? data.smsRechargeRequests : [])
             .filter(x => String(x.status).toUpperCase() === "PENDING")
-            .forEach(x => requests.push({ uid, email: decodeFields(profile.data.fields || {}).email || "", ...x }));
+            .forEach(x => requests.push({ ...x, uid, email: decodeFields(profile.data.fields || {}).email || "" }));
         } catch (e) { if (e.status !== 404) throw e; }
       }
       requests.sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));

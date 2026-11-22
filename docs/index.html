@@ -1462,6 +1462,10 @@ async function e24DeleteSelectedUser(){
  if(!(await showAppConfirm('সতর্কতা: '+label+'-এর Firebase Login, গ্রাহক, লেনদেন, খাতা ও সংরক্ষিত User Data স্থায়ীভাবে মুছে ফেলার অনুরোধ করা হবে। এই কাজ ফেরানো যাবে না।','ব্যবহারকারী স্থায়ীভাবে মুছবেন?')))return;
  try{await e24AdminApi('/admin/users/'+encodeURIComponent(uid),{method:'DELETE'});showToast('ব্যবহারকারী ও তার ডেটা মুছে ফেলার কাজ সম্পন্ন হয়েছে।');await e24RenderAdminRoleManager();await e24RenderAdminUsers();}catch(err){showToast('ব্যবহারকারী মুছতে সমস্যা হয়েছে: '+err.message);}
 }
+// Expose inline Admin action handlers explicitly for WebView and browser compatibility.
+window.e24SaveAdminRole = e24SaveAdminRole;
+window.e24DeleteSelectedUser = e24DeleteSelectedUser;
+
 function e24SmsEscape(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function e24SmsDefaultMessage(customer){
   const c=customer||null;

@@ -126,13 +126,34 @@ async function getAdmin(env, token, caller) {
   return { role: role.role, managedUsers: Array.isArray(role.managedUsers) ? role.managedUsers : [] };
 }
 async function listDocs(env, token, path) {
-  const r = await fs(env, token, path + "?pageSize=1000");
-  return r.data.documents || [];
+  const all = [];
+  let pageToken = "";
+  do {
+    const suffix = "?pageSize=1000" + (pageToken ? "&pageToken=" + encodeURIComponent(pageToken) : "");
+    const r = await fs(env, token, path + suffix);
+    all.push(...(r.data.documents || []));
+    pageToken = r.data.nextPageToken || "";
+  } while (pageToken);
+  return all;
+}
+async function deleteDocumentTree(env, token, documentPath) {
+  // Firestore documents can own subcollections; remove descendants first.
+  const collections = await fs(env, token, documentPath + ":listCollectionIds", {
+    method: "POST", body: { pageSize: 1000 }
+  });
+  for (const collectionId of collections.data.collectionIds || []) {
+    const children = await listDocs(env, token, documentPath + "/" + collectionId);
+    for (const child of children) {
+      const childPath = child.name.split("/documents/")[1];
+      await deleteDocumentTree(env, token, childPath);
+    }
+  }
+  await fs(env, token, documentPath, { method: "DELETE", allow404: true });
 }
 
 async function route(request, env) {
   const origin = request.headers.get("Origin") || "";
-  const allowedOrigin = origin === ORIGIN || origin === "http://localhost" || origin === "http://127.0.0.1" ? origin : ORIGIN;
+  const allowedOrigin = origin === ORIGIN || origin === "null" || origin === "http://localhost" || origin === "http://127.0.0.1" ? origin : ORIGIN;
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
@@ -229,8 +250,15 @@ async function route(request, env) {
         if (!Number.isFinite(amount) || amount <= 0 || amount > 100000) throw new Error("INVALID_RECHARGE_AMOUNT");
         data.smsWalletBalance = (Number(data.smsWalletBalance) || 0) + amount;
         data.smsWalletTransactions = Array.isArray(data.smsWalletTransactions) ? data.smsWalletTransactions : [];
-        data.smsWalletTransactions.push({ id: requestId, type: "CREDIT", mode: "MANUAL", amount, balanceAfter: data.smsWalletBalance, title: "Admin অনুমোদিত Manual Recharge", date: new Date().toISOString() });
-        items[i] = { ...req, status: "APPROVED", approvedAt: new Date().toISOString(), approvedBy: caller.uid };
+        const approvedAt = new Date().toLocaleString("bn-BD");
+        data.smsWalletTransactions.push({
+          id: "RECHARGE-" + requestId, type: "CREDIT",
+          mode: req.mode === "MANUAL" ? "MANUAL" : "TEST",
+          amount, balanceAfter: data.smsWalletBalance,
+          title: "Admin অনুমোদিত Manual Recharge", date: approvedAt,
+          referenceId: requestId
+        });
+        items[i] = { ...req, status: "APPROVED", approvedAt, approvedBy: caller.uid };
       } else {
         items[i] = { ...req, status: "REMOVED", removedAt: new Date().toISOString(), removedBy: caller.uid };
       }
@@ -244,18 +272,22 @@ async function route(request, env) {
       if (!main) throw new Error("MAIN_ADMIN_REQUIRED");
       const uid = decodeURIComponent(del[1]);
       if (!uid || uid === MAIN_UID || uid === caller.uid) throw new Error("CANNOT_DELETE_MAIN_ADMIN");
-      const children = await listDocs(env, token, "users/" + encodeURIComponent(uid) + "/data");
-      for (const child of children) {
-        const documentPath = child.name.split("/documents/")[1];
-        await fs(env, token, documentPath, { method: "DELETE", allow404: true });
-      }
-      await fs(env, token, "users/" + encodeURIComponent(uid), { method: "DELETE", allow404: true });
+      // Delete Firebase Authentication first. If a later Firestore cleanup fails,
+      // a retry by Main Admin can continue; USER_NOT_FOUND is treated as already deleted.
       const authDelete = await fetch("https://identitytoolkit.googleapis.com/v1/projects/" + encodeURIComponent(env.FIREBASE_PROJECT_ID) + "/accounts:delete", {
         method: "POST",
         headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
         body: JSON.stringify({ localId: uid })
       });
-      if (!authDelete.ok) throw new Error("AUTH_USER_DELETE_FAILED");
+      if (!authDelete.ok) {
+        let authError = {};
+        try { authError = await authDelete.json(); } catch (_) {}
+        const reason = String(authError.error?.message || "");
+        if (!reason.includes("USER_NOT_FOUND")) throw new Error("AUTH_USER_DELETE_FAILED");
+      }
+      await deleteDocumentTree(env, token, "users/" + encodeURIComponent(uid) + "/data/main");
+      await deleteDocumentTree(env, token, "users/" + encodeURIComponent(uid));
+      await fs(env, token, "adminRoles/" + encodeURIComponent(uid), { method: "DELETE", allow404: true });
       return reply({ success: true, message: "USER_DELETED" }, 200, allowedOrigin);
     }
 

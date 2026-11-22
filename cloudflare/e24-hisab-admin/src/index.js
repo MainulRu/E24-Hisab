@@ -139,8 +139,9 @@ async function listDocs(env, token, path) {
 async function deleteDocumentTree(env, token, documentPath) {
   // Firestore documents can own subcollections; remove descendants first.
   const collections = await fs(env, token, documentPath + ":listCollectionIds", {
-    method: "POST", body: { pageSize: 1000 }
+    method: "POST", body: { pageSize: 1000 }, allow404: true
   });
+  if (collections.status === 404) return;
   for (const collectionId of collections.data.collectionIds || []) {
     const children = await listDocs(env, token, documentPath + "/" + collectionId);
     for (const child of children) {
@@ -203,6 +204,9 @@ async function route(request, env) {
       const role = String(body.role || "");
       const managedUsers = Array.isArray(body.managedUsers) ? [...new Set(body.managedUsers.map(String))].filter(x => x && x !== uid).slice(0, 100) : [];
       if (!uid || uid.length > 128 || uid === MAIN_UID || !["limited", "full", "none"].includes(role)) throw new Error("INVALID_ROLE_INPUT");
+      // Only provision roles for existing E24 Hisab profiles.
+      await fs(env, token, "users/" + encodeURIComponent(uid));
+      for (const managedUid of managedUsers) await fs(env, token, "users/" + encodeURIComponent(managedUid));
       if (role === "none") {
         await fs(env, token, "adminRoles/" + encodeURIComponent(uid), { method: "DELETE", allow404: true });
       } else {

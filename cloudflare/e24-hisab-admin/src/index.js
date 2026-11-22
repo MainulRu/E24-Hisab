@@ -229,12 +229,7 @@ async function route(request, env) {
           body: { fields: encodeFields({ role, managedUsers: role === "limited" ? managedUsers : [], active: true, updatedAt: new Date().toISOString(), updatedBy: caller.uid }) }
         });
       }
-      // Read back the saved document so the UI can confirm the actual persisted assignment.
-      const savedRole = role === "none" ? null : await getRole(env, token, uid);
-      if (role !== "none" && (!savedRole || savedRole.role !== role || (role === "limited" && JSON.stringify(savedRole.managedUsers || []) !== JSON.stringify(managedUsers)))) {
-        throw new Error("ROLE_SAVE_VERIFICATION_FAILED");
-      }
-      return reply({ success: true, message: "ROLE_UPDATED", managedUsers: savedRole?.managedUsers || [], managedUsersCount: (savedRole?.managedUsers || []).length }, 200, allowedOrigin);
+      return reply({ success: true, message: "ROLE_UPDATED" }, 200, allowedOrigin);
     }
 
     if (url.pathname === "/admin/recharge" && request.method === "GET") {

@@ -238,7 +238,7 @@ async function route(request, env) {
     }
 
     if (url.pathname === "/admin/recharge" && request.method === "GET") {
-      const uids = admin.role === "limited" ? [caller.uid] : (await listDocs(env, token, "users")).map(d => d.name.split("/").pop());
+      const uids = (await listDocs(env, token, "users")).map(d => d.name.split("/").pop());
       const requests = [];
       for (const uid of uids) {
         try {
@@ -260,7 +260,7 @@ async function route(request, env) {
       const requestId = String(body.requestId || "");
       const action = String(body.action || "");
       if (!uid || !requestId || !["approve", "cancel"].includes(action)) throw new Error("INVALID_REQUEST");
-      if (admin.role === "limited" && uid !== caller.uid) throw new Error("USER_NOT_ASSIGNED");
+
       const path = "users/" + encodeURIComponent(uid) + "/data/main";
       const doc = await fs(env, token, path);
       const data = decodeFields(doc.data.fields || {});

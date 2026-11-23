@@ -1012,7 +1012,7 @@
               <div class="e24-settings-content">
                 <section class="sms-wallet-panel" id="sms-admin-recharge-panel" hidden>
                   <strong><i class="fa-solid fa-user-shield"></i> Admin: Recharge Requests</strong>
-                  <!-- Developer note: Editor ও Admin pending recharge request দেখতে/Approve/Cancel করতে পারেন; User Management শুধু Admin tier-এ। -->
+                  <!-- Developer note: Recharge Admin শুধু Pending Request Approve করতে পারে; Full/Main Admin Approve বা Cancel করতে পারেন। -->
                   <div id="sms-admin-recharge-list"></div>
                 </section>
                 <section class="sms-wallet-panel" id="e24-admin-role-manager" hidden>
@@ -1022,7 +1022,7 @@
                   <select id="e24-admin-role-user" aria-label="Admin Role-এর জন্য ব্যবহারকারী নির্বাচন"><option value="">ব্যবহারকারী নির্বাচন করুন</option></select>
                   <label class="e24-admin-label" for="e24-admin-role-choice">Admin Role</label>
                   <select id="e24-admin-role-choice"><option value="none">User</option><option value="limited">Recharge Admin</option><option value="full">Admin</option></select>
-                  <!-- Developer note: Editor recharge request পরিচালনা করতে পারে; User Management access নেই। -->
+                  <!-- Developer note: Recharge Admin-এর অনুমতি শুধু Pending Recharge Request Approve করা। -->
                   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
                     <button type="button" class="btn btn-green" onclick="e24SaveAdminRole()">Save Admin Role</button>
                     <button type="button" class="btn btn-logout" onclick="e24DeleteSelectedUser()">Remove User</button>

@@ -16,24 +16,27 @@ All protected routes require `Authorization: Bearer <Firebase ID token>`.
 
 - `GET /health` — public health check.
 - `GET /admin/me` — returns the caller's server-verified role.
-- `GET /admin/users` — lists all users for Full/Main Admin, or only assigned users for Limited Admin.
+- `GET /admin/users` — lists users for Full/Main Admin only; Limited Admin is denied.
 - `GET /admin/roles` — Main Admin only.
 - `PUT /admin/roles` — Main Admin only; body: `{ "uid": "...", "role": "limited|full|none", "managedUsers": ["..."] }`.
 - `GET /admin/recharge` — pending recharge requests in the caller's permitted scope.
-- `POST /admin/recharge/action` — approve/remove a pending request; body: `{ "uid": "...", "requestId": "...", "action": "approve|remove" }`.
+- `POST /admin/recharge/action` — Limited Admin can approve only; Full/Main Admin can approve or cancel. Body: `{ "uid": "...", "requestId": "...", "action": "approve|cancel" }`.
 - `DELETE /admin/users/:uid` — Main Admin only; permanently deletes the Firebase Auth user and their Firestore profile/ledger.
 
 ## Permission model
 
 | Capability | Limited Admin | Full Admin | Main Admin |
 |---|---:|---:|---:|
-| Manage assigned users' ledgers | Yes | Yes | Yes |
-| View all users | No | Yes | Yes |
-| Approve/remove recharge requests | Assigned users | Yes | Yes |
+| Read or modify another user's profile/ledger/history | No | Yes | Yes |
+| View pending recharge requests | Yes | Yes | Yes |
+| Approve pending recharge requests | Yes | Yes | Yes |
+| Cancel pending recharge requests | No | Yes | Yes |
 | Create/change Admin roles | No | No | Yes |
 | Permanently delete users | No | No | Yes |
 
-The Worker must be deployed separately from the existing payment and OTP Workers. Do not replace or edit those Workers.
+Limited Admin has no direct Firestore access to another user's profile or ledger. The Admin Worker uses its service account internally to locate pending recharge requests and applies an approval only after validating that the request is still pending. It never returns wallet transaction history or SMS history to Limited Admin.
+
+The Worker and Firestore Rules must be deployed separately from the existing payment and OTP Workers. Do not replace or edit those Workers.
 
 
 ## Deploy this Worker

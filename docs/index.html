@@ -614,7 +614,103 @@
     .e24-ai-send:disabled{opacity:.5;cursor:default}
     .e24-ai-note{background:#fff;padding:0 12px 9px;text-align:center;color:#77847c;font-size:10px}
     @media(max-width:480px){.e24-ai-backdrop{padding:0}.e24-ai-window{width:100%;height:100%;height:100dvh;border-radius:0}.e24-ai-head{padding-top:max(14px,env(safe-area-inset-top))}.e24-ai-compose{padding-bottom:max(10px,env(safe-area-inset-bottom))}}
-</style>
+
+/* E24 COMPLETE DARK MODE FIX - 2026-11-24 */
+.phone-screen.e24-dark{
+  --phone-bg:#202a24;
+  --text-dark:#edf3ee;
+  --text-muted:#b8c5bb;
+  --border-color:#46554a;
+  --light-green:#294333;
+  --bg-gradient:linear-gradient(135deg,#18231c 0%,#202a24 55%,#252d25 100%);
+  color:#edf3ee;
+  background:#202a24;
+}
+.phone-screen.e24-dark .screen-body{
+  background:#202a24!important;
+  color:#edf3ee!important;
+}
+.phone-screen.e24-dark .screen-body :is(h1,h2,h3,h4,p,label,small,strong,summary,td,th,li,.tx-name,.customer-name,.tx-date,.tx-sub,.report-empty,.report-total-count,.sms-wallet-note,.e24-settings-hint,.e24-admin-summary-email,.e24-settings-content label){
+  color:#e8f0ea;
+}
+.phone-screen.e24-dark .screen-body :is(.text-muted,.tx-date,.report-total-count,.report-empty,.sms-wallet-note,.e24-settings-hint,.e24-admin-summary-email){
+  color:#b8c5bb!important;
+}
+.phone-screen.e24-dark .screen-body :is(.section-title,.current-due-card,.profile-header,.transaction-item,.customer-item,.history-item,.payment-header,.sms-wallet-panel,.sms-history-item,.e24-settings-card,.settings-app-info,.e24-admin-user-summary,.e24-admin-summary-grid span,.customer-modal,.app-confirm-dialog,.report-tabs,.search-box,.custom-select,.date-input-box){
+  background:#2b3830!important;
+  color:#edf3ee!important;
+  border-color:#46554a!important;
+}
+.phone-screen.e24-dark .screen-body :is(.section-title){
+  background:#294b36!important;
+  color:#d9f2df!important;
+}
+.phone-screen.e24-dark .screen-body :is(.form-input,.custom-select,input,select,textarea,.e24-settings-content input,.e24-settings-content select,.e24-admin-panel input,.e24-admin-panel select,.e24-ai-input){
+  background:#26332b!important;
+  color:#f1f5f2!important;
+  border-color:#526257!important;
+  caret-color:#fff;
+}
+.phone-screen.e24-dark .screen-body :is(input,select,textarea)::placeholder{
+  color:#aab8ae!important;
+  opacity:1;
+}
+.phone-screen.e24-dark .screen-body :is(.e24-settings-card>summary,.e24-settings-content label){
+  color:#edf3ee!important;
+}
+.phone-screen.e24-dark .screen-body :is(.e24-settings-content button.secondary,.e24-ai-history-toolbar button){
+  background:#35483b!important;
+  color:#e4f3e8!important;
+}
+.phone-screen.e24-dark .screen-body :is(.report-tabs){
+  background:#303b34!important;
+}
+.phone-screen.e24-dark .screen-body :is(.red-text){color:#ff8f87!important}
+.phone-screen.e24-dark .screen-body :is(.green-text,.tx-sub){color:#82d9a2!important}
+.phone-screen.e24-dark .screen-body :is(.btn,.btn-green,.btn-blue,.btn-purple,.btn-pink,.customer-modal-actions button,.app-confirm-actions button){
+  color:#fff!important;
+}
+.phone-screen.e24-dark .screen-body :is(.tx-icon,.stat-card,.summary-box,.section-banner){
+  color:#fff!important;
+}
+.phone-screen.e24-dark .screen-body :is(.e24-settings-content,.e24-settings-card>summary,.e24-settings-content,.sms-admin-request){
+  border-color:#46554a!important;
+}
+.phone-screen.e24-dark .screen-body :is(.customer-modal input){
+  color:#f1f5f2!important;
+  border-bottom-color:#718078!important;
+}
+.phone-screen.e24-dark .screen-body :is(.customer-modal-actions button,.report-arrow,.nav-item.active){
+  color:#83d6a1!important;
+}
+.phone-screen.e24-dark .screen-body :is(.e24-notification-empty,.e24-ai-history-empty){
+  color:#b8c5bb!important;
+}
+.phone-screen.e24-dark .screen-body :is(.e24-admin-summary-grid span){
+  background:#303d34!important;
+  color:#bdc9c0!important;
+}
+.phone-screen.e24-dark .screen-body :is(.e24-admin-summary-grid strong,.e24-admin-summary-name){
+  color:#edf3ee!important;
+}
+.phone-screen.e24-dark .screen-body :is(.sms-test-badge){
+  background:#4b4025!important;
+  color:#ffe5a3!important;
+  border-color:#786333!important;
+}
+.phone-screen.e24-dark .screen-body :is(.sms-admin-request){
+  background:#302f27!important;
+  color:#f0e7cb!important;
+}
+.phone-screen.e24-dark .screen-body :is(.e24-ai-history-toolbar button){
+  border-color:#526257!important;
+}
+.phone-screen.e24-dark .screen-body :is(.e24-settings-icon){
+  background:#294333!important;
+  color:#8fe0aa!important;
+}
+
+  </style>
 </head>
 <body>
 

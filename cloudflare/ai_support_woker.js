@@ -241,13 +241,10 @@ async function handleAiSupport(request, env) {
   // Primary model first, followed by independent backup models.
   const geminiModels = [
     "gemini-3.8-flash",
-    "gemini-3.7-flash",
     "gemini-3.6-flash",
-    "gemini-3.5-flash",
-    "gemini-3-flash-preview",
-    "gemini-3.1-flash-lite"
+    "gemini-3.5-flash-lite"
   ];
-  const maxAttemptsPerModel = 2;
+  const maxAttemptsPerModel = 1;
   let response = null;
   let data = {};
   let lastStatus = 0;
@@ -270,7 +267,8 @@ async function handleAiSupport(request, env) {
               systemInstruction: { parts: [{ text: systemText }] },
               contents,
               generationConfig: { temperature: 0.35, maxOutputTokens: 600 }
-            })
+            }),
+            signal: AbortSignal.timeout(18000)
           }
         );
       } catch (error) {

@@ -1149,17 +1149,17 @@
               <div class="e24-settings-content">
                 <section class="sms-wallet-panel" id="sms-admin-recharge-panel" hidden>
                   <strong><i class="fa-solid fa-user-shield"></i> Admin: Recharge Requests</strong>
-                  <div class="sms-wallet-note">Limited Admin ও Full/Main Admin সব ব্যবহারকারীর Pending Recharge Request দেখতে এবং Approve/Cancel করতে পারবেন। Full/Main Admin ব্যবহারকারী ব্যবস্থাপনাও দেখতে পারবেন।</div>
+                  <div class="sms-wallet-note">Editor ও Full/Administrator সব ব্যবহারকারীর Pending Recharge Request দেখতে এবং Approve/Cancel করতে পারবেন। Full/Administrator ব্যবহারকারী ব্যবস্থাপনাও দেখতে পারবেন।</div>
                   <div id="sms-admin-recharge-list"></div>
                 </section>
                 <section class="sms-wallet-panel" id="e24-admin-role-manager" hidden>
                   <strong><i class="fa-solid fa-user-gear"></i> Make Admin and Remove User</strong>
-                  <div class="sms-wallet-note">শুধু Main Admin ব্যবহারকারীকে Limited Admin / Full Admin করতে অথবা User স্থায়ীভাবে মুছতে পারবেন।</div>
+                  <div class="sms-wallet-note">শুধু Administrator ব্যবহারকারীকে Editor / Admin করতে অথবা User স্থায়ীভাবে মুছতে পারবেন।</div>
                   <label class="e24-admin-label" for="e24-admin-role-user">ব্যবহারকারী নির্বাচন</label>
                   <select id="e24-admin-role-user" aria-label="Admin Role-এর জন্য ব্যবহারকারী নির্বাচন"><option value="">ব্যবহারকারী নির্বাচন করুন</option></select>
                   <label class="e24-admin-label" for="e24-admin-role-choice">Admin Role</label>
-                  <select id="e24-admin-role-choice"><option value="none">সাধারণ User</option><option value="limited">Limited Admin</option><option value="full">Full Admin</option></select>
-                  <div class="sms-wallet-note">Limited Admin সব ব্যবহারকারীর Recharge Request দেখতে এবং Approve/Cancel করতে পারবে; ব্যবহারকারী ব্যবস্থাপনা দেখতে পারবে না।</div>
+                  <select id="e24-admin-role-choice"><option value="none">User</option><option value="limited">Editor</option><option value="full">Admin</option></select>
+                  <div class="sms-wallet-note">Editor সব ব্যবহারকারীর Recharge Request দেখতে এবং Approve/Cancel করতে পারবে; ব্যবহারকারী ব্যবস্থাপনা দেখতে পারবে না।</div>
                   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
                     <button type="button" class="btn btn-green" onclick="e24SaveAdminRole()">Save Admin Role</button>
                     <button type="button" class="btn btn-logout" onclick="e24DeleteSelectedUser()">Remove User</button>
@@ -1169,7 +1169,7 @@
                   <div id="e24-admin-role-list"></div>
                 </section>
                 <div class="e24-admin-panel" id="e24-admin-panel" hidden>
-                  <div class="setting-title">Main Admin — ব্যবহারকারী ব্যবস্থাপনা</div>
+                  <div class="setting-title">Administrator — ব্যবহারকারী ব্যবস্থাপনা</div>
                   <div class="e24-admin-label">যার হিসাব পরিচালনা করবেন তাকে নির্বাচন করুন</div>
                   <select id="e24-admin-user-select" aria-label="ব্যবহারকারীর হিসাব নির্বাচন"></select>
                   <div id="e24-admin-user-summary" class="e24-admin-user-summary">ব্যবহারকারীর হিসাব লোড হচ্ছে...</div>
@@ -1514,7 +1514,7 @@ async function e24AdminApi(path,options={}){
  if(!response.ok||result.success!==true)throw new Error(result.error||'ADMIN_API_NOT_READY');
  return result;
 }
-function e24AdminRoleName(role){return role==='main'?'Main Admin':role==='full'?'Full Admin':role==='limited'?'Limited Admin':'সাধারণ ব্যবহারকারী';}
+function e24AdminRoleName(role){return role==='main'?'Administrator':role==='full'?'Admin':role==='limited'?'Editor':'User';}
 
 if(!firebase.apps.length)firebase.initializeApp(E24_FIREBASE_CONFIG);
 const e24Auth=firebase.auth(),e24Store=firebase.firestore();
@@ -1523,7 +1523,7 @@ function e24AuthMessage(err){const m={'auth/email-already-in-use':'এই Email 
 function e24SetAuthMode(mode){authMode=mode;document.getElementById("e24-launch-splash").hidden=true;document.querySelector(".e24-auth-card").classList.remove("launching");document.getElementById("e24-auth-subtitle").hidden=false;document.getElementById('e24-login-form').hidden=mode!=='login';document.getElementById('e24-register-form').hidden=mode!=='register';document.getElementById('e24-verify-panel').hidden=true;document.getElementById('e24-forgot-panel').hidden=true;document.getElementById('e24-forgot-password-link').hidden=mode!=='login';document.getElementById('e24-auth-switch').hidden=false;document.getElementById('e24-auth-subtitle').textContent=mode==='login'?'আপনার হিসাব নিরাপদে সংরক্ষণ করতে লগইন করুন':'নতুন E24 Hisab অ্যাকাউন্ট তৈরি করুন';document.getElementById('e24-auth-switch').textContent=mode==='login'?'নতুন অ্যাকাউন্ট তৈরি করবেন?':'আগে অ্যাকাউন্ট আছে? লগইন করুন';document.getElementById('e24-auth-error').textContent='';}
 async function e24LoadData(uid){const started=performance.now();activeDataUid=uid;const ref=e24Store.collection('users').doc(uid).collection('data').doc('main'),snap=await ref.get(),elapsed=(performance.now()-started)/1000;if(snap.exists)db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি',...snap.data()};else{let legacy=null;try{const old=JSON.parse(localStorage.getItem(KEY));if(old&&Array.isArray(old.customers)&&Array.isArray(old.transactions))legacy=old;}catch(_){}db=legacy||{customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি'};}const patch={};if(!Object.prototype.hasOwnProperty.call(db,'smsWalletBalance')||!Number.isFinite(Number(db.smsWalletBalance))){db.smsWalletBalance=0;patch.smsWalletBalance=0;}if(!Array.isArray(db.smsHistory)){db.smsHistory=[];patch.smsHistory=[];}if(!Array.isArray(db.smsRechargeRequests)){db.smsRechargeRequests=[];patch.smsRechargeRequests=[];}if(!Array.isArray(db.smsWalletTransactions)){db.smsWalletTransactions=[];patch.smsWalletTransactions=[];}if(Number(db.smsWalletBalance)===500&&db.smsWalletTransactions.length===0&&db.smsHistory.length===0&&!db.smsRechargeRequests.some(x=>String(x.status||'').toUpperCase()==='APPROVED')){db.smsWalletBalance=0;patch.smsWalletBalance=0;}if(!snap.exists||Object.keys(patch).length){await ref.set({...db,...patch,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});if(legacy)localStorage.removeItem(KEY);}refreshAll();renderSmsWallet();if(isAdmin&&typeof e24AdminUpdateSummary==='function')e24AdminUpdateSummary();const timing=document.getElementById('e24-load-timing');if(timing){timing.textContent='ডেটা: '+elapsed.toFixed(2)+' সেকেন্ড · অ্যাপ চালু: '+((performance.now()-e24BootStartedAt)/1000).toFixed(2)+' সেকেন্ড';timing.hidden=false;}}
 let e24AdminUsersCache=[];
-function e24AdminUserLabel(uid,data){const d=data||{};return uid===E24_ADMIN_UID?'Main Admin — '+(d.email||'নিজের হিসাব'):(d.name||d.email||'User '+uid.slice(0,8));}
+function e24AdminUserLabel(uid,data){const d=data||{};return uid===E24_ADMIN_UID?'Administrator — '+(d.email||'নিজের হিসাব'):(d.name||d.email||'User '+uid.slice(0,8));}
 async function e24RenderAdminUsers(){
  const panel=document.getElementById('e24-admin-panel'),select=document.getElementById('e24-admin-user-select');if(!panel||!select||!isAdmin)return;
  panel.hidden=false;
@@ -1711,7 +1711,7 @@ async function e24RenderAdminRoleManager(){
  }catch(err){console.error('Admin roles load failed:',err);if(status)status.textContent='Admin তালিকা লোড হয়নি: '+err.message;}
 }
 async function e24SaveAdminRole(){
- if(!isMainAdmin){showToast('শুধু Main Admin এই কাজ করতে পারবেন।');return;}
+ if(!isMainAdmin){showToast('শুধু Administrator এই কাজ করতে পারবেন।');return;}
  const uid=document.getElementById('e24-admin-role-user')?.value,role=document.getElementById('e24-admin-role-choice')?.value,status=document.getElementById('e24-admin-role-status');
  if(!uid){showToast('ব্যবহারকারী নির্বাচন করুন');return;}
  const managedUsers=[];
@@ -1725,7 +1725,7 @@ try{
  }catch(err){showToast('Role সংরক্ষণ হয়নি: '+err.message);if(status)status.textContent='Role সংরক্ষণ হয়নি: '+err.message;}
 }
 async function e24DeleteSelectedUser(){
- if(!isMainAdmin){showToast('শুধু Main Admin এই কাজ করতে পারবেন।');return;}
+ if(!isMainAdmin){showToast('শুধু Administrator এই কাজ করতে পারবেন।');return;}
  const uid=document.getElementById('e24-admin-role-user')?.value;if(!uid){showToast('ব্যবহারকারী নির্বাচন করুন');return;}
  const u=e24AdminUsersCache.find(x=>x.uid===uid),label=u?.data?.email||u?.data?.name||uid;
  if(!(await showAppConfirm('সতর্কতা: '+label+'-এর Firebase Login, গ্রাহক, লেনদেন, খাতা ও সংরক্ষিত User Data স্থায়ীভাবে মুছে ফেলার অনুরোধ করা হবে। এই কাজ ফেরানো যাবে না।','ব্যবহারকারী স্থায়ীভাবে মুছবেন?')))return;

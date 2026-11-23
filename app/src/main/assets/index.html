@@ -1447,7 +1447,7 @@
       const homeFab=document.getElementById('home-transaction-fab');if(homeFab)homeFab.style.display=pageKey==='1'?'flex':'none';
       if(pageKey==='1') e24ApplyHomeHeaderName();
       else if(typeof e24CloseNotificationPanel==='function') e24CloseNotificationPanel();
-      if(typeof e24RenderNotifications==='function'){e24RenderNotifications();if(pageKey==='1')requestAnimationFrame(()=>e24RenderNotifications());}
+      if(typeof window.e24RenderNotifications==='function'){window.e24RenderNotifications();if(pageKey==='1')requestAnimationFrame(()=>window.e24RenderNotifications());}
     }
 
     function openSideMenu(){const menu=document.getElementById('side-menu-backdrop');if(menu){menu.classList.add('show');menu.setAttribute('aria-hidden','false');}}
@@ -1721,6 +1721,7 @@ function e24RenderNotifications(){
  }).join(''):'<div class="e24-notification-empty">'+(e24NotificationArchiveView?'আর্কাইভে কোনো Notification নেই।':'এখনো কোনো Notification নেই।')+'</div>';
  const readAll=document.getElementById('e24-notification-read-all');if(readAll)readAll.disabled=unread+archiveUnread===0;
 }
+window.e24RenderNotifications=e24RenderNotifications;
 function e24CloseNotificationPanel(){
  const panel=document.getElementById('e24-notification-panel');
  if(panel){panel.classList.remove('show');panel.setAttribute('aria-hidden','true');}

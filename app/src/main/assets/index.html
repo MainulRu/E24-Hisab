@@ -784,9 +784,9 @@
     /* Allow vertical swipe to pass from the SMS textarea/history to the page at scroll boundaries. */
 
     /* In-app notification center */
-    .e24-notification-trigger{position:relative;border:0;background:transparent;color:#111;padding:0 2px;font:inherit;cursor:pointer;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:50px}
-    .e24-notification-trigger svg{width:32px;height:32px;display:block}.e24-notification-label,.e24-ai-label{font:500 12px/1.2 'Hind Siliguri',sans-serif;color:#111;white-space:nowrap}
-    .e24-notification-count{position:absolute;top:-2px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:10px;background:#d93025;color:#fff;font:700 9px Arial,sans-serif;display:flex;align-items:center;justify-content:center;border:1px solid #fff}
+    .e24-notification-trigger{position:relative;border:0;background:transparent;color:#fff;padding:0 1px;font:inherit;cursor:pointer;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-width:42px;align-self:center}
+    .e24-notification-trigger svg{width:24px;height:24px;display:block}.e24-notification-label,.e24-ai-label{font:500 10px/1.05 'Hind Siliguri',sans-serif;color:#fff;white-space:nowrap}
+    .e24-notification-count{position:absolute;top:-4px;right:-3px;min-width:16px;height:16px;padding:0 4px;border-radius:10px;background:#d93025;color:#fff;font:700 9px Arial,sans-serif;display:flex;align-items:center;justify-content:center;border:1px solid #fff}
     .e24-notification-count[hidden]{display:none}
     .e24-notification-panel{position:absolute;top:73px;right:8px;width:min(286px,calc(100% - 16px));max-height:72%;display:none;flex-direction:column;background:#fff;border:1px solid #dfe5e1;border-radius:11px;box-shadow:0 8px 28px rgba(0,0,0,.22);z-index:200;overflow:hidden;color:#202124}
     .e24-notification-panel.show{display:flex}
@@ -813,7 +813,7 @@
 
 
     /* E24 Gemini AI Support */
-    .e24-ai-trigger{width:50px;height:auto;flex:0 0 50px;border:0;border-radius:0;background:transparent;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:18px;cursor:pointer;margin-left:7px;padding:0}.e24-ai-trigger svg{width:36px;height:32px;display:block}
+    .e24-ai-trigger{width:42px;height:auto;flex:0 0 42px;border:0;border-radius:0;background:transparent;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;font-size:18px;cursor:pointer;margin-left:4px;padding:0;align-self:center}.e24-ai-trigger svg{width:26px;height:24px;display:block}
     .e24-ai-trigger:active{transform:scale(.95)}
     .e24-ai-backdrop{position:fixed;inset:0;z-index:5000;background:rgba(12,25,18,.48);display:none;align-items:center;justify-content:center;padding:14px}
     .e24-ai-backdrop.show{display:flex}

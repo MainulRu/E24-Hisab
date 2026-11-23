@@ -51,8 +51,7 @@ service cloud.firestore {
     match /users/{userId} {
       // Only the account owner and Full/Main Admin may open a user profile.
       allow get: if signedIn() && (request.auth.uid == userId || canManageUser(userId));
-      // Listing all profiles is reserved for Full and Main Admin. Limited
-      // Admin obtains their assigned list from the trusted Worker API.
+      // Listing all profiles is reserved for Full and Main Admin. Limited Admin cannot list profiles.
       allow list: if isFullAdmin();
 
       // Initial registration profile.

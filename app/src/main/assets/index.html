@@ -811,6 +811,30 @@
       touch-action:pan-y;
     }
 
+
+    /* E24 Gemini AI Support */
+    .e24-ai-trigger{width:38px;height:38px;flex:0 0 38px;border:0;border-radius:50%;background:#e7f5ec;color:#087b45;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;margin-left:7px}
+    .e24-ai-trigger:active{transform:scale(.95)}
+    .e24-ai-backdrop{position:fixed;inset:0;z-index:5000;background:rgba(12,25,18,.48);display:none;align-items:center;justify-content:center;padding:14px}
+    .e24-ai-backdrop.show{display:flex}
+    .e24-ai-window{width:min(100%,470px);height:min( min(720px, calc(100dvh - 28px)), 760px);background:#f7faf8;border-radius:20px;box-shadow:0 18px 55px #0004;display:flex;flex-direction:column;overflow:hidden}
+    .e24-ai-head{background:#008744;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:11px;flex:0 0 auto}
+    .e24-ai-avatar{width:40px;height:40px;border-radius:50%;background:#ffffff24;display:flex;align-items:center;justify-content:center;font-size:20px}
+    .e24-ai-head-copy{flex:1;min-width:0}.e24-ai-head-copy strong{display:block;font-size:17px}.e24-ai-head-copy small{display:block;color:#d9f3e3;font-size:11px}
+    .e24-ai-close{border:0;background:transparent;color:#fff;font-size:23px;padding:5px;cursor:pointer}
+    .e24-ai-messages{flex:1;overflow:auto;padding:15px 12px;display:flex;flex-direction:column;gap:11px;overscroll-behavior:contain}
+    .e24-ai-msg{max-width:88%;padding:10px 12px;border-radius:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+    .e24-ai-msg.assistant{align-self:flex-start;background:#fff;color:#25332b;border:1px solid #e3ebe5;border-top-left-radius:5px}
+    .e24-ai-msg.user{align-self:flex-end;background:#008744;color:#fff;border-top-right-radius:5px}
+    .e24-ai-suggestions{display:flex;flex-wrap:wrap;gap:7px;padding:0 12px 10px}
+    .e24-ai-suggestion{border:1px solid #b9d9c5;background:#fff;color:#087b45;border-radius:18px;padding:7px 10px;font-size:12px;cursor:pointer}
+    .e24-ai-compose{background:#fff;border-top:1px solid #e5ebe7;padding:10px;display:flex;align-items:flex-end;gap:8px}
+    .e24-ai-input{flex:1;min-width:0;max-height:100px;resize:none;border:1px solid #d9e2dc;border-radius:17px;padding:10px 13px;font:inherit;font-size:14px;outline:none}
+    .e24-ai-input:focus{border-color:#008744}
+    .e24-ai-send{width:40px;height:40px;flex:0 0 40px;border:0;border-radius:50%;background:#008744;color:#fff;font-size:16px;cursor:pointer}
+    .e24-ai-send:disabled{opacity:.5;cursor:default}
+    .e24-ai-note{background:#fff;padding:0 12px 9px;text-align:center;color:#77847c;font-size:10px}
+    @media(max-width:480px){.e24-ai-backdrop{padding:0}.e24-ai-window{width:100%;height:100%;height:100dvh;border-radius:0}.e24-ai-head{padding-top:max(14px,env(safe-area-inset-top))}.e24-ai-compose{padding-bottom:max(10px,env(safe-area-inset-bottom))}}
 </style>
 </head>
 <body>
@@ -832,6 +856,7 @@
       <div class="app-bar" id="dynamic-app-bar">
         <i class="fa-solid fa-bars interactive-icon" role="button" tabindex="0" aria-label="মেনু খুলুন"></i>
         <span class="app-title" id="bar-title">E24 Hisab</span>
+        <button type="button" class="e24-ai-trigger" id="e24-ai-trigger" aria-label="AI Support" title="AI Support"><i class="fa-solid fa-robot"></i></button>
         <button type="button" class="e24-notification-trigger" id="e24-notification-bell" aria-label="নোটিফিকেশন"><i class="fa-regular fa-bell"></i><span class="e24-notification-count" id="e24-notification-count" hidden>0</span></button>
       </div>
 
@@ -841,6 +866,30 @@
       </div>
 
       <!-- Toast Message -->
+      
+      <div class="e24-ai-backdrop" id="e24-ai-backdrop" aria-hidden="true">
+        <section class="e24-ai-window" role="dialog" aria-modal="true" aria-label="E24 AI Support">
+          <header class="e24-ai-head">
+            <div class="e24-ai-avatar"><i class="fa-solid fa-robot"></i></div>
+            <div class="e24-ai-head-copy"><strong>E24 AI Support</strong><small>Gemini সহকারী · অনলাইন</small></div>
+            <button type="button" class="e24-ai-close" id="e24-ai-close" aria-label="বন্ধ করুন"><i class="fa-solid fa-xmark"></i></button>
+          </header>
+          <div class="e24-ai-messages" id="e24-ai-messages" aria-live="polite">
+            <div class="e24-ai-msg assistant">স্বাগতম! আমি E24 Hisab-এর AI সহকারী। অ্যাপের ফিচার বা ব্যবহারবিধি নিয়ে বাংলায় প্রশ্ন করুন।</div>
+          </div>
+          <div class="e24-ai-suggestions" id="e24-ai-suggestions">
+            <button type="button" class="e24-ai-suggestion">নতুন গ্রাহক কীভাবে যোগ করব?</button>
+            <button type="button" class="e24-ai-suggestion">বকেয়া হিসাব কীভাবে দেখব?</button>
+            <button type="button" class="e24-ai-suggestion">Recharge কীভাবে করব?</button>
+          </div>
+          <div class="e24-ai-compose">
+            <textarea class="e24-ai-input" id="e24-ai-input" rows="1" maxlength="1000" placeholder="আপনার প্রশ্ন লিখুন..." aria-label="আপনার প্রশ্ন"></textarea>
+            <button type="button" class="e24-ai-send" id="e24-ai-send" aria-label="পাঠান"><i class="fa-solid fa-paper-plane"></i></button>
+          </div>
+          <div class="e24-ai-note">গ্রাহকের ব্যক্তিগত তথ্য, পাসওয়ার্ড বা OTP লিখবেন না। AI উত্তর ভুল হতে পারে।</div>
+        </section>
+      </div>
+
       <div class="toast-msg" id="toast">নোটিফিকেশন!</div>
 
       <div class="side-menu-backdrop" id="side-menu-backdrop" aria-hidden="true">
@@ -2008,6 +2057,60 @@ if(adminList)adminList.addEventListener('click',async e=>{
  }finally{button.disabled=false;}
 });
 }
+
+
+/* E24 Gemini AI Support — general app guidance only; never send account/ledger data. */
+const e24AiHistory=[];
+function e24AiAddMessage(role,text){
+ const list=document.getElementById('e24-ai-messages');if(!list)return;
+ const item=document.createElement('div');item.className='e24-ai-msg '+(role==='user'?'user':'assistant');item.textContent=String(text||'');
+ list.appendChild(item);list.scrollTop=list.scrollHeight;
+}
+function e24AiOpen(){
+ if(!e24Auth.currentUser){showToast('AI Support ব্যবহার করতে আগে Login করুন');return;}
+ const panel=document.getElementById('e24-ai-backdrop');if(!panel)return;
+ panel.classList.add('show');panel.setAttribute('aria-hidden','false');
+ setTimeout(()=>document.getElementById('e24-ai-input')?.focus(),80);
+}
+function e24AiClose(){
+ const panel=document.getElementById('e24-ai-backdrop');if(!panel)return;
+ panel.classList.remove('show');panel.setAttribute('aria-hidden','true');
+}
+async function e24AiSend(prefill){
+ const input=document.getElementById('e24-ai-input'),button=document.getElementById('e24-ai-send');
+ const message=String(prefill??input?.value??'').trim();
+ if(!message)return;
+ if(message.length>1000){showToast('প্রশ্ন ১০০০ অক্ষরের মধ্যে লিখুন');return;}
+ if(!e24Auth.currentUser){showToast('আগে Login করুন');return;}
+ if(input)input.value='';
+ const suggestions=document.getElementById('e24-ai-suggestions');if(suggestions)suggestions.hidden=true;
+ e24AiAddMessage('user',message);
+ const history=e24AiHistory.slice(-8);
+ e24AiHistory.push({role:'user',text:message});
+ if(button)button.disabled=true;
+ const typing=document.createElement('div');typing.className='e24-ai-msg assistant';typing.textContent='উত্তর তৈরি হচ্ছে...';
+ const list=document.getElementById('e24-ai-messages');list.appendChild(typing);list.scrollTop=list.scrollHeight;
+ try{
+  const token=await e24Auth.currentUser.getIdToken();
+  const response=await fetch(E24_OTP_API+'/ai-support',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({message,history})});
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok||result.success!==true)throw new Error(result.message||'AI উত্তর দিতে পারেনি।');
+  typing.textContent=result.reply||'দুঃখিত, এই মুহূর্তে উত্তর পাওয়া যায়নি।';
+  e24AiHistory.push({role:'model',text:typing.textContent});
+  if(e24AiHistory.length>12)e24AiHistory.splice(0,e24AiHistory.length-12);
+ }catch(error){
+  typing.textContent=error.message||'সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+ }finally{
+  if(button)button.disabled=false;
+  list.scrollTop=list.scrollHeight;
+ }
+}
+document.getElementById('e24-ai-trigger')?.addEventListener('click',e24AiOpen);
+document.getElementById('e24-ai-close')?.addEventListener('click',e24AiClose);
+document.getElementById('e24-ai-backdrop')?.addEventListener('click',e=>{if(e.target.id==='e24-ai-backdrop')e24AiClose();});
+document.getElementById('e24-ai-send')?.addEventListener('click',()=>e24AiSend());
+document.getElementById('e24-ai-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();e24AiSend();}});
+document.getElementById('e24-ai-suggestions')?.addEventListener('click',e=>{const b=e.target.closest('.e24-ai-suggestion');if(b)e24AiSend(b.textContent);});
 
 const e24BootStartedAt=performance.now();
 document.addEventListener('DOMContentLoaded',e24SetupAuthUI);

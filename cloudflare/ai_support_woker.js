@@ -181,9 +181,33 @@ async function getAuthenticatedFirebaseUser(request, env) {
 }
 __name(getAuthenticatedFirebaseUser, "getAuthenticatedFirebaseUser");
 
+var geminiModelListChecked = false;
+async function logAvailableGeminiModels(env) {
+  if (geminiModelListChecked || !env.GEMINI_API_KEY) return;
+  geminiModelListChecked = true;
+  try {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
+      headers: { "x-goog-api-key": env.GEMINI_API_KEY }
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      console.error("Gemini models.list failed:", response.status, data.error?.status || "API_ERROR", data.error?.message || "No error message returned");
+      return;
+    }
+    const available = (data.models || [])
+      .filter((model) => (model.supportedGenerationMethods || []).includes("generateContent"))
+      .map((model) => model.name);
+    console.log("Gemini models supporting generateContent:", JSON.stringify(available));
+  } catch (error) {
+    console.error("Gemini models.list connection failed:", error.message);
+  }
+}
+__name(logAvailableGeminiModels, "logAvailableGeminiModels");
+
 async function handleAiSupport(request, env) {
   const auth = await getAuthenticatedFirebaseUser(request, env);
   if (auth.error) return auth.error;
+  await logAvailableGeminiModels(env);
   if (!env.GEMINI_API_KEY) {
     return json({ success: false, message: "AI Support এখনো কনফিগার করা হয়নি।" }, 503);
   }

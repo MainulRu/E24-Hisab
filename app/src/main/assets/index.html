@@ -1447,7 +1447,7 @@
       const homeFab=document.getElementById('home-transaction-fab');if(homeFab)homeFab.style.display=pageKey==='1'?'flex':'none';
       if(pageKey==='1') e24ApplyHomeHeaderName();
       else if(typeof e24CloseNotificationPanel==='function') e24CloseNotificationPanel();
-      if(typeof e24RenderNotifications==='function') e24RenderNotifications();
+      if(typeof e24RenderNotifications==='function'){e24RenderNotifications();if(pageKey==='1')requestAnimationFrame(()=>e24RenderNotifications());}
     }
 
     function openSideMenu(){const menu=document.getElementById('side-menu-backdrop');if(menu){menu.classList.add('show');menu.setAttribute('aria-hidden','false');}}
@@ -1706,7 +1706,7 @@ function e24NotificationEscape(value){
 let e24NotificationArchiveView=false;
 function e24RenderNotifications(){
  const panel=document.getElementById('e24-notification-panel'),list=document.getElementById('e24-notification-list'),badge=document.getElementById('e24-notification-count');
- if(!db||!Array.isArray(db.notifications))return;
+ if(!db)return;
  e24EnsureNotificationData();
  const unread=db.notifications.filter(x=>!x.read).length,archiveUnread=db.notificationArchive.filter(x=>!x.read).length,archiveCount=db.notificationArchive.length;
  if(badge){badge.textContent=unread>99?'99+':String(unread);badge.hidden=unread===0;}

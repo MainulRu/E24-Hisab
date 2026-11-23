@@ -1,0 +1,10 @@
+E24 Hisab full repository backup
+Backup folder: backups/full-backup-2026-11-24/
+Source repository: https://github.com/MainulRu/E24-Hisab
+Source branch: main
+Source commit: 64794ca5cb39ea80e4d9d039c1ebf0faacced729
+Backup date: 2026-11-24
+Files copied: 27
+Method: Git tree snapshot; each file entry points to the exact source Git blob (no content rewriting).
+Includes the existing backups directory as it existed at the source commit.
+This is a source-code repository backup. It does not include external Firebase/Cloudflare runtime data, secrets stored outside Git, local MySQL data, or untracked local files.

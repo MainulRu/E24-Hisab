@@ -1,0 +1,112 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isMainAdmin() {
+      return signedIn()
+        && (
+          request.auth.uid == 'exITNpwyRNaWpoMWpW6BgMcMGbf2'
+          || (
+            request.auth.token.email == 'mainul.ru.ac.bd@gmail.com'
+            && request.auth.token.email_verified == true
+          )
+        );
+    }
+
+    function adminRolePath() {
+      return /databases/$(database)/documents/adminRoles/$(request.auth.uid);
+    }
+
+    function hasAdminRole(roleName) {
+      return signedIn()
+        && exists(adminRolePath())
+        && get(adminRolePath()).data.role == roleName
+        && get(adminRolePath()).data.active == true
+        && request.auth.token.email_verified == true;
+    }
+
+    function isFullAdmin() {
+      return isMainAdmin() || hasAdminRole('full');
+    }
+
+    // Limited Admins cannot directly read or modify another user's profile or ledger.
+    // Recharge approvals are performed only by the trusted Admin Worker.
+    function canManageUser(userId) {
+      return isFullAdmin();
+    }
+
+    // Admin role records are private. Only the trusted Admin Worker uses the
+    // service account to read/write them; browser clients cannot alter roles.
+    match /adminRoles/{adminUid} {
+      allow read, write: if false;
+    }
+
+    match /users/{userId} {
+      // Only the account owner and Full/Main Admin may open a user profile.
+      allow get: if signedIn() && (request.auth.uid == userId || canManageUser(userId));
+      // Listing all profiles is reserved for Full and Main Admin. Limited Admin cannot list profiles.
+      allow list: if isFullAdmin();
+
+      // Initial registration profile.
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['email', 'mobile', 'emailVerified', 'createdAt'])
+        && request.resource.data.email is string
+        && request.resource.data.emailVerified == request.auth.token.email_verified
+        && (!('mobile' in request.resource.data) || request.resource.data.mobile is string);
+
+      // Account owner can update only their own profile fields.
+      // Profile photo is stored as a compressed data URL with a size limit.
+      allow update: if signedIn()
+          && request.auth.uid == userId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'email', 'mobile', 'emailVerified',
+            'name', 'organizationName', 'profilePhotoData', 'updatedAt'
+          ])
+          && request.resource.data.email is string
+          && request.resource.data.emailVerified == request.auth.token.email_verified
+          && (!('mobile' in request.resource.data) || request.resource.data.mobile is string)
+          && (!('name' in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() <= 100))
+          && (!('organizationName' in request.resource.data) || (request.resource.data.organizationName is string && request.resource.data.organizationName.size() <= 120))
+          && (!('profilePhotoData' in request.resource.data) || (request.resource.data.profilePhotoData is string && request.resource.data.profilePhotoData.size() <= 600000))
+          && (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is timestamp);
+
+      allow delete: if isMainAdmin();
+
+      function ownerWalletBalanceCannotIncrease() {
+        return !('smsWalletBalance' in resource.data)
+          ? (!('smsWalletBalance' in request.resource.data)
+              || request.resource.data.smsWalletBalance == 0)
+          : ('smsWalletBalance' in request.resource.data
+              && request.resource.data.smsWalletBalance is number
+              && request.resource.data.smsWalletBalance <= resource.data.smsWalletBalance);
+      }
+
+      match /data/{documentId} {
+        // Account owners may read their own ledger. Full/Main Admin can read all ledgers.
+        allow read: if signedIn()
+          && (request.auth.uid == userId || canManageUser(userId));
+
+        // A new main ledger starts with zero SMS Wallet balance.
+        allow create: if canManageUser(userId)
+          || (signedIn()
+            && request.auth.uid == userId
+            && (documentId != 'main'
+              || !('smsWalletBalance' in request.resource.data)
+              || request.resource.data.smsWalletBalance == 0));
+
+        // Client-side writes may debit the wallet (e.g. SMS usage), but can never
+        // increase its balance. Trusted payment backend uses Firebase Admin credentials.
+        allow update: if canManageUser(userId)
+          || (signedIn()
+            && request.auth.uid == userId
+            && (documentId != 'main' || ownerWalletBalanceCannotIncrease()));
+
+        allow delete: if canManageUser(userId);
+      }
+    }
+  }
+}

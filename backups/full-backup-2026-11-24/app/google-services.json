@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "186986158022",
+    "project_id": "e24-hisab",
+    "storage_bucket": "e24-hisab.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:186986158022:android:9c580145c686e38ca0c4c7",
+        "android_client_info": {
+          "package_name": "com.e24hisab"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACwZ_KCPGepGU0ZqCKsFsN9drntbGMsFk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

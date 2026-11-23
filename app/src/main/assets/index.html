@@ -829,12 +829,33 @@
     .e24-ai-window{width:min(100%,470px);height:min( min(720px, calc(100dvh - 28px)), 760px);background:#f7faf8;border-radius:20px;box-shadow:0 18px 55px #0004;display:flex;flex-direction:column;overflow:hidden}
     .e24-ai-head{background:var(--primary-green);color:#fff;padding:10px 14px;min-height:58px;display:flex;align-items:center;gap:12px;flex:0 0 auto;border-bottom:0;box-shadow:0 2px 5px rgba(0,0,0,.12)}
     .e24-ai-avatar{display:none}
-    .e24-ai-head-copy{flex:1;min-width:0}.e24-ai-head-copy strong{display:block;font-size:19px;font-weight:600;color:#fff}.e24-ai-head-copy small{display:none}
+    .e24-ai-head-copy{flex:1;min-width:0}.e24-ai-head-copy strong{display:block;font-size:16px;font-weight:600;color:#fff}.e24-ai-head-copy small{display:none}
     .e24-ai-close{width:32px;height:36px;flex:0 0 32px;border:0;background:transparent;color:#fff;font-size:23px;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
     .e24-ai-helpline{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:0 12px;border:0;border-radius:20px;background:rgba(255,255,255,.16);color:#fff;font:600 13px/1 inherit;white-space:nowrap}
     .e24-ai-head-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
     .e24-ai-history{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:36px;padding:0 8px;border:0;border-radius:20px;background:transparent;color:#fff;font:600 13px/1 inherit;white-space:nowrap;cursor:pointer}
-    .e24-ai-history i{font-size:19px}
+    .e24-ai-helpline{font-size:11px;min-height:32px;padding:0 9px;gap:5px;text-decoration:none}
+    .e24-ai-helpline i{font-size:15px}
+    .e24-ai-history{font-size:11px;min-height:32px;gap:4px;padding:0 6px}
+    .e24-ai-history i{font-size:16px}
+    .e24-ai-close{font-size:20px}
+    .e24-ai-messages{padding:12px 10px;gap:9px}
+    .e24-ai-msg{font-size:13px;padding:8px 10px;line-height:1.5}
+    .e24-ai-suggestion{font-size:11px;padding:6px 9px}
+    .e24-ai-input{font-size:13px;padding:9px 11px}
+    .e24-ai-send{width:38px;height:38px;flex-basis:38px;font-size:14px}
+    .e24-ai-note{font-size:9px}
+    .e24-ai-history-view{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;background:#f7faf8}
+    .e24-ai-history-view[hidden]{display:none}
+    .e24-ai-window.history-open .e24-ai-messages,.e24-ai-window.history-open .e24-ai-suggestions,.e24-ai-window.history-open .e24-ai-compose,.e24-ai-window.history-open .e24-ai-note{display:none}
+    .e24-ai-history-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#fff;border-bottom:1px solid #e5ebe7;font-size:13px}
+    .e24-ai-history-toolbar button{border:0;border-radius:16px;background:#e6f4ea;color:#087b45;padding:7px 10px;font-size:11px;display:flex;align-items:center;gap:5px}
+    .e24-ai-history-items{overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+    .e24-ai-history-item{background:#fff;border:1px solid #e3ebe5;border-radius:10px;padding:8px 10px;max-width:94%;font-size:12px;overflow-wrap:anywhere}
+    .e24-ai-history-item.user{align-self:flex-end;background:#e6f4ea}
+    .e24-ai-history-item strong{font-size:10px;color:#087b45}
+    .e24-ai-history-item p{margin:3px 0 0;white-space:pre-wrap;line-height:1.45}
+    .e24-ai-history-empty{padding:22px 10px;text-align:center;color:#7b8490;font-size:12px}
     .e24-ai-messages{flex:1;overflow:auto;padding:15px 12px;display:flex;flex-direction:column;gap:11px;overscroll-behavior:contain}
     .e24-ai-msg{max-width:88%;padding:10px 12px;border-radius:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
     .e24-ai-msg.assistant{align-self:flex-start;background:#fff;color:#25332b;border:1px solid #e3ebe5;border-top-left-radius:5px}
@@ -886,12 +907,16 @@
             <button type="button" class="e24-ai-close" id="e24-ai-close" aria-label="ফিরে যান"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="e24-ai-head-copy"><strong>সাপোর্ট</strong></div>
             <div class="e24-ai-head-actions">
-              <span class="e24-ai-helpline" aria-label="হেল্পলাইন"><i class="fa-solid fa-headset" aria-hidden="true"></i><span>হেল্পলাইন</span></span>
+              <a class="e24-ai-helpline" href="tel:+8801737537688" aria-label="+8801737-537688 নম্বরে কল করুন"><i class="fa-solid fa-headset" aria-hidden="true"></i><span>হেল্পলাইন</span></a>
               <button type="button" class="e24-ai-history" id="e24-ai-history" aria-label="চ্যাট হিস্ট্রি"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>হিস্ট্রি</span></button>
             </div>
           </header>
           <div class="e24-ai-messages" id="e24-ai-messages" aria-live="polite">
             <div class="e24-ai-msg assistant">স্বাগতম! আমি E24 Hisab-এর AI সহকারী। অ্যাপের ফিচার বা ব্যবহারবিধি নিয়ে বাংলায় প্রশ্ন করুন।</div>
+          </div>
+          <div class="e24-ai-history-view" id="e24-ai-history-view" hidden>
+            <div class="e24-ai-history-toolbar"><strong>চ্যাট হিস্ট্রি</strong><button type="button" id="e24-ai-history-back"><i class="fa-solid fa-arrow-left"></i> চ্যাটে ফিরুন</button></div>
+            <div class="e24-ai-history-items" id="e24-ai-history-items"></div>
           </div>
           <div class="e24-ai-suggestions" id="e24-ai-suggestions">
             <button type="button" class="e24-ai-suggestion">নতুন গ্রাহক কীভাবে যোগ করব?</button>
@@ -2129,7 +2154,18 @@ async function e24AiSend(prefill){
 }
 document.getElementById('e24-ai-trigger')?.addEventListener('click',e24AiOpen);
 document.getElementById('e24-ai-close')?.addEventListener('click',e24AiClose);
-document.getElementById('e24-ai-history')?.addEventListener('click',()=>{const list=document.getElementById('e24-ai-messages');if(list){list.scrollTo({top:0,behavior:'smooth'});showToast('এই সেশনের চ্যাট হিস্ট্রি দেখানো হচ্ছে');}});
+function e24AiShowHistory(){
+ const win=document.querySelector('.e24-ai-window'),view=document.getElementById('e24-ai-history-view'),items=document.getElementById('e24-ai-history-items');
+ if(!win||!view||!items)return;
+ items.textContent='';
+ const rows=e24AiHistory.slice();
+ if(!rows.length){const empty=document.createElement('div');empty.className='e24-ai-history-empty';empty.textContent='এখনো কোনো চ্যাট হিস্ট্রি নেই।';items.appendChild(empty);}
+ rows.forEach(entry=>{const item=document.createElement('div');item.className='e24-ai-history-item '+(entry.role==='user'?'user':'assistant');const who=document.createElement('strong');who.textContent=entry.role==='user'?'আপনি':'E24 AI';const body=document.createElement('p');body.textContent=String(entry.text||'');item.append(who,body);items.appendChild(item);});
+ win.classList.add('history-open');view.hidden=false;
+}
+function e24AiHideHistory(){document.querySelector('.e24-ai-window')?.classList.remove('history-open');const view=document.getElementById('e24-ai-history-view');if(view)view.hidden=true;}
+document.getElementById('e24-ai-history')?.addEventListener('click',e24AiShowHistory);
+document.getElementById('e24-ai-history-back')?.addEventListener('click',e24AiHideHistory);
 document.getElementById('e24-ai-backdrop')?.addEventListener('click',e=>{if(e.target.id==='e24-ai-backdrop')e24AiClose();});
 document.getElementById('e24-ai-send')?.addEventListener('click',()=>e24AiSend());
 document.getElementById('e24-ai-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();e24AiSend();}});

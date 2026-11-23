@@ -32,10 +32,6 @@ service cloud.firestore {
       return isMainAdmin() || hasAdminRole('full');
     }
 
-    function isLimitedAdmin() {
-      return hasAdminRole('limited');
-    }
-
     // Limited Admins cannot directly read or modify another user's profile or ledger.
     // Recharge approvals are performed only by the trusted Admin Worker.
     function canManageUser(userId) {

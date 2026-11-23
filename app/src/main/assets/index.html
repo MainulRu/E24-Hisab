@@ -1202,10 +1202,6 @@
                 <!-- Developer note: ব্যবসা প্রতিষ্ঠানের নাম Header-এ দেখানো হয়; ফাঁকা থাকলে ডিফল্ট E24 Hisab। -->
                 <label>মোবাইল নম্বর</label><input id="e24-settings-mobile" type="tel" placeholder="মোবাইল নম্বর">
                 <div class="e24-settings-actions"><button id="e24-save-profile" type="button">প্রোফাইল সংরক্ষণ</button></div>
-                <div class="e24-settings-divider"></div>
-                <label>বর্তমান Email</label><div class="e24-account-email" id="e24-account-email">লগইন হয়নি</div>
-                <div class="e24-settings-actions"><button class="secondary" type="button" onclick="e24ChangeEmail()">Email পরিবর্তন</button><button class="secondary" type="button" onclick="e24ResetPassword()">Password Reset</button></div>
-                <div class="e24-admin-label" id="e24-account-role">—</div>
               </div>
             </details>
             <details class="e24-settings-card">
@@ -1265,6 +1261,12 @@
               <summary><span class="e24-settings-icon"><i class="fa-solid fa-user-shield"></i></span> অ্যাডমিন সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
               <!-- Developer note: এই settings বিভাগটি অনুমোদিত Admin role-এর জন্য সীমাবদ্ধ। -->
               <div class="e24-settings-content">
+                <section class="sms-wallet-panel" aria-label="Account access settings">
+                  <strong><i class="fa-solid fa-user-lock"></i> Account & Security</strong>
+                  <label>বর্তমান Email</label><div class="e24-account-email" id="e24-account-email">লগইন হয়নি</div>
+                  <div class="e24-settings-actions"><button class="secondary" type="button" onclick="e24ChangeEmail()">Email পরিবর্তন</button><button class="secondary" type="button" onclick="e24ResetPassword()">Password Reset</button></div>
+                  <div class="e24-admin-label" id="e24-account-role">—</div>
+                </section>
                 <section class="sms-wallet-panel" id="sms-admin-recharge-panel" hidden>
                   <strong><i class="fa-solid fa-user-shield"></i> Admin: Recharge Requests</strong>
                   <!-- Developer note: Recharge Admin শুধু Pending Request Approve করতে পারে; Full/Main Admin Approve বা Cancel করতে পারেন। -->

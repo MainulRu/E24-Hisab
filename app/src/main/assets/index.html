@@ -2161,7 +2161,7 @@ async function e24AiSend(prefill){
   list.scrollTop=list.scrollHeight;
  }
 }
-document.getElementById('e24-ai-trigger')?.addEventListener('click',e24AiOpen);
+// Support trigger uses delegated click handling so recreated Home headers keep working.
 document.getElementById('e24-ai-close')?.addEventListener('click',e24AiClose);
 function e24AiShowHistory(){
  const win=document.querySelector('.e24-ai-window'),view=document.getElementById('e24-ai-history-view'),items=document.getElementById('e24-ai-history-items');

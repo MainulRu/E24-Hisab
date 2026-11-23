@@ -1722,6 +1722,21 @@ function e24RenderNotifications(){
  }).join(''):'<div class="e24-notification-empty">'+(e24NotificationArchiveView?'আর্কাইভে কোনো Notification নেই।':'এখনো কোনো Notification নেই।')+'</div>';
  const readAll=document.getElementById('e24-notification-read-all');if(readAll)readAll.disabled=unread+archiveUnread===0;
 }
+function e24BindNotificationHeaderObserver(){
+ const bar=document.getElementById('dynamic-app-bar');
+ if(!bar||bar.dataset.e24BadgeObserver==='1')return;
+ bar.dataset.e24BadgeObserver='1';
+ const observer=new MutationObserver(()=>{
+  if(!document.getElementById('e24-notification-count'))return;
+  try{e24RenderNotifications();}catch(err){console.error('Notification badge refresh failed:',err);}
+ });
+ observer.observe(bar,{childList:true,subtree:true});
+}
+if(document.readyState==='loading'){
+ document.addEventListener('DOMContentLoaded',e24BindNotificationHeaderObserver,{once:true});
+}else{
+ e24BindNotificationHeaderObserver();
+}
 function e24CloseNotificationPanel(){
  const panel=document.getElementById('e24-notification-panel');
  if(panel){panel.classList.remove('show');panel.setAttribute('aria-hidden','true');}

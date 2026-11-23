@@ -792,6 +792,10 @@
     .e24-notification-panel.show{display:flex}
     .e24-notification-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px;border-bottom:1px solid #edf0ed;font-size:13px;font-weight:700}
     .e24-notification-read-all{border:0;background:transparent;color:#087a35;font:600 11px 'Hind Siliguri',sans-serif;cursor:pointer;padding:3px}
+    .e24-notification-actions{display:flex;align-items:center;gap:6px}
+    .e24-notification-archive{border:0;background:#eef3ef;color:#365443;border-radius:5px;padding:4px 6px;font:600 10px 'Hind Siliguri',sans-serif;cursor:pointer;white-space:nowrap}
+    .e24-notification-archive.active{background:#dceee2;color:#087a35}
+
     .e24-notification-list{overflow-y:auto;overscroll-behavior:contain;max-height:330px}
     .e24-notification-item{display:block;width:100%;border:0;border-bottom:1px solid #f0f2f0;background:#fff;text-align:left;padding:9px 11px;color:#202124;font:inherit;cursor:pointer}
     .e24-notification-item.unread{background:#f0f8f2}
@@ -832,7 +836,7 @@
       </div>
 
       <div class="e24-notification-panel" id="e24-notification-panel" aria-hidden="true">
-        <div class="e24-notification-head"><span>নোটিফিকেশন</span><button type="button" class="e24-notification-read-all" id="e24-notification-read-all">সবগুলো Read করুন</button></div>
+        <div class="e24-notification-head"><span id="e24-notification-heading">নোটিফিকেশন</span><div class="e24-notification-actions"><button type="button" class="e24-notification-archive" id="e24-notification-archive">আর্কাইভ (0)</button><button type="button" class="e24-notification-read-all" id="e24-notification-read-all">সবগুলো Read করুন</button></div></div>
         <div class="e24-notification-list" id="e24-notification-list"><div class="e24-notification-empty">এখনো কোনো Notification নেই।</div></div>
       </div>
 
@@ -1445,7 +1449,7 @@
           const previousDue=customerTotals(cid).due,transactionId=id();
           db.transactions.push({id:transactionId,customerId:cid,type:db.txType,amount,paid:initialPaid,note,date:selectedDate.toLocaleDateString('bn-BD')});
           const updatedDue=customerTotals(cid).due;
-          if(previousDue>0&&updatedDue<=0){e24EnsureNotificationData();const now=new Date(),dayKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0'),reminder=db.notifications.find(x=>String(x.id)==='due-reminder-'+String(cid)+'-'+dayKey);if(reminder)reminder.read=true;const customer=db.customers.find(x=>String(x.id)===String(cid));e24QueueNotification('customer-paid-'+transactionId,'customer-paid','বকেয়া সম্পূর্ণ পরিশোধ',String(customer?.name||'গ্রাহক')+'-এর বকেয়া সম্পূর্ণ পরিশোধ হয়েছে।','3',cid);}
+          if(previousDue>0&&updatedDue<=0){e24EnsureNotificationData();const now=new Date(),dayKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0'),reminder=[...db.notifications,...(db.notificationArchive||[])].find(x=>String(x.id)==='due-reminder-'+String(cid)+'-'+dayKey);if(reminder)reminder.read=true;const customer=db.customers.find(x=>String(x.id)===String(cid));e24QueueNotification('customer-paid-'+transactionId,'customer-paid','বকেয়া সম্পূর্ণ পরিশোধ',String(customer?.name||'গ্রাহক')+'-এর বকেয়া সম্পূর্ণ পরিশোধ হয়েছে।','3',cid);}
           db.selectedCustomerId=cid;save();refreshAll();e24RenderNotifications();showToast('লেনদেন সংরক্ষিত হয়েছে');switchPage('3');
         };
       }
@@ -1555,15 +1559,17 @@ async function e24LoadData(uid){const started=performance.now();activeDataUid=ui
 let e24NotificationPollTimer=null;
 function e24EnsureNotificationData(){
  if(!Array.isArray(db.notifications))db.notifications=[];
+ if(!Array.isArray(db.notificationArchive))db.notificationArchive=[];
  if(!db.notificationMeta||typeof db.notificationMeta!=='object')db.notificationMeta={};
  if(!db.notificationMeta.rechargeStatusById||typeof db.notificationMeta.rechargeStatusById!=='object')db.notificationMeta.rechargeStatusById={};
+ if(db.notifications.length>35){const moved=db.notifications.splice(0,db.notifications.length-35);db.notificationArchive=db.notificationArchive.concat(moved);}
 }
 function e24QueueNotification(notificationId,type,title,message,page,customerId){
  e24EnsureNotificationData();
  const key=String(notificationId||'');
- if(!key||db.notifications.some(x=>String(x.id)===key))return false;
+ if(!key||db.notifications.some(x=>String(x.id)===key)||db.notificationArchive.some(x=>String(x.id)===key))return false;
  db.notifications.push({id:key,type:String(type||''),title:String(title||''),message:String(message||''),page:String(page||'1'),customerId:customerId==null?null:String(customerId),createdAt:Date.now(),read:false});
- db.notifications=db.notifications.slice(-100);
+ if(db.notifications.length>35){const moved=db.notifications.splice(0,db.notifications.length-35);db.notificationArchive=db.notificationArchive.concat(moved);}
  return true;
 }
 function e24PersistNotificationState(){
@@ -1577,7 +1583,7 @@ function e24ProcessLoadedNotifications(uid){
  const now=new Date(),dayKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
  (db.customers||[]).forEach(customer=>{
   const due=Number(customerTotals(customer.id).due)||0,reminderId='due-reminder-'+String(customer.id)+'-'+dayKey;
-  const reminder=db.notifications.find(x=>String(x.id)===reminderId);
+  const reminder=[...db.notifications,...(db.notificationArchive||[])].find(x=>String(x.id)===reminderId);
   if(due>0){
    const amount=due.toLocaleString('bn-BD',{maximumFractionDigits:0}),message=String(customer.name||'গ্রাহক')+' সাহেবের ৳'+amount+' বকেয়া রয়েছে।';
    if(reminder){if(reminder.message!==message){reminder.message=message;reminder.createdAt=Date.now();changed=true;}}
@@ -1600,17 +1606,22 @@ function e24ProcessLoadedNotifications(uid){
 function e24NotificationEscape(value){
  return String(value==null?'':value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
+let e24NotificationArchiveView=false;
 function e24RenderNotifications(){
  const panel=document.getElementById('e24-notification-panel'),list=document.getElementById('e24-notification-list'),badge=document.getElementById('e24-notification-count');
  if(!db||!Array.isArray(db.notifications))return;
- const unread=db.notifications.filter(x=>!x.read).length;
+ e24EnsureNotificationData();
+ const unread=db.notifications.filter(x=>!x.read).length,archiveCount=db.notificationArchive.length;
  if(badge){badge.textContent=unread>99?'99+':String(unread);badge.hidden=unread===0;}
  if(!panel||!list)return;
- const rows=db.notifications.slice().sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
+ const rows=(e24NotificationArchiveView?db.notificationArchive:db.notifications).slice().sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
+ const heading=document.getElementById('e24-notification-heading'),archiveButton=document.getElementById('e24-notification-archive');
+ if(heading)heading.textContent=e24NotificationArchiveView?'নোটিফিকেশন আর্কাইভ':'নোটিফিকেশন';
+ if(archiveButton){archiveButton.textContent=e24NotificationArchiveView?'সর্বশেষ ৩৫টি':'আর্কাইভ ('+archiveCount+')';archiveButton.classList.toggle('active',e24NotificationArchiveView);}
  list.innerHTML=rows.length?rows.map(item=>{
   const time=Number(item.createdAt)?new Date(Number(item.createdAt)).toLocaleString('bn-BD',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}):'';
   return '<button type="button" class="e24-notification-item '+(item.read?'':'unread')+'" data-e24-notification-id="'+e24NotificationEscape(item.id)+'"><span class="e24-notification-title">'+e24NotificationEscape(item.title)+'</span><span class="e24-notification-message">'+e24NotificationEscape(item.message)+'</span><span class="e24-notification-time">'+e24NotificationEscape(time)+'</span></button>';
- }).join(''):'<div class="e24-notification-empty">এখনো কোনো Notification নেই।</div>';
+ }).join(''):'<div class="e24-notification-empty">'+(e24NotificationArchiveView?'আর্কাইভে কোনো Notification নেই।':'এখনো কোনো Notification নেই।')+'</div>';
  const readAll=document.getElementById('e24-notification-read-all');if(readAll)readAll.disabled=unread===0;
 }
 function e24CloseNotificationPanel(){
@@ -1636,10 +1647,12 @@ function e24OpenNotification(item){
 document.addEventListener('click',event=>{
  const bell=event.target.closest('#e24-notification-bell');
  if(bell){event.preventDefault();event.stopPropagation();e24ToggleNotificationPanel();return;}
+ const archiveButton=event.target.closest('#e24-notification-archive');
+ if(archiveButton){e24NotificationArchiveView=!e24NotificationArchiveView;e24RenderNotifications();return;}
  const readAll=event.target.closest('#e24-notification-read-all');
- if(readAll){e24EnsureNotificationData();db.notifications.forEach(x=>x.read=true);e24PersistNotificationState();e24RenderNotifications();return;}
+ if(readAll){e24EnsureNotificationData();db.notifications.forEach(x=>x.read=true);db.notificationArchive.forEach(x=>x.read=true);e24PersistNotificationState();e24RenderNotifications();return;}
  const itemButton=event.target.closest('[data-e24-notification-id]');
- if(itemButton){const item=(db.notifications||[]).find(x=>String(x.id)===itemButton.getAttribute('data-e24-notification-id'));e24OpenNotification(item);return;}
+ if(itemButton){const key=itemButton.getAttribute('data-e24-notification-id'),item=[...(db.notifications||[]),...(db.notificationArchive||[])].find(x=>String(x.id)===key);e24OpenNotification(item);return;}
  if(!event.target.closest('#e24-notification-panel'))e24CloseNotificationPanel();
 });
 async function e24CheckRechargeStatusFromCloud(){

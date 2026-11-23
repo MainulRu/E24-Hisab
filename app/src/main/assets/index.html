@@ -784,9 +784,9 @@
     /* Allow vertical swipe to pass from the SMS textarea/history to the page at scroll boundaries. */
 
     /* In-app notification center */
-    .e24-notification-trigger{position:relative;border:0;background:transparent;color:#fff;padding:3px 2px;font:inherit;cursor:pointer;line-height:1}
-    .e24-notification-trigger svg{width:20px;height:20px;display:block}
-    .e24-notification-count{position:absolute;top:-7px;right:-8px;min-width:16px;height:16px;padding:0 4px;border-radius:10px;background:#d93025;color:#fff;font:700 9px Arial,sans-serif;display:flex;align-items:center;justify-content:center;border:1px solid #fff}
+    .e24-notification-trigger{position:relative;border:0;background:transparent;color:#111;padding:0 2px;font:inherit;cursor:pointer;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:50px}
+    .e24-notification-trigger svg{width:32px;height:32px;display:block}.e24-notification-label,.e24-ai-label{font:500 12px/1.2 'Hind Siliguri',sans-serif;color:#111;white-space:nowrap}
+    .e24-notification-count{position:absolute;top:-2px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:10px;background:#d93025;color:#fff;font:700 9px Arial,sans-serif;display:flex;align-items:center;justify-content:center;border:1px solid #fff}
     .e24-notification-count[hidden]{display:none}
     .e24-notification-panel{position:absolute;top:73px;right:8px;width:min(286px,calc(100% - 16px));max-height:72%;display:none;flex-direction:column;background:#fff;border:1px solid #dfe5e1;border-radius:11px;box-shadow:0 8px 28px rgba(0,0,0,.22);z-index:200;overflow:hidden;color:#202124}
     .e24-notification-panel.show{display:flex}
@@ -813,7 +813,7 @@
 
 
     /* E24 Gemini AI Support */
-    .e24-ai-trigger{width:38px;height:38px;flex:0 0 38px;border:0;border-radius:50%;background:#e7f5ec;color:#087b45;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;margin-left:7px}
+    .e24-ai-trigger{width:50px;height:auto;flex:0 0 50px;border:0;border-radius:0;background:transparent;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:18px;cursor:pointer;margin-left:7px;padding:0}.e24-ai-trigger svg{width:36px;height:32px;display:block}
     .e24-ai-trigger:active{transform:scale(.95)}
     .e24-ai-backdrop{position:fixed;inset:0;z-index:5000;background:rgba(12,25,18,.48);display:none;align-items:center;justify-content:center;padding:14px}
     .e24-ai-backdrop.show{display:flex}
@@ -856,8 +856,8 @@
       <div class="app-bar" id="dynamic-app-bar">
         <i class="fa-solid fa-bars interactive-icon" role="button" tabindex="0" aria-label="মেনু খুলুন"></i>
         <span class="app-title" id="bar-title">E24 Hisab</span>
-        <button type="button" class="e24-notification-trigger" id="e24-notification-bell" aria-label="নোটিফিকেশন"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H7l-3.5 2v-5A7.5 7.5 0 1 1 20 11.5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10h8M8 14h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="e24-notification-count" id="e24-notification-count" hidden>0</span></button>
-        <button type="button" class="e24-ai-trigger" id="e24-ai-trigger" aria-label="AI Support" title="AI Support"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 3v2.2M9.5 3h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="4" y="6" width="16" height="14" rx="4" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 12h.01M15.5 12h.01M9 16h6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M2 11v4M22 11v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <button type="button" class="e24-notification-trigger" id="e24-notification-bell" aria-label="ইনবক্স"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 10.5 16 5l12 5.5v15H4v-15Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="m4.5 11 11.5 8 11.5-8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 25.5 12 17M27.5 25.5 20 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span class="e24-notification-label">ইনবক্স</span><span class="e24-notification-count" id="e24-notification-count" hidden>0</span></button>
+        <button type="button" class="e24-ai-trigger" id="e24-ai-trigger" aria-label="সাপোর্ট" title="সাপোর্ট"><svg viewBox="0 0 36 32" width="36" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 5.5C3 3.6 4.6 2 6.5 2h18C26.4 2 28 3.6 28 5.5v12c0 1.9-1.6 3.5-3.5 3.5H13l-7.5 7v-7.2C4 20.2 3 19 3 17.5v-12Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M11 9h20c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-2v4l-5-4h-5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="e24-ai-label">সাপোর্ট</span></button>
       </div>
 
       <div class="e24-notification-panel" id="e24-notification-panel" aria-hidden="true">
@@ -1392,7 +1392,7 @@
       };
 
       if (pageKey === '1') {
-        dynamicBar.innerHTML = `<i class="fa-solid fa-bars interactive-icon"></i><span class="app-title" id="bar-title">E24 Hisab</span><button type="button" class="e24-notification-trigger" id="e24-notification-bell" aria-label="নোটিফিকেশন"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H7l-3.5 2v-5A7.5 7.5 0 1 1 20 11.5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10h8M8 14h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="e24-notification-count" id="e24-notification-count" hidden>0</span></button>`;
+        dynamicBar.innerHTML = `<i class="fa-solid fa-bars interactive-icon"></i><span class="app-title" id="bar-title">E24 Hisab</span><button type="button" class="e24-notification-trigger" id="e24-notification-bell" aria-label="ইনবক্স"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 10.5 16 5l12 5.5v15H4v-15Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="m4.5 11 11.5 8 11.5-8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 25.5 12 17M27.5 25.5 20 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span class="e24-notification-label">ইনবক্স</span><span class="e24-notification-count" id="e24-notification-count" hidden>0</span></button>`;
         const homeTitle = document.getElementById('bar-title');
         if (homeTitle) homeTitle.textContent = window.e24OrgName || 'E24 Hisab';
       } else if (pageKey === '3') {

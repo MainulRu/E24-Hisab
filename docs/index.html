@@ -946,7 +946,7 @@
                 <label>ব্যবসা প্রতিষ্ঠানের নাম</label><input id="e24-settings-organization" type="text" placeholder="ব্যবসা প্রতিষ্ঠানের নাম (ঐচ্ছিক)">
                 <!-- Developer note: ব্যবসা প্রতিষ্ঠানের নাম Header-এ দেখানো হয়; ফাঁকা থাকলে ডিফল্ট E24 Hisab। -->
                 <label>মোবাইল নম্বর</label><input id="e24-settings-mobile" type="tel" placeholder="মোবাইল নম্বর">
-                <div class="e24-settings-actions"><button type="button" onclick="e24SaveProfile()">প্রোফাইল সংরক্ষণ</button></div>
+                <div class="e24-settings-actions"><button id="e24-save-profile" type="button">প্রোফাইল সংরক্ষণ</button></div>
                 <div class="e24-settings-divider"></div>
                 <label>বর্তমান Email</label><div class="e24-account-email" id="e24-account-email">লগইন হয়নি</div>
                 <div class="e24-settings-actions"><button class="secondary" type="button" onclick="e24ChangeEmail()">Email পরিবর্তন</button><button class="secondary" type="button" onclick="e24ResetPassword()">Password Reset</button></div>
@@ -1608,6 +1608,8 @@ function e24PrepareProfilePhoto(file){
   });
 }
 function e24SetupSettings(){
+  const profileSaveButton=document.getElementById('e24-save-profile');
+  if(profileSaveButton)profileSaveButton.onclick=()=>e24SaveProfile();
   const s=e24ReadSettings(),dark=document.getElementById('e24-settings-dark'),notice=document.getElementById('e24-settings-notifications'),language=document.getElementById('e24-settings-language'),restore=document.getElementById('e24-restore-file'),photoInput=document.getElementById('e24-profile-photo-file');
   if(dark){dark.checked=!!s.dark;dark.onchange=()=>{const v=e24ReadSettings();v.dark=dark.checked;localStorage.setItem('e24-app-settings',JSON.stringify(v));document.querySelector('.phone-screen')?.classList.toggle('e24-dark',dark.checked);};}
   if(notice){notice.checked=s.notifications!==false;notice.onchange=()=>{const v=e24ReadSettings();v.notifications=notice.checked;localStorage.setItem('e24-app-settings',JSON.stringify(v));showToast('নোটিফিকেশন পছন্দ সংরক্ষিত হয়েছে');};}

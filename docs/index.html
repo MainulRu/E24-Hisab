@@ -577,6 +577,9 @@
     .e24-ai-head-copy{flex:1;min-width:0}.e24-ai-head-copy strong{display:block;font-size:19px;font-weight:600;color:#fff}.e24-ai-head-copy small{display:none}
     .e24-ai-close{width:32px;height:36px;flex:0 0 32px;border:0;background:transparent;color:#fff;font-size:23px;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
     .e24-ai-helpline{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:0 12px;border:0;border-radius:20px;background:rgba(255,255,255,.16);color:#fff;font:600 13px/1 inherit;white-space:nowrap}
+    .e24-ai-head-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+    .e24-ai-history{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:36px;padding:0 8px;border:0;border-radius:20px;background:transparent;color:#fff;font:600 13px/1 inherit;white-space:nowrap;cursor:pointer}
+    .e24-ai-history i{font-size:19px}
     .e24-ai-messages{flex:1;overflow:auto;padding:15px 12px;display:flex;flex-direction:column;gap:11px;overscroll-behavior:contain}
     .e24-ai-msg{max-width:88%;padding:10px 12px;border-radius:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
     .e24-ai-msg.assistant{align-self:flex-start;background:#fff;color:#25332b;border:1px solid #e3ebe5;border-top-left-radius:5px}
@@ -627,7 +630,10 @@
           <header class="e24-ai-head">
             <button type="button" class="e24-ai-close" id="e24-ai-close" aria-label="ফিরে যান"><i class="fa-solid fa-arrow-left"></i></button>
             <div class="e24-ai-head-copy"><strong>সাপোর্ট</strong></div>
-            <span class="e24-ai-helpline" aria-label="হেল্পলাইন"><i class="fa-solid fa-headset" aria-hidden="true"></i><span>হেল্পলাইন</span></span>
+            <div class="e24-ai-head-actions">
+              <span class="e24-ai-helpline" aria-label="হেল্পলাইন"><i class="fa-solid fa-headset" aria-hidden="true"></i><span>হেল্পলাইন</span></span>
+              <button type="button" class="e24-ai-history" id="e24-ai-history" aria-label="চ্যাট হিস্ট্রি"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>হিস্ট্রি</span></button>
+            </div>
           </header>
           <div class="e24-ai-messages" id="e24-ai-messages" aria-live="polite">
             <div class="e24-ai-msg assistant">স্বাগতম! আমি E24 Hisab-এর AI সহকারী। অ্যাপের ফিচার বা ব্যবহারবিধি নিয়ে বাংলায় প্রশ্ন করুন।</div>
@@ -1868,6 +1874,7 @@ async function e24AiSend(prefill){
 }
 document.getElementById('e24-ai-trigger')?.addEventListener('click',e24AiOpen);
 document.getElementById('e24-ai-close')?.addEventListener('click',e24AiClose);
+document.getElementById('e24-ai-history')?.addEventListener('click',()=>{const list=document.getElementById('e24-ai-messages');if(list){list.scrollTo({top:0,behavior:'smooth'});showToast('এই সেশনের চ্যাট হিস্ট্রি দেখানো হচ্ছে');}});
 document.getElementById('e24-ai-backdrop')?.addEventListener('click',e=>{if(e.target.id==='e24-ai-backdrop')e24AiClose();});
 document.getElementById('e24-ai-send')?.addEventListener('click',()=>e24AiSend());
 document.getElementById('e24-ai-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();e24AiSend();}});

@@ -2117,7 +2117,7 @@
     function closeSideMenu(){const menu=document.getElementById('side-menu-backdrop');if(menu){menu.classList.remove('show');menu.setAttribute('aria-hidden','true');}}
     function openMenuPage(pageKey){closeSideMenu();switchPage(String(pageKey));}
 
-    document.addEventListener('DOMContentLoaded',()=>{const bar=document.getElementById('dynamic-app-bar');if(bar)bar.addEventListener('click',event=>{const icon=event.target.closest('.interactive-icon');if(!icon)return;if(icon.classList.contains('fa-bell'))showToast('নতুন কোনো নোটিফিকেশন নেই');else if(icon.classList.contains('fa-bars')||icon.querySelector('.fa-bars'))openSideMenu();});});
+    document.addEventListener('DOMContentLoaded',()=>{const bar=document.getElementById('dynamic-app-bar');if(bar)bar.addEventListener('click',event=>{const icon=event.target.closest('.interactive-icon');if(!icon)return;if(icon.classList.contains('fa-bell'))showToast('নতুন কোনো নোটিফিকেশন নেই');else if(icon.classList.contains('fa-bars')||icon.querySelector('.fa-bars'))openSideMenu();});document.querySelectorAll('.bottom-nav .nav-item[role="button"]').forEach(item=>item.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();item.click();}}));});
     // side-menu-backdrop-close-handler
     document.addEventListener('DOMContentLoaded',()=>{const backdrop=document.getElementById('side-menu-backdrop');if(backdrop)backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeSideMenu();});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSideMenu();});});
     function printLedger() {

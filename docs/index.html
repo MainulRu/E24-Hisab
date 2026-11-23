@@ -608,7 +608,7 @@
             <div class="current-due-heading"><i class="fa-solid fa-wallet"></i> বর্তমান মোট বাকি</div>
             <div class="current-due-note">সব গ্রাহক</div>
             <div class="current-due-amount" id="current-total-due">৳ 0</div>
-            <div class="current-due-note">আগের বাকি + আজকের নতুন বাকি − পরবর্তী জমা</div>
+            <!-- Developer note: বর্তমান বকেয়া = আগের বাকি + আজকের নতুন বাকি − পরবর্তী জমা। -->
           </div>
 
           <div class="section-banner"><i class="fa-solid fa-chart-line"></i> সাম্প্রতিক লেনদেন</div>
@@ -826,7 +826,7 @@
                 </div>
                 <label>নাম / প্রোফাইল</label><input id="e24-settings-name" type="text" placeholder="আপনার নাম">
                 <label>প্রতিষ্ঠানের নাম</label><input id="e24-settings-organization" type="text" placeholder="প্রতিষ্ঠানের নাম (ঐচ্ছিক)">
-                <div class="e24-settings-hint">এই নামটি হোম পেজের উপরের Header-এ E24 Hisab-এর জায়গায় দেখাবে। ফাঁকা রাখলে E24 Hisab দেখাবে।</div>
+                <!-- Developer note: প্রতিষ্ঠানের নাম Header-এ দেখানো হয়; ফাঁকা থাকলে ডিফল্ট E24 Hisab। -->
                 <label>মোবাইল নম্বর</label><input id="e24-settings-mobile" type="tel" placeholder="মোবাইল নম্বর">
                 <div class="e24-settings-actions"><button type="button" onclick="e24SaveProfile()">প্রোফাইল সংরক্ষণ</button></div>
                 <div class="e24-settings-divider"></div>
@@ -841,7 +841,7 @@
                 <label for="e24-settings-language">ভাষা</label><select id="e24-settings-language"><option value="bn">বাংলা</option><option value="en" disabled>English (শীঘ্রই)</option></select>
                 <div class="e24-settings-row"><label for="e24-settings-dark">ডার্ক থিম</label><input id="e24-settings-dark" type="checkbox" style="width:20px;min-height:20px"></div>
                 <div class="e24-settings-row"><label for="e24-settings-notifications">নোটিফিকেশন পছন্দ</label><input id="e24-settings-notifications" type="checkbox" style="width:20px;min-height:20px"></div>
-                <div class="e24-settings-hint">নোটিফিকেশন পছন্দ সংরক্ষিত হবে। Push notification সেবা আলাদাভাবে চালু করতে হবে।</div>
+                <!-- Developer note: নোটিফিকেশন পছন্দ সংরক্ষিত হয়; Push notification backend আলাদা। -->
               </div>
             </details>
             <details class="e24-settings-card">
@@ -855,18 +855,18 @@
             <details class="e24-settings-card">
               <summary><span class="e24-settings-icon"><i class="fa-solid fa-credit-card"></i></span> পেমেন্ট সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
               <div class="e24-settings-content">
-                <div class="e24-settings-hint">bKash / Nagad / Bank Payment Gateway Configuration এখানে ভবিষ্যতে যুক্ত হবে। এখনো কোনো বাস্তব Gateway সংযুক্ত নেই।</div>
+                <!-- Developer note: bKash/Nagad/Bank gateway এখনো সংযুক্ত নয়; ভবিষ্যৎ integration point। -->
                 <button class="secondary" type="button" onclick="switchPage('5')">পেমেন্ট পেজ দেখুন</button>
               </div>
             </details>
             <details class="e24-settings-card">
               <summary><span class="e24-settings-icon"><i class="fa-solid fa-comments"></i></span> মেসেজ সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
               <div class="e24-settings-content">
-                <div class="e24-settings-hint">SMS Recharge Request ও Wallet লেনদেনের হিসাব এখানে থাকবে। SMS পাঠানো ও SMS History দেখতে Message Center ব্যবহার করুন।</div>
+                <!-- Developer note: SMS Recharge Request ও Wallet history এই settings section-এ; SMS send/history Message Center-এ। -->
 
 <section class="sms-wallet-panel">
             <strong><i class="fa-solid fa-circle-plus"></i> SMS Wallet Recharge</strong>
-            <div class="sms-wallet-note" style="margin-top:7px">বিকাশ অথবা নগদে Send Money করে নিচের Transaction ID জমা দিন। টাকা যাচাই করে Admin অনুমোদন করবেন।</div>
+            <!-- Developer note: Manual recharge-এ payment পাঠানোর পর Transaction ID জমা হয়; Admin যাচাই করে অনুমোদন করেন। -->
             <div class="form-group" style="margin-top:8px"><label class="form-label" for="sms-recharge-amount">রিচার্জের পরিমাণ (৳):</label><input id="sms-recharge-amount" type="number" class="form-input" min="10" step="10" inputmode="decimal" placeholder="যেমন 100"></div>
             <!--
             SSLCOMMERZ AUTOMATIC RECHARGE — DISABLED FOR NOW
@@ -878,7 +878,7 @@
             <div class="form-group"><label class="form-label">Send Money নম্বর:</label><div style="display:flex;gap:8px;align-items:center"><input id="sms-recharge-pay-number" class="form-input" value="01737-537688" readonly><button type="button" class="secondary" onclick="document.getElementById('sms-recharge-pay-number').select();document.execCommand('copy');showToast('নম্বর কপি হয়েছে')">কপি</button></div></div>
             <div class="form-group"><label class="form-label" for="sms-recharge-trxid">Transaction ID:</label><input id="sms-recharge-trxid" type="text" class="form-input" maxlength="80" autocomplete="off" placeholder="পেমেন্টের TrxID লিখুন"></div>
             <button id="sms-recharge-request" type="button" class="btn btn-blue">পেমেন্ট তথ্য জমা দিন</button>
-            <div class="sms-wallet-note" style="margin-top:5px">Wallet-এ টাকা যোগ হবে Admin পেমেন্ট যাচাই করে অনুমোদন করার পর।</div>
+            <!-- Developer note: Admin payment verification ও approval-এর পর wallet balance credit হয়। -->
           </section>
 
 <section class="sms-wallet-panel">
@@ -894,17 +894,17 @@
               <div class="e24-settings-content">
                 <section class="sms-wallet-panel" id="sms-admin-recharge-panel" hidden>
                   <strong><i class="fa-solid fa-user-shield"></i> Admin: Recharge Requests</strong>
-                  <div class="sms-wallet-note">Editor ও Full/Administrator সব ব্যবহারকারীর Pending Recharge Request দেখতে এবং Approve/Cancel করতে পারবেন। Full/Administrator ব্যবহারকারী ব্যবস্থাপনাও দেখতে পারবেন।</div>
+                  <!-- Developer note: Editor ও Admin pending recharge request দেখতে/Approve/Cancel করতে পারেন; User Management শুধু Admin tier-এ। -->
                   <div id="sms-admin-recharge-list"></div>
                 </section>
                 <section class="sms-wallet-panel" id="e24-admin-role-manager" hidden>
                   <strong><i class="fa-solid fa-user-gear"></i> Make Admin and Remove User</strong>
-                  <div class="sms-wallet-note">শুধু Administrator ব্যবহারকারীকে Editor / Admin করতে অথবা User স্থায়ীভাবে মুছতে পারবেন।</div>
+                  <!-- Developer note: শুধু Administrator role assignment ও user removal করতে পারে। -->
                   <label class="e24-admin-label" for="e24-admin-role-user">ব্যবহারকারী নির্বাচন</label>
                   <select id="e24-admin-role-user" aria-label="Admin Role-এর জন্য ব্যবহারকারী নির্বাচন"><option value="">ব্যবহারকারী নির্বাচন করুন</option></select>
                   <label class="e24-admin-label" for="e24-admin-role-choice">Admin Role</label>
                   <select id="e24-admin-role-choice"><option value="none">User</option><option value="limited">Editor</option><option value="full">Admin</option></select>
-                  <div class="sms-wallet-note">Editor সব ব্যবহারকারীর Recharge Request দেখতে এবং Approve/Cancel করতে পারবে; ব্যবহারকারী ব্যবস্থাপনা দেখতে পারবে না।</div>
+                  <!-- Developer note: Editor recharge request পরিচালনা করতে পারে; User Management access নেই। -->
                   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
                     <button type="button" class="btn btn-green" onclick="e24SaveAdminRole()">Save Admin Role</button>
                     <button type="button" class="btn btn-logout" onclick="e24DeleteSelectedUser()">Remove User</button>
@@ -915,7 +915,7 @@
                 </section>
                 <div class="e24-admin-panel" id="e24-admin-panel" hidden>
                   <div class="setting-title">Administrator — ব্যবহারকারী ব্যবস্থাপনা</div>
-                  <div class="e24-admin-label">যার হিসাব পরিচালনা করবেন তাকে নির্বাচন করুন</div>
+                  <!-- Developer note: এখানে target account select করা হয়। -->
                   <select id="e24-admin-user-select" aria-label="ব্যবহারকারীর হিসাব নির্বাচন"></select>
                   <div id="e24-admin-user-summary" class="e24-admin-user-summary">ব্যবহারকারীর হিসাব লোড হচ্ছে...</div>
                 </div>

@@ -76,7 +76,7 @@ service cloud.firestore {
           && (!('name' in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() <= 100))
           && (!('organizationName' in request.resource.data) || (request.resource.data.organizationName is string && request.resource.data.organizationName.size() <= 120))
           && (!('profilePhotoData' in request.resource.data) || (request.resource.data.profilePhotoData is string && request.resource.data.profilePhotoData.size() <= 600000))
-          && (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is timestamp));
+          && (!('updatedAt' in request.resource.data) || request.resource.data.updatedAt is timestamp);
 
       allow delete: if isMainAdmin();
 

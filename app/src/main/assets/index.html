@@ -1445,7 +1445,7 @@
           const previousDue=customerTotals(cid).due,transactionId=id();
           db.transactions.push({id:transactionId,customerId:cid,type:db.txType,amount,paid:initialPaid,note,date:selectedDate.toLocaleDateString('bn-BD')});
           const updatedDue=customerTotals(cid).due;
-          if(previousDue>0&&updatedDue<=0){const customer=db.customers.find(x=>String(x.id)===String(cid));e24QueueNotification('customer-paid-'+transactionId,'customer-paid','বকেয়া সম্পূর্ণ পরিশোধ',String(customer?.name||'গ্রাহক')+'-এর বকেয়া সম্পূর্ণ পরিশোধ হয়েছে।','3',cid);}
+          if(previousDue>0&&updatedDue<=0){e24EnsureNotificationData();const now=new Date(),dayKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0'),reminder=db.notifications.find(x=>String(x.id)==='due-reminder-'+String(cid)+'-'+dayKey);if(reminder)reminder.read=true;const customer=db.customers.find(x=>String(x.id)===String(cid));e24QueueNotification('customer-paid-'+transactionId,'customer-paid','বকেয়া সম্পূর্ণ পরিশোধ',String(customer?.name||'গ্রাহক')+'-এর বকেয়া সম্পূর্ণ পরিশোধ হয়েছে।','3',cid);}
           db.selectedCustomerId=cid;save();refreshAll();e24RenderNotifications();showToast('লেনদেন সংরক্ষিত হয়েছে');switchPage('3');
         };
       }
@@ -1576,11 +1576,13 @@ function e24ProcessLoadedNotifications(uid){
  let changed=false;
  const now=new Date(),dayKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
  (db.customers||[]).forEach(customer=>{
-  const due=Number(customerTotals(customer.id).due)||0;
+  const due=Number(customerTotals(customer.id).due)||0,reminderId='due-reminder-'+String(customer.id)+'-'+dayKey;
+  const reminder=db.notifications.find(x=>String(x.id)===reminderId);
   if(due>0){
-   const amount=due.toLocaleString('bn-BD',{maximumFractionDigits:0});
-   if(e24QueueNotification('due-reminder-'+String(customer.id)+'-'+dayKey,'due-reminder','বকেয়া পরিশোধের স্মরণ',String(customer.name||'গ্রাহক')+' সাহেবের ৳'+amount+' বকেয়া রয়েছে।','3',customer.id))changed=true;
-  }
+   const amount=due.toLocaleString('bn-BD',{maximumFractionDigits:0}),message=String(customer.name||'গ্রাহক')+' সাহেবের ৳'+amount+' বকেয়া রয়েছে।';
+   if(reminder){if(reminder.message!==message){reminder.message=message;reminder.createdAt=Date.now();changed=true;}}
+   else if(e24QueueNotification(reminderId,'due-reminder','বকেয়া পরিশোধের স্মরণ',message,'3',customer.id))changed=true;
+  }else if(reminder&&!reminder.read){reminder.read=true;changed=true;}
  });
  const statusMap=db.notificationMeta.rechargeStatusById;
  (db.smsRechargeRequests||[]).forEach(request=>{

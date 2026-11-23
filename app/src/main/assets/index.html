@@ -2109,16 +2109,24 @@ function e24AiAddMessage(role,text){
  const item=document.createElement('div');item.className='e24-ai-msg '+(role==='user'?'user':'assistant');item.textContent=String(text||'');
  list.appendChild(item);list.scrollTop=list.scrollHeight;
 }
+let e24AiModalHistoryOpen=false;
 function e24AiOpen(){
  if(!e24Auth.currentUser){showToast('AI Support ব্যবহার করতে আগে Login করুন');return;}
  const panel=document.getElementById('e24-ai-backdrop');if(!panel)return;
  panel.classList.add('show');panel.setAttribute('aria-hidden','false');
- setTimeout(()=>document.getElementById('e24-ai-input')?.focus(),80);
+ if(!e24AiModalHistoryOpen){history.pushState({e24AiSupport:true},'');e24AiModalHistoryOpen=true;}
 }
 function e24AiClose(){
  const panel=document.getElementById('e24-ai-backdrop');if(!panel)return;
  panel.classList.remove('show');panel.setAttribute('aria-hidden','true');
+ if(e24AiModalHistoryOpen){e24AiModalHistoryOpen=false;history.back();}
 }
+window.addEventListener('popstate',()=>{
+ const panel=document.getElementById('e24-ai-backdrop');
+ if(panel?.classList.contains('show')){
+  panel.classList.remove('show');panel.setAttribute('aria-hidden','true');e24AiModalHistoryOpen=false;
+ }
+});
 async function e24AiSend(prefill){
  const input=document.getElementById('e24-ai-input'),button=document.getElementById('e24-ai-send');
  const message=String(prefill??input?.value??'').trim();

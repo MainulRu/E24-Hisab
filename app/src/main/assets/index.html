@@ -2105,7 +2105,7 @@ async function e24AiSend(prefill){
   e24AiHistory.push({role:'model',text:typing.textContent});
   if(e24AiHistory.length>12)e24AiHistory.splice(0,e24AiHistory.length-12);
  }catch(error){
-  typing.textContent=error.message||'সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+  typing.textContent=error.name==='AbortError'?'AI সার্ভার থেকে ৭০ সেকেন্ডেও উত্তর আসেনি। Worker ও Gemini API সেটিংস পরীক্ষা করুন।':(error.message||'সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
  }finally{
   if(button)button.disabled=false;
   list.scrollTop=list.scrollHeight;

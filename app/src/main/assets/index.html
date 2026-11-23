@@ -1584,6 +1584,7 @@
 const E24_ADMIN_UID='exITNpwyRNaWpoMW6BgMcMGbf2';
 const E24_FIREBASE_CONFIG={"apiKey":"AIzaSyCQbMapGDCxtxukp6ao92Bi8di5qer2gS4","authDomain":"e24-hisab.firebaseapp.com","projectId":"e24-hisab","storageBucket":"e24-hisab.firebasestorage.app","messagingSenderId":"186986158022","appId":"1:186986158022:web:abe1e7a90ee7fb64a0c4c7","measurementId":"G-GX018MK85M"};
 const E24_OTP_API='https://floral-mouse-c0eae24-hisab-otp.ah0788767.workers.dev';
+const E24_AI_SUPPORT_API='https://gemeni-api-key.ah0788767.workers.dev';
 const E24_PAYMENT_API='https://e24-sms-wallet-payment.ah0788767.workers.dev';
 
 const E24_ADMIN_API='https://e24-hisab-admin.ah0788767.workers.dev';
@@ -2092,7 +2093,7 @@ async function e24AiSend(prefill){
  const list=document.getElementById('e24-ai-messages');list.appendChild(typing);list.scrollTop=list.scrollHeight;
  try{
   const token=await e24Auth.currentUser.getIdToken();
-  const response=await fetch(E24_OTP_API+'/ai-support',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({message,history})});
+  const response=await fetch(E24_AI_SUPPORT_API+'/ai-support',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({message,history})});
   const result=await response.json().catch(()=>({}));
   if(!response.ok||result.success!==true)throw new Error(result.message||'AI উত্তর দিতে পারেনি।');
   typing.textContent=result.reply||'দুঃখিত, এই মুহূর্তে উত্তর পাওয়া যায়নি।';

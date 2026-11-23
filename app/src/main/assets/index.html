@@ -1709,7 +1709,8 @@ function e24RenderNotifications(){
  if(!db)return;
  e24EnsureNotificationData();
  const unread=db.notifications.filter(x=>!x.read).length,archiveUnread=db.notificationArchive.filter(x=>!x.read).length,archiveCount=db.notificationArchive.length;
- if(badge){badge.textContent=unread>99?'99+':String(unread);badge.hidden=unread===0;}
+ const totalUnread=unread+archiveUnread;
+  if(badge){badge.textContent=totalUnread>99?'99+':String(totalUnread);badge.hidden=totalUnread===0;}
  if(!panel||!list)return;
  const rows=(e24NotificationArchiveView?db.notificationArchive:db.notifications).slice().sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
  const heading=document.getElementById('e24-notification-heading'),archiveButton=document.getElementById('e24-notification-archive');

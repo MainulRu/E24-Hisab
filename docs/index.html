@@ -1839,7 +1839,11 @@ async function e24AiSend(prefill){
  const list=document.getElementById('e24-ai-messages');list.appendChild(typing);list.scrollTop=list.scrollHeight;
  try{
   const token=await e24Auth.currentUser.getIdToken();
-  const response=await fetch(E24_AI_SUPPORT_API+'/ai-support',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({message,history})});
+  const aiController=new AbortController();
+  const aiTimeout=setTimeout(()=>aiController.abort(),70000);
+  let response;
+  try{response=await fetch(E24_AI_SUPPORT_API+'/ai-support',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({message,history}),signal:aiController.signal});}
+  finally{clearTimeout(aiTimeout);}
   const result=await response.json().catch(()=>({}));
   if(!response.ok||result.success!==true)throw new Error(result.message||'AI উত্তর দিতে পারেনি।');
   typing.textContent=result.reply||'দুঃখিত, এই মুহূর্তে উত্তর পাওয়া যায়নি।';

@@ -51,7 +51,7 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      // Assigned Limited Admins may open only assigned user profiles.
+      // Only the account owner and Full/Main Admin may open a user profile.
       allow get: if signedIn() && (request.auth.uid == userId || canManageUser(userId));
       // Listing all profiles is reserved for Full and Main Admin. Limited
       // Admin obtains their assigned list from the trusted Worker API.
@@ -93,7 +93,7 @@ service cloud.firestore {
       }
 
       match /data/{documentId} {
-        // Account owners may read their own ledger. Main Admin can read all ledgers.
+        // Account owners may read their own ledger. Full/Main Admin can read all ledgers.
         allow read: if signedIn()
           && (request.auth.uid == userId || canManageUser(userId));
 

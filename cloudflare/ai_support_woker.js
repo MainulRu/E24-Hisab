@@ -225,7 +225,7 @@ async function handleAiSupport(request, env) {
           model: "openai/gpt-oss-20b",
           messages: chatMessages,
           temperature: 0.35,
-          max_tokens: 600
+          max_completion_tokens: 600
         }),
         signal: AbortSignal.timeout(18000)
       });

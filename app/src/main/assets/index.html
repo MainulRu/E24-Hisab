@@ -2024,6 +2024,33 @@
   color:#82d9a2!important;
   -webkit-text-fill-color:#82d9a2!important;
 }
+
+
+    /* E24 compact header and four-item navigation refresh - 2026-11-24 */
+    .app-bar{min-height:58px;position:relative;z-index:20;gap:8px;padding:9px 13px;box-shadow:0 2px 8px rgba(0,0,0,.10)}
+    #dynamic-app-bar>.interactive-icon{width:36px;min-width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;font-size:19px}
+    #dynamic-app-bar>.app-title{flex:1;min-width:0;text-align:center;font-size:16px;font-weight:700;letter-spacing:.1px}
+    .side-menu-panel{padding:16px 13px 22px}
+    .side-menu-section-label{padding:13px 10px 5px;color:#738078;font-size:10px;font-weight:700;letter-spacing:.25px}
+    .side-menu-link{min-height:44px;padding:10px 12px;font-size:13px;border:1px solid transparent}
+    .side-menu-link i{font-size:15px}
+    .bottom-nav{height:60px;min-height:60px;flex:0 0 60px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;justify-content:initial;padding:4px 5px max(4px,env(safe-area-inset-bottom));gap:2px;background:#fff;border-top:1px solid var(--border-color);box-shadow:0 -3px 12px rgba(0,0,0,.06);z-index:15}
+    .bottom-nav .nav-item{width:auto;min-width:0;flex:initial;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:10px;font-size:10px;font-weight:500;color:var(--text-muted);cursor:pointer;user-select:none}
+    .bottom-nav .nav-item i{font-size:18px;line-height:1;margin:0}
+    .bottom-nav .nav-item.active{color:var(--primary-green);background:var(--light-green);font-weight:700}
+    .bottom-nav .nav-item:active{transform:scale(.96)}
+    .side-menu-backdrop{z-index:120}
+    .side-menu-panel{position:relative;z-index:121}
+    .phone-screen.e24-dark .bottom-nav{background:#17221c;border-top-color:#34463b}
+    .phone-screen.e24-dark .bottom-nav .nav-item{color:#c3d0c7}
+    .phone-screen.e24-dark .bottom-nav .nav-item.active{color:#82d9a2;background:#243b2d}
+    .phone-screen.e24-dark .side-menu-panel{background:#17221c;color:#e8f0ea}
+    .phone-screen.e24-dark .side-menu-head{color:#e8f0ea;border-bottom-color:#34463b}
+    .phone-screen.e24-dark .side-menu-close{background:#26392e;color:#dceee2}
+    .phone-screen.e24-dark .side-menu-link{background:transparent;color:#e8f0ea}
+    .phone-screen.e24-dark .side-menu-link:active,.phone-screen.e24-dark .side-menu-link:hover{background:#26392e}
+    .phone-screen.e24-dark .side-menu-section-label{color:#9eafa4}
+    @media(max-width:360px){.bottom-nav{height:56px;min-height:56px;flex-basis:56px}.bottom-nav .nav-item{font-size:9px}.bottom-nav .nav-item i{font-size:17px}}
 </style>
 </head>
 <body>
@@ -2089,15 +2116,15 @@
       <div class="toast-msg" id="toast">নোটিফিকেশন!</div>
 
       <div class="side-menu-backdrop" id="side-menu-backdrop" aria-hidden="true">
-        <aside class="side-menu-panel" role="dialog" aria-modal="true" aria-label="অ্যাপ মেনু">
-          <div class="side-menu-head"><span><i class="fa-solid fa-store"></i> E24 Hisab</span><button type="button" class="side-menu-close" onclick="closeSideMenu()" aria-label="মেনু বন্ধ"><i class="fa-solid fa-xmark"></i></button></div>
-          <button class="side-menu-link" onclick="openMenuPage('1')"><i class="fa-solid fa-house"></i> হোম</button>
-          <button class="side-menu-link" onclick="openMenuPage('2')"><i class="fa-solid fa-users"></i> গ্রাহক তালিকা</button>
+        <aside class="side-menu-panel" role="dialog" aria-modal="true" aria-label="আরও মেনু">
+          <div class="side-menu-head"><span><i class="fa-solid fa-store"></i> আরও মেনু</span><button type="button" class="side-menu-close" onclick="closeSideMenu()" aria-label="মেনু বন্ধ"><i class="fa-solid fa-xmark"></i></button></div>
+          <div class="side-menu-section-label">হিসাব ব্যবস্থাপনা</div>
           <button class="side-menu-link" onclick="openMenuPage('3')"><i class="fa-solid fa-book"></i> গ্রাহকের খাতা</button>
-          <button class="side-menu-link" onclick="openMenuPage('4')"><i class="fa-solid fa-plus-circle"></i> নতুন লেনদেন</button>
           <button class="side-menu-link" onclick="openMenuPage('5')"><i class="fa-solid fa-wallet"></i> পেমেন্ট</button>
+          <div class="side-menu-section-label">যোগাযোগ ও বিশ্লেষণ</div>
           <button class="side-menu-link" onclick="openMenuPage('6')"><i class="fa-solid fa-comments"></i> মেসেজ</button>
           <button class="side-menu-link" onclick="openMenuPage('7')"><i class="fa-solid fa-chart-pie"></i> হিসাব রিপোর্ট</button>
+          <div class="side-menu-section-label">অ্যাপ</div>
           <button class="side-menu-link" onclick="openMenuPage('8')"><i class="fa-solid fa-gear"></i> সেটিংস</button>
         </aside>
       </div>
@@ -2461,31 +2488,19 @@
 
       <button type="button" class="home-transaction-fab" id="home-transaction-fab" onclick="switchPage('4')"><i class="fa-solid fa-plus"></i><span>নতুন লেনদেন</span></button>
 
-      <!-- Bottom Navigation Menu -->
-      <nav class="bottom-nav">
-        <div class="nav-item active" id="nav-1" onclick="switchPage('1')">
+      <!-- Compact Bottom Navigation: Home, Customers, Transactions, More -->
+      <nav class="bottom-nav" aria-label="প্রধান নেভিগেশন">
+        <div class="nav-item active" id="nav-1" role="button" tabindex="0" aria-label="হোম" onclick="switchPage('1')">
           <i class="fa-solid fa-house"></i><span>হোম</span>
         </div>
-        <div class="nav-item" id="nav-2" onclick="switchPage('2')">
+        <div class="nav-item" id="nav-2" role="button" tabindex="0" aria-label="গ্রাহক" onclick="switchPage('2')">
           <i class="fa-solid fa-users"></i><span>গ্রাহক</span>
         </div>
-        <div class="nav-item" id="nav-3" onclick="switchPage('3')">
-          <i class="fa-solid fa-book"></i><span>খাতা</span>
+        <div class="nav-item" id="nav-4" role="button" tabindex="0" aria-label="লেনদেন" onclick="switchPage('4')">
+          <i class="fa-solid fa-arrow-right-arrow-left"></i><span>লেনদেন</span>
         </div>
-        <div class="nav-item" id="nav-4" onclick="switchPage('4')">
-          <div class="add-btn"><i class="fa-solid fa-plus"></i></div><span>নতুন</span>
-        </div>
-        <div class="nav-item" id="nav-5" onclick="switchPage('5')">
-          <i class="fa-solid fa-wallet"></i><span>পেমেন্ট</span>
-        </div>
-        <div class="nav-item" id="nav-6" onclick="switchPage('6')">
-          <i class="fa-solid fa-comments"></i><span>মেসেজ</span>
-        </div>
-        <div class="nav-item" id="nav-7" onclick="switchPage('7')">
-          <i class="fa-solid fa-chart-pie"></i><span>রিপোর্ট</span>
-        </div>
-        <div class="nav-item" id="nav-8" onclick="switchPage('8')">
-          <i class="fa-solid fa-gear"></i><span>সেটিংস</span>
+        <div class="nav-item" id="nav-more" role="button" tabindex="0" aria-label="আরও মেনু" aria-haspopup="dialog" onclick="openSideMenu()">
+          <i class="fa-solid fa-grid-2"></i><span>আরও</span>
         </div>
       </nav>
 
@@ -2570,12 +2585,15 @@
         if (p) p.classList.remove('active-page');
         if (n) n.classList.remove('active');
       }
+      const moreNav = document.getElementById('nav-more');
+      if (moreNav) moreNav.classList.remove('active');
 
-      // Show selected page & activate nav
+      // Show selected page & activate its compact navigation item
       const targetPage = document.getElementById('page-' + pageKey);
       const targetNav = document.getElementById('nav-' + pageKey);
       if (targetPage) targetPage.classList.add('active-page');
-      if (targetNav) targetNav.classList.add('active');
+      if (targetNav && ['1','2','4'].includes(String(pageKey))) targetNav.classList.add('active');
+      else if (moreNav) moreNav.classList.add('active');
       // Update Header Title
       const dynamicBar = document.getElementById('dynamic-app-bar');
       const titles = {
@@ -2590,7 +2608,7 @@
       };
 
       if (pageKey === '1') {
-        dynamicBar.innerHTML = `<i class="fa-solid fa-bars interactive-icon"></i><span class="app-title" id="bar-title">E24 Hisab</span><button type="button" class="e24-notification-trigger" id="e24-notification-bell" aria-label="ইনবক্স"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 10.5 16 5l12 5.5v15H4v-15Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="m4.5 11 11.5 8 11.5-8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 25.5 12 17M27.5 25.5 20 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span class="e24-notification-label">ইনবক্স</span><span class="e24-notification-count" id="e24-notification-count" hidden>0</span></button><button type="button" class="e24-ai-trigger" id="e24-ai-trigger" aria-label="সাপোর্ট" title="সাপোর্ট"><svg viewBox="0 0 36 32" width="36" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 5.5C3 3.6 4.6 2 6.5 2h18C26.4 2 28 3.6 28 5.5v12c0 1.9-1.6 3.5-3.5 3.5H13l-7.5 7v-7.2C4 20.2 3 19 3 17.5v-12Z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 9h20c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-2v4l-5-4h-5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="e24-ai-label">সাপোর্ট</span></button>`;
+        dynamicBar.innerHTML = `<i class="fa-solid fa-bars interactive-icon" role="button" tabindex="0" aria-label="মেনু খুলুন"></i><span class="app-title" id="bar-title">E24 Hisab</span><button type="button" class="e24-notification-trigger" id="e24-notification-bell" aria-label="ইনবক্স"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 10.5 16 5l12 5.5v15H4v-15Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="m4.5 11 11.5 8 11.5-8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 25.5 12 17M27.5 25.5 20 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span class="e24-notification-label">ইনবক্স</span><span class="e24-notification-count" id="e24-notification-count" hidden>0</span></button><button type="button" class="e24-ai-trigger" id="e24-ai-trigger" aria-label="সাপোর্ট" title="সাপোর্ট"><svg viewBox="0 0 36 32" width="36" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 5.5C3 3.6 4.6 2 6.5 2h18C26.4 2 28 3.6 28 5.5v12c0 1.9-1.6 3.5-3.5 3.5H13l-7.5 7v-7.2C4 20.2 3 19 3 17.5v-12Z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 9h20c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-2v4l-5-4h-5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="e24-ai-label">সাপোর্ট</span></button>`;
         const homeTitle = document.getElementById('bar-title');
         if (homeTitle) homeTitle.textContent = window.e24OrgName || 'E24 Hisab';
 
@@ -2609,7 +2627,7 @@
     function closeSideMenu(){const menu=document.getElementById('side-menu-backdrop');if(menu){menu.classList.remove('show');menu.setAttribute('aria-hidden','true');}}
     function openMenuPage(pageKey){closeSideMenu();switchPage(String(pageKey));}
 
-    document.addEventListener('DOMContentLoaded',()=>{const bar=document.getElementById('dynamic-app-bar');if(bar)bar.addEventListener('click',event=>{const icon=event.target.closest('.interactive-icon');if(!icon)return;if(icon.classList.contains('fa-bell'))showToast('নতুন কোনো নোটিফিকেশন নেই');else if(icon.classList.contains('fa-bars'))openSideMenu();});});
+    document.addEventListener('DOMContentLoaded',()=>{const bar=document.getElementById('dynamic-app-bar');if(bar)bar.addEventListener('click',event=>{const icon=event.target.closest('.interactive-icon');if(!icon)return;if(icon.classList.contains('fa-bell'))showToast('নতুন কোনো নোটিফিকেশন নেই');else if(icon.classList.contains('fa-bars')||icon.querySelector('.fa-bars'))openSideMenu();});});
     // side-menu-backdrop-close-handler
     document.addEventListener('DOMContentLoaded',()=>{const backdrop=document.getElementById('side-menu-backdrop');if(backdrop)backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeSideMenu();});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSideMenu();});});
     function printLedger() {

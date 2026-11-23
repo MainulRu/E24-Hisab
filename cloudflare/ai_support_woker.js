@@ -238,7 +238,7 @@ async function handleAiSupport(request, env) {
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    console.error("Gemini API request failed:", response.status, data.error?.status || "API_ERROR");
+    console.error("Gemini API request failed:", response.status, data.error?.status || "API_ERROR", data.error?.message || "No error message returned");
     if (response.status === 429) {
       return json({ success: false, message: "Gemini-এর ব্যবহারের সীমা আপাতত শেষ। কিছুক্ষণ পরে আবার চেষ্টা করুন।" }, 429);
     }

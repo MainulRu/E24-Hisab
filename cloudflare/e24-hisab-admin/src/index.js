@@ -238,6 +238,7 @@ async function route(request, env) {
     }
 
     if (url.pathname === "/admin/recharge" && request.method === "GET") {
+      if (!["main", "full", "limited"].includes(admin.role)) throw new Error("RECHARGE_ACCESS_REQUIRED");
       const uids = (await listDocs(env, token, "users")).map(d => d.name.split("/").pop());
       const requests = [];
       for (const uid of uids) {
@@ -255,11 +256,13 @@ async function route(request, env) {
     }
 
     if (url.pathname === "/admin/recharge/action" && request.method === "POST") {
+      if (!["main", "full", "limited"].includes(admin.role)) throw new Error("RECHARGE_ACCESS_REQUIRED");
       const body = await request.json();
       const uid = String(body.uid || "");
       const requestId = String(body.requestId || "");
       const action = String(body.action || "");
       if (!uid || !requestId || !["approve", "cancel"].includes(action)) throw new Error("INVALID_REQUEST");
+      if (admin.role === "limited" && action !== "approve") throw new Error("LIMITED_ADMIN_APPROVE_ONLY");
 
       const path = "users/" + encodeURIComponent(uid) + "/data/main";
       const doc = await fs(env, token, path);

@@ -249,7 +249,6 @@ async function handleAiSupport(request, env) {
   let data = {};
   let lastStatus = 0;
   let lastErrorMessage = "";
-  let dailyQuotaExceeded = false;
 
   for (const model of geminiModels) {
     let modelSucceeded = false;
@@ -300,17 +299,6 @@ async function handleAiSupport(request, env) {
         lastErrorMessage
       );
 
-      // A daily free-tier quota exhaustion applies to the project, so do not retry
-      // this request or send it to another backup model.
-      if (
-        response.status === 429 &&
-        /generate_content_free_tier_requests|per day limit exceeded|daily.{0,20}quota|quota.{0,20}exceeded/i.test(lastErrorMessage)
-      ) {
-        dailyQuotaExceeded = true;
-        console.warn("Gemini daily quota exhausted; stopping retries and backup models.");
-        break;
-      }
-
       // A 404 means this model is unavailable; skip directly to the next backup.
       if (response.status === 404) break;
 
@@ -324,7 +312,6 @@ async function handleAiSupport(request, env) {
     }
 
     if (modelSucceeded) break;
-    if (dailyQuotaExceeded) break;
 
     // Stop for configuration/authentication errors; trying other models won't fix them.
     if ([400, 401, 403].includes(lastStatus)) break;
@@ -333,9 +320,6 @@ async function handleAiSupport(request, env) {
   }
 
   if (!response || !response.ok) {
-    if (dailyQuotaExceeded) {
-      return json({ success: false, message: "Gemini-এর দৈনিক Free Tier সীমা শেষ। আজকের সীমা রিসেট হলে আবার চেষ্টা করুন।" }, 429);
-    }
     if (lastStatus === 429) {
       return json({ success: false, message: "Gemini-এর Request সীমা আপাতত শেষ। কিছুক্ষণ পরে আবার চেষ্টা করুন।" }, 429);
     }

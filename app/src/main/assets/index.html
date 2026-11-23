@@ -1565,6 +1565,7 @@
       function refreshAll(){renderCustomers();renderLedger();renderTransactionForm(db.txType);refreshHome();}
       window.beginTransaction=(type)=>{if(!db.customers.length){showToast('আগে একজন গ্রাহক যোগ করুন');switchPage('2');return;}renderTransactionForm(type||'বাকি');switchPage('4');};
       window.switchPage = ((old)=>function(pageKey){if(String(pageKey)==='3')renderLedger();if(String(pageKey)==='4'){db.txType='বাকি';renderTransactionForm('বাকি');}old(String(pageKey));})(window.switchPage);
+      document.addEventListener('DOMContentLoaded',()=>{const homeFab=document.getElementById('home-transaction-fab');const homePage=document.getElementById('page-1');if(homeFab)homeFab.style.display=homePage&&homePage.classList.contains('active-page')?'flex':'none';});
       document.addEventListener('DOMContentLoaded',()=>{
          // Firebase data loads after authentication.
         const add=document.querySelector('#page-2 button');

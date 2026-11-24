@@ -220,6 +220,145 @@ async function createSession(request, env, user) {
   });
   return json({ gatewayPageURL: gateway.GatewayPageURL, tranId, mode: config.mode });
 }
+/* E24_REFERRAL_BONUS_V1 */
+async function queryUserByReferralCode(env, code) {
+  const token = await serviceAccessToken(env);
+  const response = await fetch(documentsBase(env) + ":runQuery", {
+    method: "POST",
+    headers: { authorization: "Bearer " + token, "content-type": "application/json" },
+    body: JSON.stringify({ structuredQuery: {
+      from: [{ collectionId: "users" }],
+      where: { fieldFilter: { field: { fieldPath: "referralCode" }, op: "EQUAL", value: { stringValue: code } } },
+      limit: 2
+    }})
+  });
+  const rows = await response.json();
+  if (!response.ok) throw new Error("REFERRAL_LOOKUP_FAILED");
+  const docs = (Array.isArray(rows) ? rows : []).map(x => x.document).filter(Boolean);
+  return docs.length === 1 ? docs[0] : null;
+}
+async function makeReferralCode(uid, salt = 0) {
+  const bytes = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(uid + ":" + salt)));
+  const suffix = Array.from(bytes.slice(0, 6)).map(x => x.toString(16).padStart(2, "0")).join("").toUpperCase();
+  return "E24" + suffix;
+}
+async function referralValidate(code) {
+  const normalized = String(code || "").trim().toUpperCase();
+  if (!/^E24[A-F0-9]{12}$/.test(normalized)) return false;
+  return !!(await queryUserByReferralCode(env, normalized));
+}
+async function referralSetup(env, user, requestedCode) {
+  const profilePath = "/users/" + encodeURIComponent(user.uid);
+  const profileDoc = await getDocument(env, profilePath);
+  if (!profileDoc) throw new Error("PROFILE_NOT_FOUND");
+  const profile = fieldsToObject(profileDoc.fields);
+  let ownCode = String(profile.referralCode || "");
+  if (!ownCode) {
+    for (let salt = 0; salt < 5; salt++) {
+      const candidate = await makeReferralCode(user.uid, salt);
+      const existing = await queryUserByReferralCode(env, candidate);
+      if (!existing || existing.name === profileDoc.name) { ownCode = candidate; break; }
+    }
+    if (!ownCode) throw new Error("REFERRAL_CODE_CREATE_FAILED");
+  }
+  const inputCode = String(requestedCode || "").trim().toUpperCase();
+  const patch = { referralCode: ownCode };
+  if (inputCode) {
+    if (!/^E24[A-F0-9]{12}$/.test(inputCode)) throw new Error("REFERRAL_CODE_INVALID");
+    if (inputCode === ownCode) throw new Error("REFERRAL_SELF_NOT_ALLOWED");
+    if (profile.referredBy && profile.referredBy !== "") {
+      if (profile.referralCodeUsed !== inputCode) throw new Error("REFERRAL_ALREADY_SET");
+    } else {
+      const referrerDoc = await queryUserByReferralCode(env, inputCode);
+      if (!referrerDoc) throw new Error("REFERRAL_CODE_NOT_FOUND");
+      const referrerUid = referrerDoc.name.split("/").pop();
+      if (referrerUid === user.uid) throw new Error("REFERRAL_SELF_NOT_ALLOWED");
+      patch.referredBy = referrerUid;
+      patch.referralCodeUsed = inputCode;
+      patch.referredAt = new Date().toISOString();
+    }
+  }
+  if (profile.referralCode && (!inputCode || profile.referredBy)) return {
+    referralCode: profile.referralCode,
+    referredBy: profile.referredBy || null,
+    successfulReferrals: Number(profile.referralSuccessfulCount || 0),
+    bonusTotal: Number(profile.referralBonusTotal || 0)
+  };
+  const token = await serviceAccessToken(env);
+  const response = await fetch(documentsBase(env) + profilePath + "?currentDocument.updateTime=" + encodeURIComponent(profileDoc.updateTime), {
+    method: "PATCH",
+    headers: { authorization: "Bearer " + token, "content-type": "application/json" },
+    body: JSON.stringify({ fields: Object.fromEntries(Object.entries(patch).map(([k,v]) => [k, firestoreValue(v)])) })
+  });
+  if (!response.ok) throw new Error("REFERRAL_PROFILE_SAVE_FAILED");
+  return { referralCode: ownCode, referredBy: patch.referredBy || profile.referredBy || null,
+    successfulReferrals: Number(profile.referralSuccessfulCount || 0), bonusTotal: Number(profile.referralBonusTotal || 0) };
+}
+async function referralProfile(env, user) {
+  const doc = await getDocument(env, "/users/" + encodeURIComponent(user.uid));
+  if (!doc) throw new Error("PROFILE_NOT_FOUND");
+  const p = fieldsToObject(doc.fields);
+  if (!p.referralCode) return referralSetup(env, user, "");
+  return { referralCode: p.referralCode, referredBy: p.referredBy || null,
+    successfulReferrals: Number(p.referralSuccessfulCount || 0), bonusTotal: Number(p.referralBonusTotal || 0) };
+}
+async function referralRewardWrites(env, referredUid, now) {
+  const referredPath = "/users/" + encodeURIComponent(referredUid);
+  const referredDoc = await getDocument(env, referredPath);
+  if (!referredDoc) return [];
+  const referred = fieldsToObject(referredDoc.fields);
+  const referrerUid = String(referred.referredBy || "");
+  if (!referrerUid || referred.referralRewardPaid === true) return [];
+  const rewardPath = "/e24ReferralRewards/" + encodeURIComponent(referredUid);
+  const rewardDoc = await getDocument(env, rewardPath);
+  if (rewardDoc) return [];
+  const referrerPath = "/users/" + encodeURIComponent(referrerUid);
+  const referrerDoc = await getDocument(env, referrerPath);
+  if (!referrerDoc) return [];
+  const referrer = fieldsToObject(referrerDoc.fields);
+  const referrerMainPath = referrerPath + "/data/main";
+  const referrerMainDoc = await getDocument(env, referrerMainPath);
+  const referrerMain = fieldsToObject(referrerMainDoc && referrerMainDoc.fields);
+  const nextBalance = Number((Number(referrerMain.smsWalletBalance || 0) + 5).toFixed(2));
+  const ledger = {
+    id: "REFERRAL-" + referredUid, type: "CREDIT", mode: "BONUS",
+    title: "Referral Bonus", amount: 5, balanceAfter: nextBalance,
+    date: new Date(now).toLocaleString("en-GB", { timeZone: "Asia/Dhaka" }),
+    referenceId: referredUid
+  };
+  const rewardFields = {
+    referrerUid, referredUid, amount: 5, wallet: "SMS",
+    type: "FIRST_SUCCESSFUL_RECHARGE", createdAt: now
+  };
+  const writes = [{
+    update: { name: referredDoc.name, fields: {
+      referralRewardPaid: { booleanValue: true },
+      referralRewardedAt: { timestampValue: now }
+    }},
+    updateMask: { fieldPaths: ["referralRewardPaid", "referralRewardedAt"] },
+    currentDocument: { updateTime: referredDoc.updateTime }
+  },{
+    update: { name: referrerDoc.name, fields: {
+      referralSuccessfulCount: firestoreValue(Number(referrer.referralSuccessfulCount || 0) + 1),
+      referralBonusTotal: firestoreValue(Number((Number(referrer.referralBonusTotal || 0) + 5).toFixed(2))),
+      referralUpdatedAt: { timestampValue: now }
+    }},
+    updateMask: { fieldPaths: ["referralSuccessfulCount", "referralBonusTotal", "referralUpdatedAt"] },
+    currentDocument: { updateTime: referrerDoc.updateTime }
+  },{
+    update: { name: documentsBase(env) + referrerMainPath, fields: {
+      smsWalletBalance: firestoreValue(nextBalance),
+      smsWalletTransactions: firestoreValue((Array.isArray(referrerMain.smsWalletTransactions) ? referrerMain.smsWalletTransactions : []).concat([ledger]).slice(-300)),
+      updatedAt: { timestampValue: now }
+    }},
+    updateMask: { fieldPaths: ["smsWalletBalance", "smsWalletTransactions", "updatedAt"] },
+    ...(referrerMainDoc ? { currentDocument: { updateTime: referrerMainDoc.updateTime } } : { currentDocument: { exists: false } })
+  },{
+    update: { name: documentsBase(env) + rewardPath, fields: Object.fromEntries(Object.entries(rewardFields).map(([k,v]) => [k, firestoreValue(v)])) },
+    currentDocument: { exists: false }
+  }];
+  return writes;
+}
 async function commitValidatedPayment(env, session, validation) {
   const uid = session.uid;
   const tranId = session.tranId;
@@ -249,37 +388,25 @@ async function commitValidatedPayment(env, session, validation) {
   const paymentName = paymentDoc.name;
   const writes = [
     {
-      update: {
-        name: mainName,
-        fields: {
-          smsWalletBalance: firestoreValue(nextBalance),
-          smsWalletTransactions: firestoreValue((Array.isArray(main.smsWalletTransactions) ? main.smsWalletTransactions : []).concat([ledger]).slice(-300)),
-          updatedAt: { timestampValue: now }
-        }
-      },
-      updateMask: {
-        fieldPaths: ["smsWalletBalance", "smsWalletTransactions", "updatedAt"]
-      },
+      update: { name: mainName, fields: {
+        smsWalletBalance: firestoreValue(nextBalance),
+        smsWalletTransactions: firestoreValue((Array.isArray(main.smsWalletTransactions) ? main.smsWalletTransactions : []).concat([ledger]).slice(-300)),
+        updatedAt: { timestampValue: now }
+      }},
+      updateMask: { fieldPaths: ["smsWalletBalance", "smsWalletTransactions", "updatedAt"] },
       currentDocument: { updateTime: mainDoc.updateTime }
     },
     {
-      update: {
-        name: paymentName,
-        fields: {
-          status: { stringValue: "PAID" },
-          credited: { booleanValue: true },
-          valId: firestoreValue(validation.val_id || ""),
-          bankTranId: firestoreValue(validation.bank_tran_id || ""),
-          paidAt: { timestampValue: now },
-          riskLevel: firestoreValue(String(validation.risk_level || "0"))
-        }
-      },
-      updateMask: {
-        fieldPaths: ["status", "credited", "valId", "bankTranId", "paidAt", "riskLevel"]
-      },
+      update: { name: paymentName, fields: {
+        status: { stringValue: "PAID" }, credited: { booleanValue: true },
+        valId: firestoreValue(validation.val_id || ""), bankTranId: firestoreValue(validation.bank_tran_id || ""),
+        paidAt: { timestampValue: now }, riskLevel: firestoreValue(String(validation.risk_level || "0"))
+      }},
+      updateMask: { fieldPaths: ["status", "credited", "valId", "bankTranId", "paidAt", "riskLevel"] },
       currentDocument: { updateTime: paymentDoc.updateTime }
     }
   ];
+  writes.push(...await referralRewardWrites(env, uid, now));
   const token = await serviceAccessToken(env);
   const response = await fetch(documentsBase(env) + ":commit", {
     method: "POST",
@@ -360,6 +487,23 @@ export default {
       if (request.method === "POST" && url.pathname === "/ipn") {
         const result = await handleIpn(request, env);
         return new Response(await result.text(), { status: result.status, headers: { ...cors, ...JSON_HEADERS } });
+      }
+      if (request.method === "GET" && url.pathname === "/referral/validate") {
+        const code = url.searchParams.get("code") || "";
+        const normalized = code.trim().toUpperCase();
+        if (!/^E24[A-F0-9]{12}$/.test(normalized)) return json({ valid: false }, 200, cors);
+        return json({ valid: !!(await queryUserByReferralCode(env, normalized)) }, 200, cors);
+      }
+      if (request.method === "POST" && url.pathname === "/referral/setup") {
+        const user = await requireUser(request, env);
+        const body = await request.json().catch(() => ({}));
+        const result = await referralSetup(env, user, body.referralCode || "");
+        return json({ success: true, ...result }, 200, cors);
+      }
+      if (request.method === "GET" && url.pathname === "/referral/profile") {
+        const user = await requireUser(request, env);
+        const result = await referralProfile(env, user);
+        return json({ success: true, ...result }, 200, cors);
       }
       if (request.method === "POST" && url.pathname === "/create-session") {
         const user = await requireUser(request, env);

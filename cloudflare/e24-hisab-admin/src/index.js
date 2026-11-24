@@ -78,7 +78,7 @@ async function googleToken(env) {
 async function readBoundedText(request, maxBytes) {
   const lengthHeader = request.headers.get("Content-Length");
   if (lengthHeader !== null) {
-    if (!/^\\d+$/.test(lengthHeader) || Number(lengthHeader) > maxBytes) throw new Error("REQUEST_TOO_LARGE");
+    if (!/^[0-9]+$/.test(lengthHeader) || Number(lengthHeader) > maxBytes) throw new Error("REQUEST_TOO_LARGE");
   }
   if (!request.body) return "";
   const reader = request.body.getReader();

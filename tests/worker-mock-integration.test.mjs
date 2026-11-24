@@ -121,6 +121,26 @@ test("Mock Firestore integration: recharge request and global TrxID index commit
   assert.equal(commits.length, 1);
 });
 
+test("Main Admin UID can submit recharge while email is unverified; ordinary users remain blocked", async t => {
+  installFetch(t, { uid: MAIN_UID, verified: false });
+  const env = {
+    FIREBASE_API_KEY: "test-key",
+    FIREBASE_PROJECT_ID: PROJECT,
+    FIREBASE_SERVICE_ACCOUNT: JSON.stringify(await rsaServiceAccount()),
+    MAIN_ADMIN_UID: MAIN_UID
+  };
+  const body = { amount: 100, paymentMethod: "bKash", transactionId: "MAIN-UNVERIFIED-123" };
+  const allowed = await adminWorker.fetch(request("/wallet/recharge", JSON.stringify(body)), env);
+  assert.equal(allowed.status, 201);
+  assert.equal((await allowed.json()).success, true);
+
+  installFetch(t, { uid: "ordinary-user-123", verified: false });
+  const rejected = await adminWorker.fetch(request("/wallet/recharge", JSON.stringify(body)), env);
+  assert.equal(rejected.status, 401);
+  assert.equal((await rejected.json()).error, "EMAIL_NOT_VERIFIED");
+  assert.equal(commits.length, 0);
+});
+
 test("Mock Firestore integration: TEST SMS debit is atomic and repeated request ID does not debit twice", async t => {
   installFetch(t);
   seed(`users/${MAIN_UID}/data/main`, { smsWalletBalance: 5, smsHistory: [], smsWalletTransactions: [] });

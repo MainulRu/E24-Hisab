@@ -503,7 +503,7 @@ export default {
       }
       if (request.method === "POST" && url.pathname === "/referral/setup") {
         const user = await requireUser(request, env);
-        const body = await request.json().catch(() => ({}));
+        const body = await readJsonBody(request).catch(() => ({}));
         const result = await referralSetup(env, user, body.referralCode || "");
         return json({ success: true, ...result }, 200, cors);
       }

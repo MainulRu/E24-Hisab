@@ -235,7 +235,7 @@ async function queryUserByReferralCode(env, code) {
   const rows = await response.json();
   if (!response.ok) throw new Error("REFERRAL_LOOKUP_FAILED");
   const docs = (Array.isArray(rows) ? rows : []).map(x => x.document).filter(Boolean);
-  return docs.length === 1 ? docs[0] : null;
+  return docs.length === 1 ? docs[0] : (docs.length > 1 ? { ambiguous: true } : null);
 }
 async function makeReferralCode(uid, salt = 0) {
   const bytes = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(uid + ":" + salt)));
@@ -265,7 +265,7 @@ async function referralSetup(env, user, requestedCode) {
       if (profile.referralCodeUsed !== inputCode) throw new Error("REFERRAL_ALREADY_SET");
     } else {
       const referrerDoc = await queryUserByReferralCode(env, inputCode);
-      if (!referrerDoc) throw new Error("REFERRAL_CODE_NOT_FOUND");
+      if (!referrerDoc || !referrerDoc.name) throw new Error("REFERRAL_CODE_NOT_FOUND");
       const referrerUid = referrerDoc.name.split("/").pop();
       if (referrerUid === user.uid) throw new Error("REFERRAL_SELF_NOT_ALLOWED");
       patch.referredBy = referrerUid;
@@ -483,7 +483,8 @@ export default {
         const code = url.searchParams.get("code") || "";
         const normalized = code.trim().toUpperCase();
         if (!/^E24[A-F0-9]{12}$/.test(normalized)) return json({ valid: false }, 200, cors);
-        return json({ valid: !!(await queryUserByReferralCode(env, normalized)) }, 200, cors);
+        const found = await queryUserByReferralCode(env, normalized);
+        return json({ valid: !!(found && found.name) }, 200, cors);
       }
       if (request.method === "POST" && url.pathname === "/referral/setup") {
         const user = await requireUser(request, env);

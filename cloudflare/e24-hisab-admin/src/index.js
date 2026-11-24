@@ -619,6 +619,14 @@ async function route(request, env) {
 
     return reply({ success: false, error: "NOT_FOUND" }, 404, allowedOrigin);
   } catch (e) {
+    // Log only sanitized diagnostic metadata; never log request bodies, tokens, or credentials.
+    console.error("E24 Admin Worker request failed", {
+      path,
+      method: request.method,
+      errorName: String(e?.name || "Error").slice(0, 80),
+      errorCode: String(e?.message || "UNKNOWN_ERROR").slice(0, 120),
+      status: Number.isFinite(e?.status) ? e.status : null
+    });
     const allowed = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED","ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","INVALID_ROLE_INPUT","USER_NOT_ASSIGNED","USER_MANAGEMENT_REQUIRED","INVALID_REQUEST","REQUEST_NOT_PENDING","INVALID_RECHARGE_AMOUNT","INVALID_PAYMENT_METHOD","INVALID_TRANSACTION_ID","DUPLICATE_TRX","TOO_MANY_PENDING_REQUESTS","REQUEST_TOO_LARGE","INVALID_JSON","LEGACY_REQUEST_REQUIRES_REVIEW","LIMITED_ADMIN_APPROVE_ONLY","INVALID_SMS_REQUEST","LOW_BALANCE","SMS_DEBIT_CONFLICT","CANNOT_DELETE_MAIN_ADMIN","AUTH_USER_DELETE_FAILED","RECHARGE_ACCESS_REQUIRED","ROLE_SAVE_VERIFICATION_FAILED"];
     const message = allowed.includes(e.message) ? e.message : "ADMIN_API_ERROR";
     const status = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED"].includes(message) ? 401 :

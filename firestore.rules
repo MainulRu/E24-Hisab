@@ -54,7 +54,7 @@ service cloud.firestore {
       allow create: if signedIn()
         && request.auth.uid == userId
         && request.resource.data.keys().hasOnly(['email', 'mobile', 'emailVerified', 'createdAt'])
-        && request.resource.data.email is string
+        && request.resource.data.email == request.auth.token.email
         && request.resource.data.emailVerified == request.auth.token.email_verified
         && (!('mobile' in request.resource.data) || request.resource.data.mobile is string);
 
@@ -103,12 +103,10 @@ service cloud.firestore {
                 && (!('smsWalletTransactions' in request.resource.data)
                   || (request.resource.data.smsWalletTransactions is list && request.resource.data.smsWalletTransactions.size() == 0))
                 && (!('smsRechargeRequests' in request.resource.data)
-                  || (request.resource.data.smsRechargeRequests is list && request.resource.data.smsRechargeRequests.size() == 0))));
+                  || (request.resource.data.smsRechargeRequests is list && request.resource.data.smsRechargeRequests.size() == 0)))));
 
         // The legacy embedded recharge-request array is read-only for clients.
         // New requests and status changes are written only by the trusted Worker.
-        // Owners may still edit ordinary ledger/customer data and debit their own
-        // wallet, but cannot raise or remove the wallet balance.
         // Wallet balance, SMS usage history, wallet ledger and recharge requests
         // are writable only by trusted Workers (or Main Admin). Full Admin and
         // account owners can still update ordinary customer/ledger fields.

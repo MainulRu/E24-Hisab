@@ -88,8 +88,8 @@ test("owner cannot change server-owned wallet or recharge fields", async () => {
   const mainRef = doc(ownerDb, "users/owner/data/main");
   await assertFails(updateDoc(mainRef, { smsWalletBalance: 999 }));
   await assertFails(updateDoc(mainRef, { smsHistory: [{ amount: 5 }] }));
-  await assertFails(updateDoc(mainRef, { smsRechargeRequests: [] }));
-  await assertFails(updateDoc(mainRef, { smsWalletTransactions: [] }));
+  await assertFails(updateDoc(mainRef, { smsRechargeRequests: [{ amount: 50 }] }));
+  await assertFails(updateDoc(mainRef, { smsWalletTransactions: [{ amount: 5 }] }));
 });
 
 test("new owner main ledger must start with zero wallet and empty financial arrays", async () => {

@@ -342,7 +342,7 @@ async function referralRewardWrites(env, referredUid, now) {
   };
   const refMainWrite = referrerMainDoc
     ? { update: { name: refMainName, fields: refMainFields }, updateMask: { fieldPaths: ["smsWalletBalance", "smsWalletTransactions", "updatedAt"] }, currentDocument: { updateTime: referrerMainDoc.updateTime } }
-    : { create: { name: refMainName, fields: refMainFields } };
+    : { update: { name: refMainName, fields: refMainFields }, currentDocument: { exists: false } };
   return [{
     update: { name: referredDoc.name, fields: { referralRewardPaid: { booleanValue: true }, referralRewardedAt: { timestampValue: now } }},
     updateMask: { fieldPaths: ["referralRewardPaid", "referralRewardedAt"] },

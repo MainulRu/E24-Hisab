@@ -254,7 +254,7 @@ async function createWalletRechargeRequest(env, token, uid, body) {
   const legacyDoc = await fs(env, token, "users/" + encodeURIComponent(uid) + "/data/main", { allow404: true });
   if (legacyDoc.status !== 404) {
     const legacy = decodeFields(legacyDoc.data.fields || {}).smsRechargeRequests;
-    if (Array.isArray(legacy) && legacy.some(x => String(x.transactionId || "").toUpperCase() === transactionId)) throw new Error("DUPLICATE_TRX");
+    if (Array.isArray(legacy) && legacy.some(x => String(x.transactionId || "").toUpperCase() === transactionId && String(x.status || "").toUpperCase() !== "CANCELLED")) throw new Error("DUPLICATE_TRX");
   }
   const id = "R" + crypto.randomUUID().replace(/-/g, "").slice(0, 20).toLowerCase();
   const now = new Date().toISOString();

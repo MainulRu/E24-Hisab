@@ -1,0 +1,12 @@
+# Isolated SSLCOMMERZ Sandbox Worker.
+# Replace the two placeholders only with a dedicated Firebase STAGING project.
+# Never point this config at the production project "e24-hisab".
+name = "e24-sms-wallet-payment-staging"
+main = "index.js"
+compatibility_date = "2026-11-21"
+
+[vars]
+FIREBASE_PROJECT_ID = "REPLACE_WITH_STAGING_FIREBASE_PROJECT_ID"
+FIREBASE_API_KEY = "REPLACE_WITH_STAGING_FIREBASE_WEB_API_KEY"
+ALLOWED_ORIGINS = "https://mainulru.github.io"
+SSLCOMMERZ_MODE = "SANDBOX"

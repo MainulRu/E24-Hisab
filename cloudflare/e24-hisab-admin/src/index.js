@@ -281,9 +281,9 @@ async function createWalletRechargeRequest(env, token, uid, body) {
 async function debitTestSms(env, token, uid, body) {
   if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("INVALID_SMS_REQUEST");
   const id = String(body.id || "").trim();
-  const phone = String(body.phone || "").replace(/[\\s-]/g, "");
+  const phone = String(body.phone || "").replace(/[\s-]/g, "");
   const message = String(body.message || "").trim();
-  if (!/^[A-Za-z0-9_-]{8,80}$/.test(id) || !/^01[3-9]\\d{8}$/.test(phone) || !message || message.length > 500) throw new Error("INVALID_SMS_REQUEST");
+  if (!/^[A-Za-z0-9_-]{8,80}$/.test(id) || !/^01[3-9]\d{8}$/.test(phone) || !message || message.length > 500) throw new Error("INVALID_SMS_REQUEST");
   const eventId = await sha256Hex(uid + ":" + id);
   const eventPath = "e24SmsDebitEvents/" + eventId;
   const previous = await fs(env, token, eventPath, { allow404: true });

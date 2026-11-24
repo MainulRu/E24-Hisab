@@ -44,6 +44,20 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Server-owned payment, referral, idempotency and debit records.
+    match /e24PaymentSessions/{transactionId} {
+      allow read, write: if false;
+    }
+    match /e24ReferralRewards/{referredUid} {
+      allow read, write: if false;
+    }
+    match /e24RechargeTransactionIndex/{transactionHash} {
+      allow read, write: if false;
+    }
+    match /e24SmsDebitEvents/{eventId} {
+      allow read, write: if false;
+    }
+
     match /users/{userId} {
       // Only the account owner and Full/Main Admin may open a user profile.
       allow get: if signedIn() && (request.auth.uid == userId || canManageUser(userId));
@@ -54,7 +68,7 @@ service cloud.firestore {
       allow create: if signedIn()
         && request.auth.uid == userId
         && request.resource.data.keys().hasOnly(['email', 'mobile', 'emailVerified', 'createdAt'])
-        && request.resource.data.email is string
+        && request.resource.data.email == request.auth.token.email
         && request.resource.data.emailVerified == request.auth.token.email_verified
         && (!('mobile' in request.resource.data) || request.resource.data.mobile is string);
 
@@ -66,7 +80,7 @@ service cloud.firestore {
             'email', 'mobile', 'emailVerified',
             'name', 'organizationName', 'profilePhotoData', 'updatedAt'
           ])
-          && request.resource.data.email is string
+          && request.resource.data.email == request.auth.token.email
           && request.resource.data.emailVerified == request.auth.token.email_verified
           && (!('mobile' in request.resource.data) || request.resource.data.mobile is string)
           && (!('name' in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() <= 100))
@@ -76,13 +90,15 @@ service cloud.firestore {
 
       allow delete: if isMainAdmin();
 
-      function ownerWalletBalanceCannotIncrease() {
-        return !('smsWalletBalance' in resource.data)
-          ? (!('smsWalletBalance' in request.resource.data)
-              || request.resource.data.smsWalletBalance == 0)
-          : ('smsWalletBalance' in request.resource.data
-              && request.resource.data.smsWalletBalance is number
-              && request.resource.data.smsWalletBalance <= resource.data.smsWalletBalance);
+      function noClientWalletChanges() {
+        return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'smsWalletBalance', 'smsHistory', 'smsRechargeRequests', 'smsWalletTransactions'
+        ]);
+      }
+
+
+      match /rechargeRequests/{requestId} {
+        allow read, write: if false;
       }
 
       match /data/{documentId} {
@@ -91,21 +107,30 @@ service cloud.firestore {
           && (request.auth.uid == userId || canManageUser(userId));
 
         // A new main ledger starts with zero SMS Wallet balance.
-        allow create: if canManageUser(userId)
-          || (signedIn()
-            && request.auth.uid == userId
+        allow create: if isMainAdmin()
+          || (signedIn() && request.auth.uid == userId
             && (documentId != 'main'
-              || !('smsWalletBalance' in request.resource.data)
-              || request.resource.data.smsWalletBalance == 0));
+              || ((!('smsWalletBalance' in request.resource.data)
+                  || request.resource.data.smsWalletBalance == 0)
+                && (!('smsHistory' in request.resource.data)
+                  || (request.resource.data.smsHistory is list && request.resource.data.smsHistory.size() == 0))
+                && (!('smsWalletTransactions' in request.resource.data)
+                  || (request.resource.data.smsWalletTransactions is list && request.resource.data.smsWalletTransactions.size() == 0))
+                && (!('smsRechargeRequests' in request.resource.data)
+                  || (request.resource.data.smsRechargeRequests is list && request.resource.data.smsRechargeRequests.size() == 0)))));
 
-        // Client-side writes may debit the wallet (e.g. SMS usage), but can never
-        // increase its balance. Trusted payment backend uses Firebase Admin credentials.
-        allow update: if canManageUser(userId)
+        // The legacy embedded recharge-request array is read-only for clients.
+        // New requests and status changes are written only by the trusted Worker.
+        // Wallet balance, SMS usage history, wallet ledger and recharge requests
+        // are writable only by trusted Workers (or Main Admin). Full Admin is
+        // read-only for other users; owners may update ordinary ledger fields.
+        allow update: if isMainAdmin()
           || (signedIn()
             && request.auth.uid == userId
-            && (documentId != 'main' || ownerWalletBalanceCannotIncrease()));
+            && (documentId != 'main' || noClientWalletChanges()));
 
-        allow delete: if canManageUser(userId);
+        // Only Main Admin may delete a user's ledger document.
+        allow delete: if isMainAdmin();
       }
     }
   }

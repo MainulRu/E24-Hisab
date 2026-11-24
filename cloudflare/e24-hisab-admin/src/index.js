@@ -213,10 +213,11 @@ async function adminReferralRewardWrites(env, token, referredUid, now) {
     updateMask: { fieldPaths: ["referralSuccessfulCount", "referralBonusTotal", "referralUpdatedAt"] },
     currentDocument: { updateTime: referrerDoc.updateTime }
   },refMainWrite,{
-    create: { name: docName(rewardPath), fields: encodeFields({
+    update: { name: docName(rewardPath), fields: encodeFields({
       referrerUid, referredUid, amount: 5, wallet: "SMS",
       type: "FIRST_SUCCESSFUL_RECHARGE", createdAt: now
-    })}
+    })},
+    currentDocument: { exists: false }
   }];
 }
 async function commitAdminWrites(env, token, writes) {

@@ -2450,9 +2450,9 @@ const E24_ADMIN_UID='zoz7HgipuFTh67x5XIXkQ9dOmKo2';
 const E24_FIREBASE_CONFIG={"apiKey":"AIzaSyAupETzeBR2x7Jz0PG7HbzLihgr4b5taQQ","authDomain":"e24-hisab-staging.firebaseapp.com","projectId":"e24-hisab-staging","storageBucket":"e24-hisab-staging.firebasestorage.app","messagingSenderId":"391085686986","appId":"1:391085686986:web:3b3e0b455fd81904613433"};
 const E24_OTP_API='https://floral-mouse-c0eae24-hisab-otp.ah0788767.workers.dev';
 const E24_AI_SUPPORT_API='https://gemeni-api-key.ah0788767.workers.dev';
-const E24_PAYMENT_API='https://e24-sms-wallet-payment.ah0788767.workers.dev';
+const E24_PAYMENT_API='https://e24-sms-wallet-payment-staging.ah0788767.workers.dev';
 
-const E24_ADMIN_API='https://e24-hisab-admin.ah0788767.workers.dev';
+const E24_ADMIN_API='https://e24-hisab-admin-staging.ah0788767.workers.dev';
 let currentUser=null,activeDataUid=null,isAdmin=false,isMainAdmin=false,e24AdminRole='user',authMode='login';
 async function e24AdminApi(path,options={}){
  if(!e24Auth.currentUser)throw new Error('AUTH_REQUIRED');

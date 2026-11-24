@@ -85,6 +85,11 @@ service cloud.firestore {
               && request.resource.data.smsWalletBalance <= resource.data.smsWalletBalance);
       }
 
+      // Recharge request documents are server-owned; client SDK access is denied.
+      match /rechargeRequests/{requestId} {
+        allow read, write: if false;
+      }
+
       match /data/{documentId} {
         // Account owners may read their own ledger. Full/Main Admin can read all ledgers.
         allow read: if signedIn()
@@ -95,15 +100,24 @@ service cloud.firestore {
           || (signedIn()
             && request.auth.uid == userId
             && (documentId != 'main'
-              || !('smsWalletBalance' in request.resource.data)
-              || request.resource.data.smsWalletBalance == 0));
+              || (!('smsWalletBalance' in request.resource.data)
+                || request.resource.data.smsWalletBalance == 0)
+              && (!('smsRechargeRequests' in request.resource.data)
+                || (request.resource.data.smsRechargeRequests is list
+                  && request.resource.data.smsRechargeRequests.size() == 0))));
 
-        // Client-side writes may debit the wallet (e.g. SMS usage), but can never
-        // increase its balance. Trusted payment backend uses Firebase Admin credentials.
+        // The legacy embedded recharge-request array is read-only for clients.
+        // New requests and status changes are written only by the trusted Worker.
+        // Owners may still edit ordinary ledger/customer data and debit their own
+        // wallet, but cannot raise or remove the wallet balance.
         allow update: if canManageUser(userId)
           || (signedIn()
             && request.auth.uid == userId
-            && (documentId != 'main' || ownerWalletBalanceCannotIncrease()));
+            && (documentId != 'main'
+              || (ownerWalletBalanceCannotIncrease()
+                && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+                  'smsRechargeRequests'
+                ]))));
 
         allow delete: if canManageUser(userId);
       }

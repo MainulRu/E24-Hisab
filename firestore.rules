@@ -94,8 +94,7 @@ service cloud.firestore {
 
         // A new main ledger starts with zero SMS Wallet balance.
         allow create: if isMainAdmin()
-          || (signedIn()
-            && request.auth.uid == userId
+          || ((signedIn() && (request.auth.uid == userId || canManageUser(userId)))
             && (documentId != 'main'
               || ((!('smsWalletBalance' in request.resource.data)
                   || request.resource.data.smsWalletBalance == 0)
@@ -104,7 +103,7 @@ service cloud.firestore {
                 && (!('smsWalletTransactions' in request.resource.data)
                   || (request.resource.data.smsWalletTransactions is list && request.resource.data.smsWalletTransactions.size() == 0))
                 && (!('smsRechargeRequests' in request.resource.data)
-                  || (request.resource.data.smsRechargeRequests is list && request.resource.data.smsRechargeRequests.size() == 0)))));
+                  || (request.resource.data.smsRechargeRequests is list && request.resource.data.smsRechargeRequests.size() == 0))));
 
         // The legacy embedded recharge-request array is read-only for clients.
         // New requests and status changes are written only by the trusted Worker.

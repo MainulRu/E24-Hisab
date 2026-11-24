@@ -1,0 +1,34 @@
+name: Deploy Main Copy Preview
+
+on:
+  push:
+    branches:
+      - main-security-copy
+    paths:
+      - "docs/**"
+      - ".github/workflows/deploy-main-copy-preview.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: main-security-copy-pages-preview
+  cancel-in-progress: true
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Main Copy Branch
+        uses: actions/checkout@v4
+        with:
+          ref: main-security-copy
+
+      - name: Deploy isolated Cloudflare Pages preview
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy ./docs --project-name=e24-hisab-security-preview --branch=main-security-copy

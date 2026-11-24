@@ -3033,7 +3033,8 @@ async function e24LoadData(uid){
  if(!Array.isArray(db.smsRechargeRequests))db.smsRechargeRequests=[];
  if(!Array.isArray(db.smsWalletTransactions))db.smsWalletTransactions=[];
  if(!snap.exists){
-  const initial={...db,smsWalletBalance:0,smsHistory:[],smsRechargeRequests:[],smsWalletTransactions:[],updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  db.smsWalletBalance=0;db.smsHistory=[];db.smsRechargeRequests=[];db.smsWalletTransactions=[];
+  const initial={...db,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
   e24Diagnostic('main-data-write-start',{reason:'document-missing',patchFields:Object.keys(initial)});
   try{await ref.set(initial,{merge:true});e24Diagnostic('main-data-write-success',{reason:'document-missing'});}
   catch(err){e24Diagnostic('main-data-write-failed',{code:err&&err.code||'unknown',message:err&&err.message||String(err),path:'users/{uid}/data/main'});throw err;}

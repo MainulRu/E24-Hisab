@@ -76,16 +76,13 @@ service cloud.firestore {
 
       allow delete: if isMainAdmin();
 
-      function ownerWalletBalanceCannotIncrease() {
-        return !('smsWalletBalance' in resource.data)
-          ? (!('smsWalletBalance' in request.resource.data)
-              || request.resource.data.smsWalletBalance == 0)
-          : ('smsWalletBalance' in request.resource.data
-              && request.resource.data.smsWalletBalance is number
-              && request.resource.data.smsWalletBalance <= resource.data.smsWalletBalance);
+      function noClientWalletChanges() {
+        return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'smsWalletBalance', 'smsHistory', 'smsRechargeRequests', 'smsWalletTransactions'
+        ]);
       }
 
-      // Recharge request documents are server-owned; client SDK access is denied.
+
       match /rechargeRequests/{requestId} {
         allow read, write: if false;
       }
@@ -96,30 +93,35 @@ service cloud.firestore {
           && (request.auth.uid == userId || canManageUser(userId));
 
         // A new main ledger starts with zero SMS Wallet balance.
-        allow create: if canManageUser(userId)
+        allow create: if isMainAdmin()
           || (signedIn()
             && request.auth.uid == userId
             && (documentId != 'main'
               || ((!('smsWalletBalance' in request.resource.data)
                   || request.resource.data.smsWalletBalance == 0)
+                && (!('smsHistory' in request.resource.data)
+                  || (request.resource.data.smsHistory is list && request.resource.data.smsHistory.size() == 0))
+                && (!('smsWalletTransactions' in request.resource.data)
+                  || (request.resource.data.smsWalletTransactions is list && request.resource.data.smsWalletTransactions.size() == 0))
                 && (!('smsRechargeRequests' in request.resource.data)
-                  || (request.resource.data.smsRechargeRequests is list
-                    && request.resource.data.smsRechargeRequests.size() == 0))));
+                  || (request.resource.data.smsRechargeRequests is list && request.resource.data.smsRechargeRequests.size() == 0)))));
 
         // The legacy embedded recharge-request array is read-only for clients.
         // New requests and status changes are written only by the trusted Worker.
         // Owners may still edit ordinary ledger/customer data and debit their own
         // wallet, but cannot raise or remove the wallet balance.
-        allow update: if canManageUser(userId)
+        // Wallet balance, SMS usage history, wallet ledger and recharge requests
+        // are writable only by trusted Workers (or Main Admin). Full Admin and
+        // account owners can still update ordinary customer/ledger fields.
+        allow update: if isMainAdmin()
+          || (canManageUser(userId)
+            && (documentId != 'main' || noClientWalletChanges()))
           || (signedIn()
             && request.auth.uid == userId
-            && (documentId != 'main'
-              || (ownerWalletBalanceCannotIncrease()
-                && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
-                  'smsRechargeRequests'
-                ]))));
+            && (documentId != 'main' || noClientWalletChanges()));
 
-        allow delete: if canManageUser(userId);
+        // Only Main Admin may delete a user's ledger document.
+        allow delete: if isMainAdmin();
       }
     }
   }

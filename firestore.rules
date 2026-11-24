@@ -108,8 +108,8 @@ service cloud.firestore {
         // The legacy embedded recharge-request array is read-only for clients.
         // New requests and status changes are written only by the trusted Worker.
         // Wallet balance, SMS usage history, wallet ledger and recharge requests
-        // are writable only by trusted Workers (or Main Admin). Full Admin and
-        // account owners can still update ordinary customer/ledger fields.
+        // are writable only by trusted Workers (or Main Admin). Full Admin is
+        // read-only for other users; owners may update ordinary ledger fields.
         allow update: if isMainAdmin()
           || (signedIn()
             && request.auth.uid == userId

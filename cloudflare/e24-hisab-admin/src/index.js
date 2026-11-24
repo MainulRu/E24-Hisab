@@ -269,8 +269,8 @@ async function createWalletRechargeRequest(env, token, uid, body) {
   const docName = p => "projects/" + env.FIREBASE_PROJECT_ID + "/databases/(default)/documents/" + p;
   try {
     await commitAdminWrites(env, token, [
-      { create: { name: docName(collectionPath + "/" + id), fields: encodeFields(request) } },
-      { create: { name: docName(indexPath), fields: encodeFields({ uid, requestId: id, transactionIdHash: indexId, createdAt: now }) } }
+      { update: { name: docName(collectionPath + "/" + id), fields: encodeFields(request) }, currentDocument: { exists: false } },
+      { update: { name: docName(indexPath), fields: encodeFields({ uid, requestId: id, transactionIdHash: indexId, createdAt: now }) }, currentDocument: { exists: false } }
     ]);
   } catch (error) {
     if (error.status === 400 || error.status === 409) throw new Error("DUPLICATE_TRX");

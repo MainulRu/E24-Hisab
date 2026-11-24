@@ -24,6 +24,11 @@ The service account must belong to the E24 Firebase project and have permission 
   JSON body: `{"amount":100}`
 - `POST /ipn` — public SSLCOMMERZ IPN listener; validates the payment with the official Sandbox validation API before crediting.
 - `GET /status?tran_id=...` — requires the same user's Firebase ID token.
+- `GET /referral/validate?code=...` — public validity check; returns only a boolean.
+- `POST /referral/setup` — requires Firebase ID token; creates the caller's referral code and optionally locks in a valid referring code.
+- `GET /referral/profile` — requires Firebase ID token; returns the caller's code and successful referral/bonus totals.
+
+On the first validated successful SMS Wallet recharge by a referred account, the Worker atomically adds ৳5 to the referrer's SMS Wallet and records one reward per referred UID. The same referred account cannot generate another bonus.
 - `GET /callback/success|fail|cancel` — customer return pages.
 
 ## Important security notes

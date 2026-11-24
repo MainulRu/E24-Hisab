@@ -426,7 +426,7 @@ async function route(request, env) {
       return reply({ success: true, request: created }, 201, allowedOrigin);
     }
     if (url.pathname === "/wallet/test-sms" && request.method === "POST") {
-      if (!caller.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
+      if (!caller.emailVerified && caller.uid !== mainAdminUid(env)) throw new Error("EMAIL_NOT_VERIFIED");
       const body = await readJsonBody(request);
       const result = await debitTestSms(env, token, caller.uid, body);
       return reply({ success: true, balance: result.balance, smsRecord: result.smsRecord, ledger: result.ledger }, 200, allowedOrigin);

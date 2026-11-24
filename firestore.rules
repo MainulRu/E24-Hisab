@@ -94,7 +94,7 @@ service cloud.firestore {
 
         // A new main ledger starts with zero SMS Wallet balance.
         allow create: if isMainAdmin()
-          || ((signedIn() && (request.auth.uid == userId || canManageUser(userId)))
+          || (signedIn() && request.auth.uid == userId
             && (documentId != 'main'
               || ((!('smsWalletBalance' in request.resource.data)
                   || request.resource.data.smsWalletBalance == 0)
@@ -113,8 +113,6 @@ service cloud.firestore {
         // are writable only by trusted Workers (or Main Admin). Full Admin and
         // account owners can still update ordinary customer/ledger fields.
         allow update: if isMainAdmin()
-          || (canManageUser(userId)
-            && (documentId != 'main' || noClientWalletChanges()))
           || (signedIn()
             && request.auth.uid == userId
             && (documentId != 'main' || noClientWalletChanges()));

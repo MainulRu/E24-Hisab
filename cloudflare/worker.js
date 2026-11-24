@@ -466,6 +466,99 @@ async function handleVerifyEmailOTP(request, env) {
   });
 }
 __name(handleVerifyEmailOTP, "handleVerifyEmailOTP");
+
+async function handleRegistrationSendEmailOTP(request, env) {
+  if (!env.E24_HISAB_OTP_DB) return json({ success:false, message:"OTP database is not configured." },500);
+  const body=await request.json().catch(()=>({}));
+  const email=String(body.email||"").trim().toLowerCase();
+  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return json({success:false,message:"সঠিক Email Address লিখুন।"},400);
+  const db=env.E24_HISAB_OTP_DB;
+  await db.prepare(`CREATE TABLE IF NOT EXISTS pending_registration_otps (
+    email TEXT PRIMARY KEY, otp_hash TEXT NOT NULL, created_at INTEGER NOT NULL,
+    expires_at INTEGER NOT NULL, attempts INTEGER NOT NULL DEFAULT 0,
+    last_sent_at INTEGER NOT NULL
+  )`).run();
+  const now=Math.floor(Date.now()/1e3);
+  const old=await db.prepare("SELECT last_sent_at FROM pending_registration_otps WHERE email=?").bind(email).first();
+  if(old && now-Number(old.last_sent_at)<RESEND_WAIT) return json({success:false,message:"একটু অপেক্ষা করে আবার OTP চান।",retryAfter:RESEND_WAIT-(now-Number(old.last_sent_at))},429);
+  const otp=generateOTP();
+  const otpHash=await hashOTP("e24-registration:"+email+":"+otp);
+  await db.prepare(`INSERT INTO pending_registration_otps(email,otp_hash,created_at,expires_at,attempts,last_sent_at)
+    VALUES(?,?,?,?,0,?) ON CONFLICT(email) DO UPDATE SET otp_hash=excluded.otp_hash,
+    created_at=excluded.created_at,expires_at=excluded.expires_at,attempts=0,last_sent_at=excluded.last_sent_at`)
+    .bind(email,otpHash,now,now+OTP_TTL,now).run();
+  try { await sendBrevoEmailOTP(env,email,otp); }
+  catch(error) {
+    console.error("Registration OTP email failed:",error.message);
+    await db.prepare("DELETE FROM pending_registration_otps WHERE email=?").bind(email).run();
+    return json({success:false,message:"Email-এ OTP পাঠানো যায়নি। পরে আবার চেষ্টা করুন।"},502);
+  }
+  return json({success:true,message:"Verification code sent.",expiresIn:OTP_TTL,resendAfter:RESEND_WAIT});
+}
+async function handleRegistrationVerifyEmailOTP(request, env) {
+  if (!env.E24_HISAB_OTP_DB) return json({success:false,message:"OTP database is not configured."},500);
+  const body=await request.json().catch(()=>({}));
+  const email=String(body.email||"").trim().toLowerCase();
+  const otp=String(body.otp||"").trim();
+  const password=String(body.password||"");
+  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || !/^\\d{6}$/.test(otp)) return json({success:false,message:"Email ও ৬ সংখ্যার OTP সঠিকভাবে দিন।"},400);
+  if(password.length<6 || password.length>128) return json({success:false,message:"Password কমপক্ষে ৬ অক্ষরের হতে হবে।"},400);
+  const db=env.E24_HISAB_OTP_DB;
+  await db.prepare(`CREATE TABLE IF NOT EXISTS pending_registration_otps (
+    email TEXT PRIMARY KEY, otp_hash TEXT NOT NULL, created_at INTEGER NOT NULL,
+    expires_at INTEGER NOT NULL, attempts INTEGER NOT NULL DEFAULT 0,
+    last_sent_at INTEGER NOT NULL
+  )`).run();
+  const rec=await db.prepare("SELECT otp_hash,expires_at,attempts FROM pending_registration_otps WHERE email=?").bind(email).first();
+  const now=Math.floor(Date.now()/1e3);
+  if(!rec || Number(rec.expires_at)<=now) {
+    await db.prepare("DELETE FROM pending_registration_otps WHERE email=?").bind(email).run();
+    return json({success:false,message:"OTP ভুল অথবা মেয়াদ শেষ। নতুন OTP নিন।"},400);
+  }
+  if(Number(rec.attempts)>=MAX_ATTEMPTS) {
+    await db.prepare("DELETE FROM pending_registration_otps WHERE email=?").bind(email).run();
+    return json({success:false,message:"অনেকবার ভুল OTP দেওয়া হয়েছে। নতুন OTP নিন।"},429);
+  }
+  const supplied=await hashOTP("e24-registration:"+email+":"+otp);
+  if(supplied!==rec.otp_hash) {
+    const attempts=Number(rec.attempts)+1;
+    if(attempts>=MAX_ATTEMPTS) await db.prepare("DELETE FROM pending_registration_otps WHERE email=?").bind(email).run();
+    else await db.prepare("UPDATE pending_registration_otps SET attempts=? WHERE email=?").bind(attempts,email).run();
+    return json({success:false,message:"OTP সঠিক নয়।",attemptsRemaining:Math.max(0,MAX_ATTEMPTS-attempts)},400);
+  }
+  const apiKey=env.FIREBASE_WEB_API_KEY || "AIzaSyAupETzeBR2x7Jz0PG7HbzLihgr4b5taQQ";
+  let signup;
+  try {
+    const response=await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key="+encodeURIComponent(apiKey),{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email,password,returnSecureToken:true})
+    });
+    signup=await response.json().catch(()=>({}));
+    if(!response.ok || !signup.localId) {
+      const code=String(signup.error?.message||"");
+      if(code==="EMAIL_EXISTS") return json({success:false,message:"এই Email দিয়ে আগে থেকেই অ্যাকাউন্ট আছে। Login করুন অথবা Password Reset করুন।"},409);
+      console.error("Firebase registration failed:",code||response.status);
+      return json({success:false,message:"Firebase অ্যাকাউন্ট তৈরি করা যায়নি। আবার চেষ্টা করুন।"},502);
+    }
+    await markFirebaseEmailVerified(env,signup.localId);
+  } catch(error) {
+    console.error("Verified registration failed:",error.message);
+    if(signup?.localId) {
+      try {
+        const token=await getFirebaseAdminAccessToken(env);
+        const service=JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
+        await fetch("https://identitytoolkit.googleapis.com/v1/accounts:delete?key="+encodeURIComponent(apiKey),{
+          method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
+          body:JSON.stringify({localId:signup.localId})
+        });
+      } catch(cleanupError) { console.error("Registration rollback failed:",cleanupError.message); }
+    }
+    return json({success:false,message:"Email verification সম্পন্ন করা যায়নি। OTP আবার যাচাই করে চেষ্টা করুন।"},502);
+  }
+  await db.prepare("DELETE FROM pending_registration_otps WHERE email=?").bind(email).run();
+  return json({success:true,verified:true,email:email,message:"Email verified and account created."});
+}
+
 function normalizePhone(phone) {
   let p = String(phone || "").replace(/[\s\-()]/g, "");
   if (p.startsWith("01") && p.length === 11) {
@@ -848,6 +941,12 @@ var worker_default = {
       }, 405);
     }
     try {
+      if (url.pathname === "/register/send-email-otp") {
+        return await handleRegistrationSendEmailOTP(request, env);
+      }
+      if (url.pathname === "/register/verify-email-otp") {
+        return await handleRegistrationVerifyEmailOTP(request, env);
+      }
       if (url.pathname === "/send-email-otp") {
         return await handleSendEmailOTP(
           request,

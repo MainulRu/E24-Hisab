@@ -4,7 +4,7 @@ This setup is deliberately separate from production. It creates two distinct Clo
 
 ## 1. Create a dedicated Firebase staging project
 
-Create a new Firebase project (for example, `e24-hisab-staging`). Do not use the production project `e24-hisab`.
+The dedicated Firebase staging project `e24-hisab-staging` has been created. Do not use the production project `e24-hisab`.
 
 In the staging project:
 1. Enable Authentication with the same sign-in provider needed for the test account.
@@ -14,7 +14,7 @@ In the staging project:
 5. Create `users/{uid}/data/main` with `smsWalletBalance: 0`, `smsWalletTransactions: []`, and `smsHistory: []`.
 6. Create an `adminRoles/{uid}` record only if you intend to test Admin Worker authorization. Use a separate staging admin account.
 
-Use the staging project's Web API key in the two staging Wrangler configs. Replace both occurrences of `REPLACE_WITH_STAGING_FIREBASE_PROJECT_ID` and `REPLACE_WITH_STAGING_FIREBASE_WEB_API_KEY`. Do not put production values here.
+The two staging Wrangler configs already point to `e24-hisab-staging` and contain its Web API key. Do not replace these with production values.
 
 ## 2. Create a staging service account
 
@@ -48,7 +48,7 @@ npx wrangler secret put FIREBASE_SERVICE_ACCOUNT --config cloudflare/e24-hisab-a
 
 ## 4. Deploy staging Workers only
 
-After replacing the Firebase placeholders and setting all secrets, deploy only these configs:
+After creating the staging test user, preparing the staging service-account key, and setting all required secrets, deploy only these configs:
 
 ```sh
 npx wrangler deploy --config workers/sslcommerz-wallet/wrangler.staging.toml
@@ -70,7 +70,7 @@ These commands target the staging Worker names in the staging configs. Do not us
 ## Safety boundaries
 
 - These files do not deploy Workers and do not create a Firebase project or credentials.
-- The staging Firebase project must be created and populated before deployment. The placeholder project ID intentionally prevents accidentally using production.
+- The staging Firebase project `e24-hisab-staging` is configured in the staging Wrangler files. Populate it with test-only data before deployment.
 - Never copy production user records, service-account keys, SSLCOMMERZ live credentials, or production API secrets into staging.
 - A successful mocked CI test is not proof of a real SSLCOMMERZ Sandbox transaction.
 - The existing production Workers and production Firebase data remain untouched by this setup.

@@ -420,7 +420,7 @@ async function route(request, env) {
     const caller = await verifyCaller(request, env);
     const token = await googleToken(env);
     if (url.pathname === "/wallet/recharge" && request.method === "POST") {
-      if (!caller.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
+      if (!caller.emailVerified && caller.uid !== mainAdminUid(env)) throw new Error("EMAIL_NOT_VERIFIED");
       const body = await readJsonBody(request);
       const created = await createWalletRechargeRequest(env, token, caller.uid, body);
       return reply({ success: true, request: created }, 201, allowedOrigin);

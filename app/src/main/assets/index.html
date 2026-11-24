@@ -3025,7 +3025,7 @@ async function e24LoadData(uid){
  let legacy=null;
  if(snap.exists)db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি',...snap.data()};
  else{
-  try{const old=JSON.parse(localStorage.getItem(KEY));if(old&&Array.isArray(old.customers)&&Array.isArray(old.transactions))legacy=old;}catch(_){}
+  if(currentUser&&currentUser.uid===uid){try{const old=JSON.parse(localStorage.getItem(KEY));if(old&&Array.isArray(old.customers)&&Array.isArray(old.transactions))legacy=old;}catch(_){}}
   db=legacy||{customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি'};
  }
  if(!Number.isFinite(Number(db.smsWalletBalance)))db.smsWalletBalance=0;

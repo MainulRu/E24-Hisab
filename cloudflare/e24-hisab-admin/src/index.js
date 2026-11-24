@@ -225,32 +225,51 @@ async function commitAdminWrites(env, token, writes) {
   }
   return result;
 }
+async function sha256Hex(value) {
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)));
+  return Array.from(digest).map(x => x.toString(16).padStart(2, "0")).join("");
+}
 async function createWalletRechargeRequest(env, token, uid, body) {
+  if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("INVALID_REQUEST");
   const amount = Number(body.amount);
   const paymentMethod = String(body.paymentMethod || "");
-  const transactionId = String(body.transactionId || "").trim().replace(/\\s+/g, "").toUpperCase();
+  const transactionId = String(body.transactionId || "").trim().replace(/\s+/g, "").toUpperCase();
   if (!Number.isFinite(amount) || amount < 10 || amount > 10000 || Math.round(amount * 100) !== amount * 100) throw new Error("INVALID_RECHARGE_AMOUNT");
   if (!["bKash", "Nagad", "Rocket"].includes(paymentMethod)) throw new Error("INVALID_PAYMENT_METHOD");
   if (!/^[A-Z0-9-]{5,64}$/.test(transactionId)) throw new Error("INVALID_TRANSACTION_ID");
   const collectionPath = "users/" + encodeURIComponent(uid) + "/rechargeRequests";
-  const previous = await listDocs(env, token, collectionPath);
-  if (previous.some(doc => String(decodeFields(doc.fields || {}).transactionId || "").toUpperCase() === transactionId)) throw new Error("DUPLICATE_TRX");
+  const existing = await listDocs(env, token, collectionPath);
+  if (existing.length >= 50 && existing.some(d => String(decodeFields(d.fields || {}).status).toUpperCase() === "PENDING")) throw new Error("TOO_MANY_PENDING_REQUESTS");
   const id = "R" + crypto.randomUUID().replace(/-/g, "").slice(0, 20).toLowerCase();
   const now = new Date().toISOString();
   const request = {
     id, uid, amount, status: "PENDING", date: new Date().toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" }),
     createdAt: now, mode: "MANUAL", paymentMethod, receiverNumber: "01737537688", transactionId
   };
-  await fs(env, token, collectionPath + "/" + id, {
-    method: "PATCH", currentDocumentExists: false,
-    body: { fields: encodeFields(request) }
-  });
+  const indexId = await sha256Hex(transactionId);
+  const indexPath = "e24RechargeTransactionIndex/" + indexId;
+  const indexDoc = await fs(env, token, indexPath, { allow404: true });
+  if (indexDoc.status !== 404) throw new Error("DUPLICATE_TRX");
+  const docName = p => "projects/" + env.FIREBASE_PROJECT_ID + "/databases/(default)/documents/" + p;
+  try {
+    await commitAdminWrites(env, token, [
+      { create: { name: docName(collectionPath + "/" + id), fields: encodeFields(request) } },
+      { create: { name: docName(indexPath), fields: encodeFields({ uid, requestId: id, transactionIdHash: indexId, createdAt: now }) } }
+    ]);
+  } catch (error) {
+    if (error.status === 400 || error.status === 409) throw new Error("DUPLICATE_TRX");
+    throw error;
+  }
   return request;
 }
 async function listWalletRechargeRequests(env, token, uid) {
   const docs = await listDocs(env, token, "users/" + encodeURIComponent(uid) + "/rechargeRequests");
-  return docs.map(doc => decodeFields(doc.fields || {}))
-    .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+  const current = docs.map(doc => decodeFields(doc.fields || {}));
+  const legacyDoc = await fs(env, token, "users/" + encodeURIComponent(uid) + "/data/main", { allow404: true });
+  const legacy = legacyDoc.status === 404 ? [] : (Array.isArray(decodeFields(legacyDoc.data.fields || {}).smsRechargeRequests) ? decodeFields(legacyDoc.data.fields || {}).smsRechargeRequests : [])
+    .filter(item => !current.some(saved => String(saved.id) === String(item.id)))
+    .map(item => ({ ...item, uid, legacy: true }));
+  return current.concat(legacy).sort((a, b) => String(b.createdAt || b.date || "").localeCompare(String(a.createdAt || a.date || "")));
 }
 async function route(request, env) {
   const origin = request.headers.get("Origin") || "";
@@ -355,9 +374,16 @@ async function route(request, env) {
           const docs = await listDocs(env, token, "users/" + encodeURIComponent(uid) + "/rechargeRequests");
           const profile = await fs(env, token, "users/" + encodeURIComponent(uid));
           const profileData = decodeFields(profile.data.fields || {});
-          docs.map(d => decodeFields(d.fields || {}))
-            .filter(x => String(x.status).toUpperCase() === "PENDING")
-            .forEach(x => requests.push({ ...x, uid, email: admin.role === "limited" ? "" : (profileData.email || ""), customerName: profileData.name || "" }));
+          const newItems = docs.map(d => decodeFields(d.fields || {}));
+          newItems.filter(x => String(x.status).toUpperCase() === "PENDING")
+            .forEach(x => requests.push({ ...x, uid, email: admin.role === "limited" ? "" : (profileData.email || ""), customerName: profileData.name || "", legacy: false }));
+          const ledgerResult = await fs(env, token, "users/" + encodeURIComponent(uid) + "/data/main", { allow404: true });
+          if (ledgerResult.status !== 404) {
+            const legacyItems = decodeFields(ledgerResult.data.fields || {}).smsRechargeRequests;
+            (Array.isArray(legacyItems) ? legacyItems : [])
+              .filter(x => String(x.status).toUpperCase() === "PENDING" && !newItems.some(n => String(n.id) === String(x.id)))
+              .forEach(x => requests.push({ ...x, uid, email: admin.role === "limited" ? "" : (profileData.email || ""), customerName: profileData.name || "", legacy: true }));
+          }
         } catch (e) { if (e.status !== 404) throw e; }
       }
       requests.sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
@@ -375,7 +401,21 @@ async function route(request, env) {
 
       const path = "users/" + encodeURIComponent(uid) + "/data/main";
       const requestPath = path.replace("/data/main", "/rechargeRequests/" + encodeURIComponent(requestId));
-      const requestDoc = await fs(env, token, requestPath);
+      let requestDoc;
+      try { requestDoc = await fs(env, token, requestPath); }
+      catch (lookupError) {
+        if (lookupError.status !== 404) throw lookupError;
+        if (action === "approve") throw new Error("LEGACY_REQUEST_REQUIRES_REVIEW");
+        if (admin.role === "limited") throw new Error("LIMITED_ADMIN_APPROVE_ONLY");
+        const legacyDoc = await fs(env, token, path);
+        const legacyData = decodeFields(legacyDoc.data.fields || {});
+        const legacyItems = Array.isArray(legacyData.smsRechargeRequests) ? legacyData.smsRechargeRequests : [];
+        const legacyIndex = legacyItems.findIndex(x => String(x.id) === requestId && String(x.status).toUpperCase() === "PENDING");
+        if (legacyIndex < 0) throw new Error("REQUEST_NOT_PENDING");
+        legacyItems[legacyIndex] = { ...legacyItems[legacyIndex], status: "CANCELLED", cancelledAt: new Date().toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" }), cancelledBy: caller.uid };
+        await fs(env, token, path, { method: "PATCH", currentDocumentUpdateTime: legacyDoc.data.updateTime, body: { fields: { smsRechargeRequests: encodeValue(legacyItems) } } });
+        return reply({ success: true, message: "REQUEST_CANCELLED" }, 200, allowedOrigin);
+      }
       const req = decodeFields(requestDoc.data.fields || {});
       if (String(req.uid) !== uid || String(req.id) !== requestId || String(req.status).toUpperCase() !== "PENDING") throw new Error("REQUEST_NOT_PENDING");
       const doc = await fs(env, token, path);
@@ -447,7 +487,7 @@ async function route(request, env) {
 
     return reply({ success: false, error: "NOT_FOUND" }, 404, allowedOrigin);
   } catch (e) {
-    const allowed = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED","ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","INVALID_ROLE_INPUT","USER_NOT_ASSIGNED","USER_MANAGEMENT_REQUIRED","INVALID_REQUEST","REQUEST_NOT_PENDING","INVALID_RECHARGE_AMOUNT","INVALID_PAYMENT_METHOD","INVALID_TRANSACTION_ID","DUPLICATE_TRX","CANNOT_DELETE_MAIN_ADMIN","AUTH_USER_DELETE_FAILED"];
+    const allowed = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED","ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","INVALID_ROLE_INPUT","USER_NOT_ASSIGNED","USER_MANAGEMENT_REQUIRED","INVALID_REQUEST","REQUEST_NOT_PENDING","INVALID_RECHARGE_AMOUNT","INVALID_PAYMENT_METHOD","INVALID_TRANSACTION_ID","DUPLICATE_TRX","TOO_MANY_PENDING_REQUESTS","LEGACY_REQUEST_REQUIRES_REVIEW","LIMITED_ADMIN_APPROVE_ONLY","CANNOT_DELETE_MAIN_ADMIN","AUTH_USER_DELETE_FAILED"];
     const message = allowed.includes(e.message) ? e.message : "ADMIN_API_ERROR";
     const status = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED"].includes(message) ? 401 :
       ["ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","USER_MANAGEMENT_REQUIRED","USER_NOT_ASSIGNED"].includes(message) ? 403 : 400;

@@ -471,7 +471,7 @@ async function handleRegistrationSendEmailOTP(request, env) {
   if (!env.E24_HISAB_OTP_DB) return json({ success:false, message:"OTP database is not configured." },500);
   const body=await request.json().catch(()=>({}));
   const email=String(body.email||"").trim().toLowerCase();
-  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return json({success:false,message:"সঠিক Email Address লিখুন।"},400);
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({success:false,message:"সঠিক Email Address লিখুন।"},400);
   const db=env.E24_HISAB_OTP_DB;
   await db.prepare(`CREATE TABLE IF NOT EXISTS pending_registration_otps (
     email TEXT PRIMARY KEY, otp_hash TEXT NOT NULL, created_at INTEGER NOT NULL,
@@ -501,7 +501,7 @@ async function handleRegistrationVerifyEmailOTP(request, env) {
   const email=String(body.email||"").trim().toLowerCase();
   const otp=String(body.otp||"").trim();
   const password=String(body.password||"");
-  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || !/^\\d{6}$/.test(otp)) return json({success:false,message:"Email ও ৬ সংখ্যার OTP সঠিকভাবে দিন।"},400);
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !/^\d{6}$/.test(otp)) return json({success:false,message:"Email ও ৬ সংখ্যার OTP সঠিকভাবে দিন।"},400);
   if(password.length<6 || password.length>128) return json({success:false,message:"Password কমপক্ষে ৬ অক্ষরের হতে হবে।"},400);
   const db=env.E24_HISAB_OTP_DB;
   await db.prepare(`CREATE TABLE IF NOT EXISTS pending_registration_otps (

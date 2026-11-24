@@ -1,18 +1,24 @@
-const MAIN_UID = "exITNpwyRNaWpoMWpW6BgMcMGbf2";
-const MAIN_EMAIL = "mainul.ru.ac.bd@gmail.com";
-const ORIGIN = "https://mainulru.github.io";
-
-const reply = (body, status = 200, origin = ORIGIN) => new Response(JSON.stringify(body), {
-  status,
-  headers: {
+function mainAdminUid(env) {
+  return String(env.MAIN_ADMIN_UID || "").trim();
+}
+function mainAdminEmail(env) {
+  return String(env.MAIN_ADMIN_EMAIL || "").trim().toLowerCase();
+}
+function allowedOrigins(env) {
+  return String(env.ALLOWED_ORIGINS || "http://localhost:5500,http://127.0.0.1:5500")
+    .split(",").map(x => x.trim()).filter(Boolean);
+}
+const reply = (body, status = 200, origin = "") => {
+  const headers = {
     "Content-Type": "application/json; charset=utf-8",
-    "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
     "Access-Control-Allow-Headers": "Authorization,Content-Type",
     "Vary": "Origin",
     "Cache-Control": "no-store"
-  }
-});
+  };
+  if (origin) headers["Access-Control-Allow-Origin"] = origin;
+  return new Response(JSON.stringify(body), { status, headers });
+};
 
 function b64url(value) {
   const bytes = typeof value === "string" ? new TextEncoder().encode(value) : value;
@@ -156,7 +162,10 @@ async function getRole(env, token, uid) {
   }
 }
 async function getAdmin(env, token, caller) {
-  if (caller.uid === MAIN_UID || (caller.email === MAIN_EMAIL && caller.emailVerified)) {
+  if (
+    (mainAdminUid(env) && caller.uid === mainAdminUid(env)) ||
+    (mainAdminEmail(env) && caller.email === mainAdminEmail(env) && caller.emailVerified)
+  ) {
     return { role: "main", managedUsers: [] };
   }
   if (!caller.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
@@ -365,13 +374,26 @@ async function listWalletRechargeRequests(env, token, uid) {
 }
 async function route(request, env) {
   const origin = request.headers.get("Origin") || "";
-  const allowedOrigin = origin === ORIGIN || origin === "null" || origin === "http://localhost" || origin === "http://127.0.0.1" ? origin : ORIGIN;
-  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: {
-    "Access-Control-Allow-Origin": allowedOrigin,
-    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-    "Access-Control-Allow-Headers": "Authorization,Content-Type",
-    "Vary": "Origin"
-  }});
+  const allowed = allowedOrigins(env);
+  const allowedOrigin = allowed.includes(origin) ? origin : "";
+
+  if (request.method === "OPTIONS") {
+    if (!allowedOrigin) return new Response(null, { status: 403 });
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": allowedOrigin,
+        "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+        "Access-Control-Allow-Headers": "Authorization,Content-Type",
+        "Vary": "Origin"
+      }
+    });
+  }
+
+  if (origin && !allowedOrigin) {
+    return reply({ success: false, error: "ORIGIN_NOT_ALLOWED" }, 403);
+  }
+
   const url = new URL(request.url);
   if (url.pathname === "/health" && request.method === "GET") {
     let serviceAccountConfigured = false;
@@ -382,14 +404,18 @@ async function route(request, env) {
     const configured = {
       firebaseApiKey: !!env.FIREBASE_API_KEY,
       firebaseProjectId: !!env.FIREBASE_PROJECT_ID,
-      serviceAccount: serviceAccountConfigured
+      serviceAccount: serviceAccountConfigured,
+      mainAdminUid: !!env.MAIN_ADMIN_UID,
+      mainAdminEmail: !!env.MAIN_ADMIN_EMAIL,
+      allowedOrigins: allowedOrigins(env).length > 0
     };
     const ready = Object.values(configured).every(Boolean);
     return reply({ success: ready, service: "e24-hisab-admin", configured }, ready ? 200 : 503, allowedOrigin);
   }
 
   try {
-    if (!env.FIREBASE_API_KEY || !env.FIREBASE_PROJECT_ID || !env.FIREBASE_SERVICE_ACCOUNT) {
+    if (!env.FIREBASE_API_KEY || !env.FIREBASE_PROJECT_ID || !env.FIREBASE_SERVICE_ACCOUNT ||
+        !mainAdminUid(env) || !mainAdminEmail(env) || !allowedOrigins(env).length) {
       return reply({ success: false, error: "WORKER_CONFIG_MISSING" }, 500, allowedOrigin);
     }
     const caller = await verifyCaller(request, env);
@@ -444,7 +470,7 @@ async function route(request, env) {
       const uid = String(body.uid || "").trim();
       const role = String(body.role || "");
       const managedUsers = Array.isArray(body.managedUsers) ? [...new Set(body.managedUsers.map(String))].filter(x => x && x !== uid).slice(0, 100) : [];
-      if (!uid || uid.length > 128 || uid === MAIN_UID || !["limited", "full", "none"].includes(role)) throw new Error("INVALID_ROLE_INPUT");
+      if (!uid || uid.length > 128 || uid === mainAdminUid(env) || !["limited", "full", "none"].includes(role)) throw new Error("INVALID_ROLE_INPUT");
       // Only provision roles for existing E24 Hisab profiles.
       await fs(env, token, "users/" + encodeURIComponent(uid));
       for (const managedUid of managedUsers) await fs(env, token, "users/" + encodeURIComponent(managedUid));
@@ -466,7 +492,10 @@ async function route(request, env) {
 
     if (url.pathname === "/admin/recharge" && request.method === "GET") {
       if (!["main", "full", "limited"].includes(admin.role)) throw new Error("RECHARGE_ACCESS_REQUIRED");
-      const uids = (await listDocs(env, token, "users")).map(d => d.name.split("/").pop());
+      const allUids = (await listDocs(env, token, "users")).map(d => d.name.split("/").pop());
+      const uids = admin.role === "limited"
+        ? allUids.filter(uid => admin.managedUsers.includes(uid)).slice(0, 100)
+        : allUids;
       const requests = [];
       for (const uid of uids) {
         try {
@@ -497,6 +526,7 @@ async function route(request, env) {
       const action = String(body.action || "");
       if (!/^[A-Za-z0-9_-]{1,128}$/.test(uid) || !/^[A-Za-z0-9_-]{5,80}$/.test(requestId) || !["approve", "cancel"].includes(action)) throw new Error("INVALID_REQUEST");
       if (admin.role === "limited" && action !== "approve") throw new Error("LIMITED_ADMIN_APPROVE_ONLY");
+      if (admin.role === "limited" && !admin.managedUsers.includes(uid)) throw new Error("USER_NOT_ASSIGNED");
 
       const path = "users/" + encodeURIComponent(uid) + "/data/main";
       const requestPath = path.replace("/data/main", "/rechargeRequests/" + encodeURIComponent(requestId));
@@ -565,7 +595,7 @@ async function route(request, env) {
     if (del && request.method === "DELETE") {
       if (!main) throw new Error("MAIN_ADMIN_REQUIRED");
       const uid = decodeURIComponent(del[1]);
-      if (!uid || uid === MAIN_UID || uid === caller.uid) throw new Error("CANNOT_DELETE_MAIN_ADMIN");
+      if (!uid || uid === mainAdminUid(env) || uid === caller.uid) throw new Error("CANNOT_DELETE_MAIN_ADMIN");
       // Delete Firebase Authentication first. If a later Firestore cleanup fails,
       // a retry by Main Admin can continue; USER_NOT_FOUND is treated as already deleted.
       const authDelete = await fetch("https://identitytoolkit.googleapis.com/v1/projects/" + encodeURIComponent(env.FIREBASE_PROJECT_ID) + "/accounts:delete", {
@@ -587,7 +617,7 @@ async function route(request, env) {
 
     return reply({ success: false, error: "NOT_FOUND" }, 404, allowedOrigin);
   } catch (e) {
-    const allowed = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED","ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","INVALID_ROLE_INPUT","USER_NOT_ASSIGNED","USER_MANAGEMENT_REQUIRED","INVALID_REQUEST","REQUEST_NOT_PENDING","INVALID_RECHARGE_AMOUNT","INVALID_PAYMENT_METHOD","INVALID_TRANSACTION_ID","DUPLICATE_TRX","TOO_MANY_PENDING_REQUESTS","REQUEST_TOO_LARGE","INVALID_JSON","LEGACY_REQUEST_REQUIRES_REVIEW","LIMITED_ADMIN_APPROVE_ONLY","INVALID_SMS_REQUEST","LOW_BALANCE","SMS_DEBIT_CONFLICT","CANNOT_DELETE_MAIN_ADMIN","AUTH_USER_DELETE_FAILED"];
+    const allowed = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED","ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","INVALID_ROLE_INPUT","USER_NOT_ASSIGNED","USER_MANAGEMENT_REQUIRED","INVALID_REQUEST","REQUEST_NOT_PENDING","INVALID_RECHARGE_AMOUNT","INVALID_PAYMENT_METHOD","INVALID_TRANSACTION_ID","DUPLICATE_TRX","TOO_MANY_PENDING_REQUESTS","REQUEST_TOO_LARGE","INVALID_JSON","LEGACY_REQUEST_REQUIRES_REVIEW","LIMITED_ADMIN_APPROVE_ONLY","INVALID_SMS_REQUEST","LOW_BALANCE","SMS_DEBIT_CONFLICT","CANNOT_DELETE_MAIN_ADMIN","AUTH_USER_DELETE_FAILED","RECHARGE_ACCESS_REQUIRED","ROLE_SAVE_VERIFICATION_FAILED"];
     const message = allowed.includes(e.message) ? e.message : "ADMIN_API_ERROR";
     const status = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED"].includes(message) ? 401 :
       ["ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","USER_MANAGEMENT_REQUIRED","USER_NOT_ASSIGNED"].includes(message) ? 403 : 400;

@@ -2664,8 +2664,7 @@ function e24TrackNewRechargeRequests(requests){
  e24EnsureNotificationData();
  const meta=db.notificationMeta;
  if(!Array.isArray(meta.knownRechargeRequestIds)){
-  meta.knownRechargeRequestIds=(requests||[]).map(x=>String(x.id)).filter(Boolean).slice(-200);
-  e24PersistNotificationState();return;
+  meta.knownRechargeRequestIds=[];
  }
  let changed=false;
  (requests||[]).forEach(request=>{

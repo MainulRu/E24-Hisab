@@ -85,13 +85,15 @@ async function requireUser(request, env) {
   const auth = request.headers.get("Authorization") || "";
   const match = auth.match(/^Bearer\s+(.+)$/i);
   if (!match) throw new Error("AUTH_REQUIRED");
+  if (match[1].length > 8192) throw new Error("AUTH_INVALID");
   const response = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + encodeURIComponent(env.FIREBASE_API_KEY), {
     method: "POST", headers: JSON_HEADERS, body: JSON.stringify({ idToken: match[1] })
   });
   if (!response.ok) throw new Error("AUTH_INVALID");
   const data = await response.json();
   const user = data.users && data.users[0];
-  if (!user || !user.localId) throw new Error("AUTH_INVALID");
+  if (!user || !user.localId || user.disabled) throw new Error("AUTH_INVALID");
+  if (!user.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
   return { uid: user.localId, email: user.email || "", emailVerified: !!user.emailVerified };
 }
 let cachedAccessToken = null;
@@ -154,12 +156,49 @@ async function getDocument(env, path) {
   try { return await fsFetch(env, path); }
   catch (error) { if (error.status === 404) return null; throw error; }
 }
+async function readBoundedText(request, maxBytes) {
+  const lengthHeader = request.headers.get("Content-Length");
+  if (lengthHeader !== null) {
+    if (!/^[0-9]+$/.test(lengthHeader) || Number(lengthHeader) > maxBytes) throw new Error("REQUEST_TOO_LARGE");
+  }
+  if (!request.body) return "";
+  const reader = request.body.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    while (true) {
+      const part = await reader.read();
+      if (part.done) break;
+      total += part.value.byteLength;
+      if (total > maxBytes) {
+        try { await reader.cancel(); } catch (_) {}
+        throw new Error("REQUEST_TOO_LARGE");
+      }
+      chunks.push(part.value);
+    }
+  } finally {
+    try { reader.releaseLock(); } catch (_) {}
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  try { return new TextDecoder("utf-8", { fatal: true }).decode(bytes); }
+  catch (_) { throw new Error("INVALID_JSON"); }
+}
+async function readJsonBody(request, maxBytes = 8192) {
+  const raw = await readBoundedText(request, maxBytes);
+  try { return raw ? JSON.parse(raw) : {}; }
+  catch (error) {
+    if (error.message === "REQUEST_TOO_LARGE") throw error;
+    throw new Error("INVALID_JSON");
+  }
+}
 async function savePendingSession(env, tranId, data) {
   const path = "/e24PaymentSessions/" + encodeURIComponent(tranId);
   const fields = {};
   for (const [key, value] of Object.entries(data)) fields[key] = firestoreValue(value);
   const token = await serviceAccessToken(env);
-  const response = await fetch(documentsBase(env) + path, {
+  const response = await fetch(documentsBase(env) + path + "?currentDocument.exists=false", {
     method: "PATCH",
     headers: { authorization: "Bearer " + token, "content-type": "application/json" },
     body: JSON.stringify({ fields })
@@ -167,7 +206,7 @@ async function savePendingSession(env, tranId, data) {
   if (!response.ok) throw new Error("PAYMENT_RECORD_SAVE_FAILED");
 }
 async function createSession(request, env, user) {
-  const body = await request.json();
+  const body = await readJsonBody(request);
   const amount = Number(body.amount);
   if (!Number.isFinite(amount) || amount < 10 || amount > 10000 || Math.round(amount * 100) !== amount * 100) {
     return json({ error: "INVALID_AMOUNT" }, 400);
@@ -303,7 +342,7 @@ async function referralRewardWrites(env, referredUid, now) {
   if (!referredDoc) return [];
   const referred = fieldsToObject(referredDoc.fields);
   const referrerUid = String(referred.referredBy || "");
-  if (!referrerUid || referred.referralRewardPaid === true) return [];
+  if (!referrerUid || referrerUid === referredUid || referred.referralRewardPaid === true) return [];
   const rewardPath = "/e24ReferralRewards/" + encodeURIComponent(referredUid);
   const rewardDoc = await getDocument(env, rewardPath);
   if (rewardDoc) return [];
@@ -333,7 +372,7 @@ async function referralRewardWrites(env, referredUid, now) {
   };
   const refMainWrite = referrerMainDoc
     ? { update: { name: refMainName, fields: refMainFields }, updateMask: { fieldPaths: ["smsWalletBalance", "smsWalletTransactions", "updatedAt"] }, currentDocument: { updateTime: referrerMainDoc.updateTime } }
-    : { create: { name: refMainName, fields: refMainFields } };
+    : { update: { name: refMainName, fields: refMainFields }, currentDocument: { exists: false } };
   return [{
     update: { name: referredDoc.name, fields: { referralRewardPaid: { booleanValue: true }, referralRewardedAt: { timestampValue: now } }},
     updateMask: { fieldPaths: ["referralRewardPaid", "referralRewardedAt"] },
@@ -347,7 +386,8 @@ async function referralRewardWrites(env, referredUid, now) {
     updateMask: { fieldPaths: ["referralSuccessfulCount", "referralBonusTotal", "referralUpdatedAt"] },
     currentDocument: { updateTime: referrerDoc.updateTime }
   },refMainWrite,{
-    create: { name: documentsBase(env) + rewardPath, fields: Object.fromEntries(Object.entries(rewardFields).map(([k,v]) => [k, firestoreValue(v)])) }
+    update: { name: documentsBase(env) + rewardPath, fields: Object.fromEntries(Object.entries(rewardFields).map(([k,v]) => [k, firestoreValue(v)])) },
+    currentDocument: { exists: false }
   }];
 }
 async function commitValidatedPayment(env, session, validation) {
@@ -360,6 +400,7 @@ async function commitValidatedPayment(env, session, validation) {
   if (!mainDoc || !paymentDoc) throw new Error("PAYMENT_RECORD_NOT_FOUND");
   const payment = fieldsToObject(paymentDoc.fields);
   if (payment.credited === true || payment.status === "PAID") return { alreadyCredited: true };
+  if (payment.status !== "PENDING" || payment.tranId !== tranId || payment.uid !== uid) throw new Error("PAYMENT_SESSION_STATE_INVALID");
   const main = fieldsToObject(mainDoc.fields);
   const balance = Number(main.smsWalletBalance || 0);
   const amount = Number(session.amount);
@@ -413,12 +454,18 @@ async function commitValidatedPayment(env, session, validation) {
   return { alreadyCredited: false, balance: nextBalance };
 }
 async function handleIpn(request, env) {
-  const form = await request.formData();
+  let rawForm;
+  try { rawForm = await readBoundedText(request, 32768); }
+  catch (error) {
+    if (error.message === "REQUEST_TOO_LARGE") return json({ error: "IPN_TOO_LARGE" }, 413);
+    return json({ error: "INVALID_IPN_BODY" }, 400);
+  }
+  const form = new URLSearchParams(rawForm);
   const ipnStatus = String(form.get("status") || "").toUpperCase();
   if (ipnStatus !== "VALID") return json({ status: "IGNORED_NON_VALID_STATUS" });
   const valId = String(form.get("val_id") || "");
   const tranId = String(form.get("tran_id") || "");
-  if (!valId || !tranId) return json({ error: "MISSING_PAYMENT_REFERENCE" }, 400);
+  if (!valId || valId.length > 128 || !/^E24S[A-Z0-9]{12,64}$/.test(tranId)) return json({ error: "INVALID_PAYMENT_REFERENCE" }, 400);
   const doc = await getDocument(env, "/e24PaymentSessions/" + encodeURIComponent(tranId));
   if (!doc) return json({ error: "UNKNOWN_TRANSACTION" }, 404);
   const session = fieldsToObject(doc.fields);
@@ -436,7 +483,10 @@ async function handleIpn(request, env) {
   const paidAmount = Number(validation.amount);
   if (!response.ok || !["VALID", "VALIDATED"].includes(String(validation.status || "").toUpperCase()) ||
       String(validation.tran_id) !== tranId || String(validation.currency) !== "BDT" || String(validation.currency_type) !== "BDT" ||
-      Math.abs(paidAmount - Number(session.amount)) > 0.001 || String(validation.risk_level || "0") !== "0") {
+      Math.abs(paidAmount - Number(session.amount)) > 0.001 || String(validation.risk_level || "0") !== "0" ||
+      (validation.value_a != null && String(validation.value_a) !== String(session.uid)) ||
+      (validation.value_b != null && String(validation.value_b) !== "SMS_WALLET") ||
+      String(session.currency || "BDT") !== "BDT" || !session.uid || !Number.isFinite(Number(session.amount))) {
     return json({ error: "PAYMENT_VALIDATION_FAILED" }, 400);
   }
   const result = await commitValidatedPayment(env, session, validation);
@@ -488,7 +538,7 @@ export default {
       }
       if (request.method === "POST" && url.pathname === "/referral/setup") {
         const user = await requireUser(request, env);
-        const body = await request.json().catch(() => ({}));
+        const body = await readJsonBody(request).catch(() => ({}));
         const result = await referralSetup(env, user, body.referralCode || "");
         return json({ success: true, ...result }, 200, cors);
       }
@@ -510,7 +560,8 @@ export default {
       return json({ error: "NOT_FOUND" }, 404, cors);
     } catch (error) {
       const status = error.message === "AUTH_REQUIRED" ? 401 :
-        error.message === "AUTH_INVALID" ? 403 : 500;
+        ["AUTH_INVALID", "EMAIL_NOT_VERIFIED"].includes(error.message) ? 403 :
+        ["REQUEST_TOO_LARGE", "INVALID_JSON"].includes(error.message) ? 400 : 500;
       return json({ error: status === 500 ? "SERVER_ERROR" : error.message }, status, cors);
     }
   }

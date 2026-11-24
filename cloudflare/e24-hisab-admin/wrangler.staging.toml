@@ -1,0 +1,10 @@
+# Isolated Admin Worker for the E24 Hisab staging Firebase project.
+# Replace the two placeholders only with a dedicated Firebase STAGING project.
+# Never point this config at the production project "e24-hisab".
+name = "e24-hisab-admin-staging"
+main = "src/index.js"
+compatibility_date = "2026-11-21"
+
+[vars]
+FIREBASE_PROJECT_ID = "REPLACE_WITH_STAGING_FIREBASE_PROJECT_ID"
+FIREBASE_API_KEY = "REPLACE_WITH_STAGING_FIREBASE_WEB_API_KEY"

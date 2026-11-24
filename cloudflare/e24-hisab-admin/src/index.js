@@ -278,6 +278,48 @@ async function createWalletRechargeRequest(env, token, uid, body) {
   }
   return request;
 }
+async function debitTestSms(env, token, uid, body) {
+  if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("INVALID_SMS_REQUEST");
+  const id = String(body.id || "").trim();
+  const phone = String(body.phone || "").replace(/[\\s-]/g, "");
+  const message = String(body.message || "").trim();
+  if (!/^[A-Za-z0-9_-]{8,80}$/.test(id) || !/^01[3-9]\\d{8}$/.test(phone) || !message || message.length > 500) throw new Error("INVALID_SMS_REQUEST");
+  const eventId = await sha256Hex(uid + ":" + id);
+  const eventPath = "e24SmsDebitEvents/" + eventId;
+  const previous = await fs(env, token, eventPath, { allow404: true });
+  if (previous.status !== 404) return decodeFields(previous.data.fields || {});
+  const mainPath = "users/" + encodeURIComponent(uid) + "/data/main";
+  const mainDoc = await fs(env, token, mainPath);
+  const data = decodeFields(mainDoc.data.fields || {});
+  const balance = Number(data.smsWalletBalance || 0);
+  if (!Number.isFinite(balance) || balance < 1) throw new Error("LOW_BALANCE");
+  const nextBalance = Number((balance - 1).toFixed(2));
+  const date = new Date().toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" });
+  const smsRecord = { id, phone, message, status: "SUCCESS", date, mode: "TEST", cost: 1 };
+  const ledger = { id: "SMS-" + id, type: "DEBIT", title: "Test SMS পাঠানো", amount: 1, balanceAfter: nextBalance, date, mode: "TEST", referenceId: id };
+  const history = (Array.isArray(data.smsHistory) ? data.smsHistory : []).concat([smsRecord]).slice(-200);
+  const transactions = (Array.isArray(data.smsWalletTransactions) ? data.smsWalletTransactions : []).concat([ledger]).slice(-300);
+  const docName = p => "projects/" + env.FIREBASE_PROJECT_ID + "/databases/(default)/documents/" + p;
+  const event = { uid, id, phone, message, balance: nextBalance, smsRecord, ledger, createdAt: new Date().toISOString(), mode: "TEST" };
+  try {
+    await commitAdminWrites(env, token, [
+      {
+        update: { name: docName(mainPath), fields: {
+          smsWalletBalance: encodeValue(nextBalance),
+          smsHistory: encodeValue(history),
+          smsWalletTransactions: encodeValue(transactions)
+        }},
+        updateMask: { fieldPaths: ["smsWalletBalance", "smsHistory", "smsWalletTransactions"] },
+        currentDocument: { updateTime: mainDoc.data.updateTime }
+      },
+      { update: { name: docName(eventPath), fields: encodeFields(event) }, currentDocument: { exists: false } }
+    ]);
+  } catch (error) {
+    if (error.status === 400 || error.status === 409) throw new Error("SMS_DEBIT_CONFLICT");
+    throw error;
+  }
+  return event;
+}
 async function listWalletRechargeRequests(env, token, uid) {
   const docs = await listDocs(env, token, "users/" + encodeURIComponent(uid) + "/rechargeRequests");
   const current = docs.map(doc => decodeFields(doc.fields || {}));
@@ -319,9 +361,16 @@ async function route(request, env) {
     const caller = await verifyCaller(request, env);
     const token = await googleToken(env);
     if (url.pathname === "/wallet/recharge" && request.method === "POST") {
+      if (!caller.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
       const body = await readJsonBody(request);
       const created = await createWalletRechargeRequest(env, token, caller.uid, body);
       return reply({ success: true, request: created }, 201, allowedOrigin);
+    }
+    if (url.pathname === "/wallet/test-sms" && request.method === "POST") {
+      if (!caller.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
+      const body = await readJsonBody(request);
+      const result = await debitTestSms(env, token, caller.uid, body);
+      return reply({ success: true, balance: result.balance, smsRecord: result.smsRecord, ledger: result.ledger }, 200, allowedOrigin);
     }
     if (url.pathname === "/wallet/recharge" && request.method === "GET") {
       const requests = await listWalletRechargeRequests(env, token, caller.uid);
@@ -503,7 +552,7 @@ async function route(request, env) {
 
     return reply({ success: false, error: "NOT_FOUND" }, 404, allowedOrigin);
   } catch (e) {
-    const allowed = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED","ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","INVALID_ROLE_INPUT","USER_NOT_ASSIGNED","USER_MANAGEMENT_REQUIRED","INVALID_REQUEST","REQUEST_NOT_PENDING","INVALID_RECHARGE_AMOUNT","INVALID_PAYMENT_METHOD","INVALID_TRANSACTION_ID","DUPLICATE_TRX","TOO_MANY_PENDING_REQUESTS","REQUEST_TOO_LARGE","INVALID_JSON","LEGACY_REQUEST_REQUIRES_REVIEW","LIMITED_ADMIN_APPROVE_ONLY","CANNOT_DELETE_MAIN_ADMIN","AUTH_USER_DELETE_FAILED"];
+    const allowed = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED","ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","INVALID_ROLE_INPUT","USER_NOT_ASSIGNED","USER_MANAGEMENT_REQUIRED","INVALID_REQUEST","REQUEST_NOT_PENDING","INVALID_RECHARGE_AMOUNT","INVALID_PAYMENT_METHOD","INVALID_TRANSACTION_ID","DUPLICATE_TRX","TOO_MANY_PENDING_REQUESTS","REQUEST_TOO_LARGE","INVALID_JSON","LEGACY_REQUEST_REQUIRES_REVIEW","LIMITED_ADMIN_APPROVE_ONLY","INVALID_SMS_REQUEST","LOW_BALANCE","SMS_DEBIT_CONFLICT","CANNOT_DELETE_MAIN_ADMIN","AUTH_USER_DELETE_FAILED"];
     const message = allowed.includes(e.message) ? e.message : "ADMIN_API_ERROR";
     const status = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED"].includes(message) ? 401 :
       ["ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","USER_MANAGEMENT_REQUIRED","USER_NOT_ASSIGNED"].includes(message) ? 403 : 400;

@@ -92,6 +92,7 @@ async function verifyCaller(request, env) {
 async function fs(env, token, path, options = {}) {
   let url = "https://firestore.googleapis.com/v1/projects/" + env.FIREBASE_PROJECT_ID + "/databases/(default)/documents/" + path;
   if (options.currentDocumentUpdateTime) url += "?currentDocument.updateTime=" + encodeURIComponent(options.currentDocumentUpdateTime);
+  else if (options.currentDocumentExists === false) url += "?currentDocument.exists=false";
   const res = await fetch(url, {
     method: options.method || "GET",
     headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
@@ -224,6 +225,33 @@ async function commitAdminWrites(env, token, writes) {
   }
   return result;
 }
+async function createWalletRechargeRequest(env, token, uid, body) {
+  const amount = Number(body.amount);
+  const paymentMethod = String(body.paymentMethod || "");
+  const transactionId = String(body.transactionId || "").trim().replace(/\\s+/g, "").toUpperCase();
+  if (!Number.isFinite(amount) || amount < 10 || amount > 10000 || Math.round(amount * 100) !== amount * 100) throw new Error("INVALID_RECHARGE_AMOUNT");
+  if (!["bKash", "Nagad", "Rocket"].includes(paymentMethod)) throw new Error("INVALID_PAYMENT_METHOD");
+  if (!/^[A-Z0-9-]{5,64}$/.test(transactionId)) throw new Error("INVALID_TRANSACTION_ID");
+  const collectionPath = "users/" + encodeURIComponent(uid) + "/rechargeRequests";
+  const previous = await listDocs(env, token, collectionPath);
+  if (previous.some(doc => String(decodeFields(doc.fields || {}).transactionId || "").toUpperCase() === transactionId)) throw new Error("DUPLICATE_TRX");
+  const id = "R" + crypto.randomUUID().replace(/-/g, "").slice(0, 20).toLowerCase();
+  const now = new Date().toISOString();
+  const request = {
+    id, uid, amount, status: "PENDING", date: new Date().toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" }),
+    createdAt: now, mode: "MANUAL", paymentMethod, receiverNumber: "01737537688", transactionId
+  };
+  await fs(env, token, collectionPath + "/" + id, {
+    method: "PATCH", currentDocumentExists: false,
+    body: { fields: encodeFields(request) }
+  });
+  return request;
+}
+async function listWalletRechargeRequests(env, token, uid) {
+  const docs = await listDocs(env, token, "users/" + encodeURIComponent(uid) + "/rechargeRequests");
+  return docs.map(doc => decodeFields(doc.fields || {}))
+    .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+}
 async function route(request, env) {
   const origin = request.headers.get("Origin") || "";
   const allowedOrigin = origin === ORIGIN || origin === "null" || origin === "http://localhost" || origin === "http://127.0.0.1" ? origin : ORIGIN;
@@ -255,6 +283,15 @@ async function route(request, env) {
     }
     const caller = await verifyCaller(request, env);
     const token = await googleToken(env);
+    if (url.pathname === "/wallet/recharge" && request.method === "POST") {
+      const body = await request.json();
+      const created = await createWalletRechargeRequest(env, token, caller.uid, body);
+      return reply({ success: true, request: created }, 201, allowedOrigin);
+    }
+    if (url.pathname === "/wallet/recharge" && request.method === "GET") {
+      const requests = await listWalletRechargeRequests(env, token, caller.uid);
+      return reply({ success: true, requests }, 200, allowedOrigin);
+    }
     const admin = await getAdmin(env, token, caller);
     const main = admin.role === "main";
 
@@ -315,15 +352,15 @@ async function route(request, env) {
       const requests = [];
       for (const uid of uids) {
         try {
-          const ledger = await fs(env, token, "users/" + encodeURIComponent(uid) + "/data/main");
-          const data = decodeFields(ledger.data.fields || {});
+          const docs = await listDocs(env, token, "users/" + encodeURIComponent(uid) + "/rechargeRequests");
           const profile = await fs(env, token, "users/" + encodeURIComponent(uid));
-          (Array.isArray(data.smsRechargeRequests) ? data.smsRechargeRequests : [])
+          const profileData = decodeFields(profile.data.fields || {});
+          docs.map(d => decodeFields(d.fields || {}))
             .filter(x => String(x.status).toUpperCase() === "PENDING")
-            .forEach(x => requests.push({ ...x, uid, email: decodeFields(profile.data.fields || {}).email || "" }));
+            .forEach(x => requests.push({ ...x, uid, email: admin.role === "limited" ? "" : (profileData.email || ""), customerName: profileData.name || "" }));
         } catch (e) { if (e.status !== 404) throw e; }
       }
-      requests.sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+      requests.sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
       return reply({ success: true, requests }, 200, allowedOrigin);
     }
 
@@ -337,47 +374,49 @@ async function route(request, env) {
       if (admin.role === "limited" && action !== "approve") throw new Error("LIMITED_ADMIN_APPROVE_ONLY");
 
       const path = "users/" + encodeURIComponent(uid) + "/data/main";
+      const requestPath = path.replace("/data/main", "/rechargeRequests/" + encodeURIComponent(requestId));
+      const requestDoc = await fs(env, token, requestPath);
+      const req = decodeFields(requestDoc.data.fields || {});
+      if (String(req.uid) !== uid || String(req.id) !== requestId || String(req.status).toUpperCase() !== "PENDING") throw new Error("REQUEST_NOT_PENDING");
       const doc = await fs(env, token, path);
       const data = decodeFields(doc.data.fields || {});
-      const items = Array.isArray(data.smsRechargeRequests) ? data.smsRechargeRequests : [];
-      const i = items.findIndex(x => String(x.id) === requestId && String(x.status).toUpperCase() === "PENDING");
-      if (i < 0) throw new Error("REQUEST_NOT_PENDING");
-      const req = items[i];
       if (action === "approve") {
         const amount = Number(req.amount);
-        if (!Number.isFinite(amount) || amount <= 0 || amount > 100000) throw new Error("INVALID_RECHARGE_AMOUNT");
-        data.smsWalletBalance = (Number(data.smsWalletBalance) || 0) + amount;
+        if (!Number.isFinite(amount) || amount < 10 || amount > 10000 || Math.round(amount * 100) !== amount * 100) throw new Error("INVALID_RECHARGE_AMOUNT");
+        data.smsWalletBalance = Number((Number(data.smsWalletBalance) || 0) + amount).toFixed(2) * 1;
         data.smsWalletTransactions = Array.isArray(data.smsWalletTransactions) ? data.smsWalletTransactions : [];
-        const approvedAt = new Date().toLocaleString("bn-BD");
+        const approvedAt = new Date().toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" });
         data.smsWalletTransactions.push({
-          id: "RECHARGE-" + requestId, type: "CREDIT",
-          mode: req.mode === "MANUAL" ? "MANUAL" : "TEST",
+          id: "RECHARGE-" + requestId, type: "CREDIT", mode: "MANUAL",
           amount, balanceAfter: data.smsWalletBalance,
-          title: "Admin অনুমোদিত Manual Recharge", date: approvedAt,
-          referenceId: requestId
+          title: "Admin অনুমোদিত Manual Recharge", date: approvedAt, referenceId: requestId
         });
-        items[i] = { ...req, status: "APPROVED", approvedAt, approvedBy: caller.uid };
-      } else {
-        const cancelledAt = new Date().toLocaleString("bn-BD");
-        items[i] = { ...req, status: "CANCELLED", cancelledAt, cancelledBy: caller.uid };
-      }
-      data.smsRechargeRequests = items;
-      if (action === "approve") {
-        const now = new Date().toISOString();
-        const docName = "projects/" + env.FIREBASE_PROJECT_ID + "/databases/(default)/documents/" + path;
-        const writes = [{
-          update: { name: docName, fields: {
-            smsWalletBalance: encodeValue(data.smsWalletBalance),
-            smsWalletTransactions: encodeValue(data.smsWalletTransactions),
-            smsRechargeRequests: encodeValue(data.smsRechargeRequests)
-          }},
-          updateMask: { fieldPaths: ["smsWalletBalance", "smsWalletTransactions", "smsRechargeRequests"] },
-          currentDocument: { updateTime: doc.data.updateTime }
-        }];
-        writes.push(...await adminReferralRewardWrites(env, token, uid, now));
+        const updatedRequest = { ...req, status: "APPROVED", approvedAt, approvedBy: caller.uid };
+        const docName = path => "projects/" + env.FIREBASE_PROJECT_ID + "/databases/(default)/documents/" + path;
+        const writes = [
+          {
+            update: { name: docName(path), fields: {
+              smsWalletBalance: encodeValue(data.smsWalletBalance),
+              smsWalletTransactions: encodeValue(data.smsWalletTransactions)
+            }},
+            updateMask: { fieldPaths: ["smsWalletBalance", "smsWalletTransactions"] },
+            currentDocument: { updateTime: doc.data.updateTime }
+          },
+          {
+            update: { name: docName(requestPath), fields: encodeFields(updatedRequest) },
+            updateMask: { fieldPaths: Object.keys(updatedRequest) },
+            currentDocument: { updateTime: requestDoc.data.updateTime }
+          }
+        ];
+        writes.push(...await adminReferralRewardWrites(env, token, uid, new Date().toISOString()));
         await commitAdminWrites(env, token, writes);
       } else {
-        await fs(env, token, path, { method: "PATCH", currentDocumentUpdateTime: doc.data.updateTime, body: { fields: encodeFields(data) } });
+        if (admin.role === "limited") throw new Error("LIMITED_ADMIN_APPROVE_ONLY");
+        const cancelledAt = new Date().toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" });
+        await fs(env, token, requestPath, {
+          method: "PATCH", currentDocumentUpdateTime: requestDoc.data.updateTime,
+          body: { fields: encodeFields({ ...req, status: "CANCELLED", cancelledAt, cancelledBy: caller.uid }) }
+        });
       }
       return reply({ success: true, message: action === "approve" ? "RECHARGE_APPROVED" : "REQUEST_CANCELLED" }, 200, allowedOrigin);
     }
@@ -408,7 +447,7 @@ async function route(request, env) {
 
     return reply({ success: false, error: "NOT_FOUND" }, 404, allowedOrigin);
   } catch (e) {
-    const allowed = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED","ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","INVALID_ROLE_INPUT","USER_NOT_ASSIGNED","USER_MANAGEMENT_REQUIRED","INVALID_REQUEST","REQUEST_NOT_PENDING","INVALID_RECHARGE_AMOUNT","CANNOT_DELETE_MAIN_ADMIN","AUTH_USER_DELETE_FAILED"];
+    const allowed = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED","ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","INVALID_ROLE_INPUT","USER_NOT_ASSIGNED","USER_MANAGEMENT_REQUIRED","INVALID_REQUEST","REQUEST_NOT_PENDING","INVALID_RECHARGE_AMOUNT","INVALID_PAYMENT_METHOD","INVALID_TRANSACTION_ID","DUPLICATE_TRX","CANNOT_DELETE_MAIN_ADMIN","AUTH_USER_DELETE_FAILED"];
     const message = allowed.includes(e.message) ? e.message : "ADMIN_API_ERROR";
     const status = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED"].includes(message) ? 401 :
       ["ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","USER_MANAGEMENT_REQUIRED","USER_NOT_ASSIGNED"].includes(message) ? 403 : 400;

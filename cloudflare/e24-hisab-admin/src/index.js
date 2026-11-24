@@ -75,13 +75,42 @@ async function googleToken(env) {
   return data.access_token;
 }
 
-async function readJsonBody(request, maxBytes = 16384) {
-  const length = Number(request.headers.get("Content-Length") || 0);
-  if (length > maxBytes) throw new Error("REQUEST_TOO_LARGE");
-  const raw = await request.text();
-  if (new TextEncoder().encode(raw).length > maxBytes) throw new Error("REQUEST_TOO_LARGE");
-  try { return raw ? JSON.parse(raw) : {}; }
+async function readBoundedText(request, maxBytes) {
+  const lengthHeader = request.headers.get("Content-Length");
+  if (lengthHeader !== null) {
+    if (!/^\\d+$/.test(lengthHeader) || Number(lengthHeader) > maxBytes) throw new Error("REQUEST_TOO_LARGE");
+  }
+  if (!request.body) return "";
+  const reader = request.body.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    while (true) {
+      const part = await reader.read();
+      if (part.done) break;
+      total += part.value.byteLength;
+      if (total > maxBytes) {
+        try { await reader.cancel(); } catch (_) {}
+        throw new Error("REQUEST_TOO_LARGE");
+      }
+      chunks.push(part.value);
+    }
+  } finally {
+    try { reader.releaseLock(); } catch (_) {}
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  try { return new TextDecoder("utf-8", { fatal: true }).decode(bytes); }
   catch (_) { throw new Error("INVALID_JSON"); }
+}
+async function readJsonBody(request, maxBytes = 16384) {
+  const raw = await readBoundedText(request, maxBytes);
+  try { return raw ? JSON.parse(raw) : {}; }
+  catch (error) {
+    if (error.message === "REQUEST_TOO_LARGE") throw error;
+    throw new Error("INVALID_JSON");
+  }
 }
 async function verifyCaller(request, env) {
   const bearer = (request.headers.get("Authorization") || "").match(/^Bearer\s+(.+)$/i);

@@ -116,7 +116,7 @@ test("Mock Firestore integration: recharge request and global TrxID index commit
   assert.equal(commits[0].writes.length, 2);
   assert.ok(commits[0].writes.every(w => w.currentDocument?.exists === false));
   const second = await adminWorker.fetch(request("/wallet/recharge", JSON.stringify(body)), env);
-  assert.equal(second.status, 500);
+  assert.equal(second.status, 400);
   assert.equal((await second.json()).error, "DUPLICATE_TRX");
   assert.equal(commits.length, 1);
 });

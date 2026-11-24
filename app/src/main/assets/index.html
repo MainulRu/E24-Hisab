@@ -2788,7 +2788,7 @@
       const money = n => '৳ ' + Number(n || 0).toLocaleString('en-IN');
       const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       const id = () => 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-      const avatar = (photo, large=false) => /^data:image\\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(String(photo||'')) && String(photo).length<=600000 ? `<img src="${photo}" alt="গ্রাহকের ছবি">` : '<i class="fa-solid fa-user"></i>'; 
+      const avatar = (photo, large=false) => /^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(String(photo||'')) && String(photo).length<=600000 ? `<img src="${photo}" alt="গ্রাহকের ছবি">` : '<i class="fa-solid fa-user"></i>'; 
       function save(){if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন');return;}const snapshot=JSON.parse(JSON.stringify(db));e24Store.collection('users').doc(activeDataUid).collection('data').doc('main').set({...snapshot,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(err=>{console.error('E24 Firestore save:',err);showToast('Cloud-এ হিসাব সংরক্ষণ হয়নি');});}
       function validTransactions() {
         const customerIds=new Set(db.customers.map(c=>String(c.id)));
@@ -3208,7 +3208,7 @@ window.e24OrgName = '';
 function e24SetProfilePhotoPreview(dataUrl){
   const preview=document.getElementById('e24-profile-photo-preview');if(!preview)return;
   preview.innerHTML='';
-  if(/^data:image\\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(String(dataUrl||''))&&String(dataUrl).length<=320000){const img=document.createElement('img');img.src=dataUrl;img.alt='প্রোফাইল ছবি';img.style.cssText='width:100%;height:100%;object-fit:cover';preview.appendChild(img);}
+  if(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(String(dataUrl||''))&&String(dataUrl).length<=320000){const img=document.createElement('img');img.src=dataUrl;img.alt='প্রোফাইল ছবি';img.style.cssText='width:100%;height:100%;object-fit:cover';preview.appendChild(img);}
   else preview.innerHTML='<i class="fa-solid fa-user"></i>';
 }
 function e24PrepareProfilePhoto(file){

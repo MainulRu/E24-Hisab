@@ -101,7 +101,8 @@ test("new owner main ledger must start with zero wallet and empty financial arra
     smsRechargeRequests: [],
     smsWalletTransactions: []
   }));
-  await assertFails(setDoc(doc(ownerDb, "users/bad-owner/data/main"), {
+  const badDb = db("bad-owner");
+  await assertFails(setDoc(doc(badDb, "users/bad-owner/data/main"), {
     cashBalance: 0,
     smsWalletBalance: 500,
     smsHistory: [],
@@ -142,7 +143,6 @@ test("Full Admin can read another user's ledger but cannot edit it", async () =>
 test("Limited Admin cannot read another user's ledger", async () => {
   const limitedDb = db("limited-admin");
   await assertFails(getDoc(doc(limitedDb, "users/other/data/main")));
-  await assertSucceeds(getDoc(doc(limitedDb, "users/limited-admin/data/main")).catch(() => null));
 });
 
 test("Main Admin can perform server-reserved wallet corrections", async () => {

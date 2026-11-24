@@ -1,0 +1,30 @@
+name: Firestore Rules Emulator Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - security/backend-hardening-2026-11-24
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  firestore-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run Firestore Rules tests in Emulator
+        run: npm run test:emulator

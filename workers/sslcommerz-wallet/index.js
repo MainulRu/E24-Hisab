@@ -92,7 +92,8 @@ async function requireUser(request, env) {
   if (!response.ok) throw new Error("AUTH_INVALID");
   const data = await response.json();
   const user = data.users && data.users[0];
-  if (!user || !user.localId) throw new Error("AUTH_INVALID");
+  if (!user || !user.localId || user.disabled) throw new Error("AUTH_INVALID");
+  if (!user.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
   return { uid: user.localId, email: user.email || "", emailVerified: !!user.emailVerified };
 }
 let cachedAccessToken = null;
@@ -370,6 +371,7 @@ async function commitValidatedPayment(env, session, validation) {
   if (!mainDoc || !paymentDoc) throw new Error("PAYMENT_RECORD_NOT_FOUND");
   const payment = fieldsToObject(paymentDoc.fields);
   if (payment.credited === true || payment.status === "PAID") return { alreadyCredited: true };
+  if (payment.status !== "PENDING" || payment.tranId !== tranId || payment.uid !== uid) throw new Error("PAYMENT_SESSION_STATE_INVALID");
   const main = fieldsToObject(mainDoc.fields);
   const balance = Number(main.smsWalletBalance || 0);
   const amount = Number(session.amount);
@@ -430,7 +432,7 @@ async function handleIpn(request, env) {
   if (ipnStatus !== "VALID") return json({ status: "IGNORED_NON_VALID_STATUS" });
   const valId = String(form.get("val_id") || "");
   const tranId = String(form.get("tran_id") || "");
-  if (!valId || !tranId) return json({ error: "MISSING_PAYMENT_REFERENCE" }, 400);
+  if (!valId || valId.length > 128 || !/^E24S[A-Z0-9]{12,64}$/.test(tranId)) return json({ error: "INVALID_PAYMENT_REFERENCE" }, 400);
   const doc = await getDocument(env, "/e24PaymentSessions/" + encodeURIComponent(tranId));
   if (!doc) return json({ error: "UNKNOWN_TRANSACTION" }, 404);
   const session = fieldsToObject(doc.fields);
@@ -525,7 +527,8 @@ export default {
       return json({ error: "NOT_FOUND" }, 404, cors);
     } catch (error) {
       const status = error.message === "AUTH_REQUIRED" ? 401 :
-        error.message === "AUTH_INVALID" ? 403 : 500;
+        ["AUTH_INVALID", "EMAIL_NOT_VERIFIED"].includes(error.message) ? 403 :
+        ["REQUEST_TOO_LARGE", "INVALID_JSON"].includes(error.message) ? 400 : 500;
       return json({ error: status === 500 ? "SERVER_ERROR" : error.message }, status, cors);
     }
   }

@@ -3299,7 +3299,7 @@ async function e24SaveProfile(){
 async function e24ChangeEmail(){
   if(!currentUser)return;
   const email=prompt('নতুন Email address লিখুন:');if(!email)return;
-  try{await currentUser.updateEmail(email.trim());await e24Store.collection('users').doc(currentUser.uid).set({email:email.trim()},{merge:true});document.getElementById('e24-account-email').textContent=email.trim();showToast('Email পরিবর্তন হয়েছে। নতুন Email যাচাই করুন।');}
+  try{await currentUser.updateEmail(email.trim());await currentUser.getIdToken(true);await e24Store.collection('users').doc(currentUser.uid).set({email:email.trim(),emailVerified:false},{merge:true});await currentUser.sendEmailVerification();document.getElementById('e24-account-email').textContent=email.trim();showToast('Email পরিবর্তন হয়েছে। নতুন Email-এর Verification link পাঠানো হয়েছে।');}
   catch(e){showToast(e.code==='auth/requires-recent-login'?'নিরাপত্তার জন্য লগআউট করে আবার লগইন করে চেষ্টা করুন।':'Email পরিবর্তন করা যায়নি। Email সঠিক কি না দেখুন।');}
 }
 async function e24ResetPassword(){

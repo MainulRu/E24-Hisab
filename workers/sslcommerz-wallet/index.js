@@ -356,7 +356,8 @@ async function referralRewardWrites(env, referredUid, now) {
     updateMask: { fieldPaths: ["referralSuccessfulCount", "referralBonusTotal", "referralUpdatedAt"] },
     currentDocument: { updateTime: referrerDoc.updateTime }
   },refMainWrite,{
-    create: { name: documentsBase(env) + rewardPath, fields: Object.fromEntries(Object.entries(rewardFields).map(([k,v]) => [k, firestoreValue(v)])) }
+    update: { name: documentsBase(env) + rewardPath, fields: Object.fromEntries(Object.entries(rewardFields).map(([k,v]) => [k, firestoreValue(v)])) },
+    currentDocument: { exists: false }
   }];
 }
 async function commitValidatedPayment(env, session, validation) {

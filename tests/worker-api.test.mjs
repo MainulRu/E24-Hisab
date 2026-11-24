@@ -6,6 +6,7 @@ import paymentWorker from "../workers/sslcommerz-wallet/index.js";
 const adminEnv = {
   FIREBASE_API_KEY: "test-api-key",
   FIREBASE_PROJECT_ID: "demo-e24-hisab",
+  ALLOWED_ORIGINS: "http://localhost:5500,http://127.0.0.1:5500",
   FIREBASE_SERVICE_ACCOUNT: JSON.stringify({
     client_email: "emulator@test-project.iam.gserviceaccount.com",
     private_key: "-----BEGIN PRIVATE KEY-----\\nAA==\\n-----END PRIVATE KEY-----"
@@ -56,7 +57,7 @@ test("Admin Worker enforces configured environment before protected operations",
 test("Admin Worker handles CORS preflight without authentication", async () => {
   const response = await adminWorker.fetch(req("/wallet/recharge", {
     method: "OPTIONS",
-    headers: { Origin: "https://mainulru.github.io" }
+    headers: { Origin: "http://localhost:5500" }
   }), adminEnv);
   assert.equal(response.status, 204);
   assert.ok(response.headers.get("access-control-allow-methods")?.includes("POST"));

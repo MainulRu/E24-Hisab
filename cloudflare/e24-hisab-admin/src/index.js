@@ -414,8 +414,7 @@ async function route(request, env) {
   }
 
   try {
-    if (!env.FIREBASE_API_KEY || !env.FIREBASE_PROJECT_ID || !env.FIREBASE_SERVICE_ACCOUNT ||
-        !mainAdminUid(env) || !mainAdminEmail(env) || !allowedOrigins(env).length) {
+    if (!env.FIREBASE_API_KEY || !env.FIREBASE_PROJECT_ID || !env.FIREBASE_SERVICE_ACCOUNT) {
       return reply({ success: false, error: "WORKER_CONFIG_MISSING" }, 500, allowedOrigin);
     }
     const caller = await verifyCaller(request, env);
@@ -435,6 +434,9 @@ async function route(request, env) {
     if (url.pathname === "/wallet/recharge" && request.method === "GET") {
       const requests = await listWalletRechargeRequests(env, token, caller.uid);
       return reply({ success: true, requests }, 200, allowedOrigin);
+    }
+    if (!mainAdminUid(env) || !mainAdminEmail(env) || !allowedOrigins(env).length) {
+      return reply({ success: false, error: "WORKER_CONFIG_MISSING" }, 500, allowedOrigin);
     }
     const admin = await getAdmin(env, token, caller);
     const main = admin.role === "main";

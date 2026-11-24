@@ -75,9 +75,18 @@ async function googleToken(env) {
   return data.access_token;
 }
 
+async function readJsonBody(request, maxBytes = 16384) {
+  const length = Number(request.headers.get("Content-Length") || 0);
+  if (length > maxBytes) throw new Error("REQUEST_TOO_LARGE");
+  const raw = await request.text();
+  if (new TextEncoder().encode(raw).length > maxBytes) throw new Error("REQUEST_TOO_LARGE");
+  try { return raw ? JSON.parse(raw) : {}; }
+  catch (_) { throw new Error("INVALID_JSON"); }
+}
 async function verifyCaller(request, env) {
   const bearer = (request.headers.get("Authorization") || "").match(/^Bearer\s+(.+)$/i);
   if (!bearer) throw new Error("AUTH_REQUIRED");
+  if (bearer[1].length > 8192) throw new Error("INVALID_TOKEN");
   const res = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + encodeURIComponent(env.FIREBASE_API_KEY), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -239,7 +248,13 @@ async function createWalletRechargeRequest(env, token, uid, body) {
   if (!/^[A-Z0-9-]{5,64}$/.test(transactionId)) throw new Error("INVALID_TRANSACTION_ID");
   const collectionPath = "users/" + encodeURIComponent(uid) + "/rechargeRequests";
   const existing = await listDocs(env, token, collectionPath);
-  if (existing.length >= 50 && existing.some(d => String(decodeFields(d.fields || {}).status).toUpperCase() === "PENDING")) throw new Error("TOO_MANY_PENDING_REQUESTS");
+  if (existing.some(d => String(decodeFields(d.fields || {}).transactionId || "").toUpperCase() === transactionId)) throw new Error("DUPLICATE_TRX");
+  if (existing.filter(d => String(decodeFields(d.fields || {}).status).toUpperCase() === "PENDING").length >= 5) throw new Error("TOO_MANY_PENDING_REQUESTS");
+  const legacyDoc = await fs(env, token, "users/" + encodeURIComponent(uid) + "/data/main", { allow404: true });
+  if (legacyDoc.status !== 404) {
+    const legacy = decodeFields(legacyDoc.data.fields || {}).smsRechargeRequests;
+    if (Array.isArray(legacy) && legacy.some(x => String(x.transactionId || "").toUpperCase() === transactionId)) throw new Error("DUPLICATE_TRX");
+  }
   const id = "R" + crypto.randomUUID().replace(/-/g, "").slice(0, 20).toLowerCase();
   const now = new Date().toISOString();
   const request = {
@@ -303,7 +318,7 @@ async function route(request, env) {
     const caller = await verifyCaller(request, env);
     const token = await googleToken(env);
     if (url.pathname === "/wallet/recharge" && request.method === "POST") {
-      const body = await request.json();
+      const body = await readJsonBody(request);
       const created = await createWalletRechargeRequest(env, token, caller.uid, body);
       return reply({ success: true, request: created }, 201, allowedOrigin);
     }
@@ -487,7 +502,7 @@ async function route(request, env) {
 
     return reply({ success: false, error: "NOT_FOUND" }, 404, allowedOrigin);
   } catch (e) {
-    const allowed = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED","ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","INVALID_ROLE_INPUT","USER_NOT_ASSIGNED","USER_MANAGEMENT_REQUIRED","INVALID_REQUEST","REQUEST_NOT_PENDING","INVALID_RECHARGE_AMOUNT","INVALID_PAYMENT_METHOD","INVALID_TRANSACTION_ID","DUPLICATE_TRX","TOO_MANY_PENDING_REQUESTS","LEGACY_REQUEST_REQUIRES_REVIEW","LIMITED_ADMIN_APPROVE_ONLY","CANNOT_DELETE_MAIN_ADMIN","AUTH_USER_DELETE_FAILED"];
+    const allowed = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED","ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","INVALID_ROLE_INPUT","USER_NOT_ASSIGNED","USER_MANAGEMENT_REQUIRED","INVALID_REQUEST","REQUEST_NOT_PENDING","INVALID_RECHARGE_AMOUNT","INVALID_PAYMENT_METHOD","INVALID_TRANSACTION_ID","DUPLICATE_TRX","TOO_MANY_PENDING_REQUESTS","REQUEST_TOO_LARGE","INVALID_JSON","LEGACY_REQUEST_REQUIRES_REVIEW","LIMITED_ADMIN_APPROVE_ONLY","CANNOT_DELETE_MAIN_ADMIN","AUTH_USER_DELETE_FAILED"];
     const message = allowed.includes(e.message) ? e.message : "ADMIN_API_ERROR";
     const status = ["AUTH_REQUIRED","INVALID_TOKEN","EMAIL_NOT_VERIFIED"].includes(message) ? 401 :
       ["ADMIN_REQUIRED","MAIN_ADMIN_REQUIRED","USER_MANAGEMENT_REQUIRED","USER_NOT_ASSIGNED"].includes(message) ? 403 : 400;

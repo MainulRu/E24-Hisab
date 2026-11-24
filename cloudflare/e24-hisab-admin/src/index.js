@@ -357,7 +357,7 @@ async function route(request, env) {
 
     if (url.pathname === "/admin/roles" && request.method === "PUT") {
       if (!main) throw new Error("MAIN_ADMIN_REQUIRED");
-      const body = await request.json();
+      const body = await readJsonBody(request);
       const uid = String(body.uid || "").trim();
       const role = String(body.role || "");
       const managedUsers = Array.isArray(body.managedUsers) ? [...new Set(body.managedUsers.map(String))].filter(x => x && x !== uid).slice(0, 100) : [];
@@ -408,7 +408,7 @@ async function route(request, env) {
 
     if (url.pathname === "/admin/recharge/action" && request.method === "POST") {
       if (!["main", "full", "limited"].includes(admin.role)) throw new Error("RECHARGE_ACCESS_REQUIRED");
-      const body = await request.json();
+      const body = await readJsonBody(request);
       const uid = String(body.uid || "");
       const requestId = String(body.requestId || "");
       const action = String(body.action || "");

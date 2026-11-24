@@ -466,7 +466,7 @@ async function route(request, env) {
       const uid = String(body.uid || "");
       const requestId = String(body.requestId || "");
       const action = String(body.action || "");
-      if (!uid || !requestId || !["approve", "cancel"].includes(action)) throw new Error("INVALID_REQUEST");
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(uid) || !/^[A-Za-z0-9_-]{5,80}$/.test(requestId) || !["approve", "cancel"].includes(action)) throw new Error("INVALID_REQUEST");
       if (admin.role === "limited" && action !== "approve") throw new Error("LIMITED_ADMIN_APPROVE_ONLY");
 
       const path = "users/" + encodeURIComponent(uid) + "/data/main";

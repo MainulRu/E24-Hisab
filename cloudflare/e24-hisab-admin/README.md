@@ -23,6 +23,8 @@ All protected routes require `Authorization: Bearer <Firebase ID token>`.
 - `POST /admin/recharge/action` — Limited Admin can approve only; Full/Main Admin can approve or cancel. Body: `{ "uid": "...", "requestId": "...", "action": "approve|cancel" }`.
 - `DELETE /admin/users/:uid` — Main Admin only; permanently deletes the Firebase Auth user and their Firestore profile/ledger.
 
+When an Admin approves a user's first SMS Wallet recharge request, the Worker atomically adds a one-time ৳5 SMS Wallet referral bonus to the referring account (if the account was registered with a valid referral code). The reward is idempotent per referred user.
+
 ## Permission model
 
 | Capability | Limited Admin | Full Admin | Main Admin |

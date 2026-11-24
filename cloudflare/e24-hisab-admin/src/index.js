@@ -496,6 +496,7 @@ async function route(request, env) {
           amount, balanceAfter: data.smsWalletBalance,
           title: "Admin অনুমোদিত Manual Recharge", date: approvedAt, referenceId: requestId
         });
+        data.smsWalletTransactions = data.smsWalletTransactions.slice(-300);
         const updatedRequest = { ...req, status: "APPROVED", approvedAt, approvedBy: caller.uid };
         const docName = path => "projects/" + env.FIREBASE_PROJECT_ID + "/databases/(default)/documents/" + path;
         const writes = [

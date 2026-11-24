@@ -199,7 +199,7 @@ async function adminReferralRewardWrites(env, token, referredUid, now) {
   };
   const refMainWrite = refMainDoc
     ? { update: { name: refMainName, fields: refMainFields }, updateMask: { fieldPaths: ["smsWalletBalance", "smsWalletTransactions", "updatedAt"] }, currentDocument: { updateTime: refMainDoc.updateTime } }
-    : { create: { name: refMainName, fields: refMainFields } };
+    : { update: { name: refMainName, fields: refMainFields }, currentDocument: { exists: false } };
   return [{
     update: { name: docName(referredPath), fields: { referralRewardPaid: { booleanValue: true }, referralRewardedAt: { timestampValue: now } }},
     updateMask: { fieldPaths: ["referralRewardPaid", "referralRewardedAt"] },

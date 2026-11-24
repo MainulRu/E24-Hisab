@@ -2788,8 +2788,8 @@
       const money = n => '৳ ' + Number(n || 0).toLocaleString('en-IN');
       const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       const id = () => 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-      const avatar = (photo, large=false) => photo ? `<img src="${photo}" alt="গ্রাহকের ছবি">` : '<i class="fa-solid fa-user"></i>'; 
-      function save(){if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন');return;}const snapshot=JSON.parse(JSON.stringify(db));e24Store.collection('users').doc(activeDataUid).collection('data').doc('main').set({...snapshot,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(err=>{console.error('E24 Firestore save:',err);showToast('Cloud-এ হিসাব সংরক্ষণ হয়নি');});}
+      const avatar = (photo, large=false) => /^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(String(photo||'')) && String(photo).length<=600000 ? `<img src="${photo}" alt="গ্রাহকের ছবি">` : '<i class="fa-solid fa-user"></i>'; 
+      function save(){if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন');return;}const snapshot=JSON.parse(JSON.stringify(db));['smsWalletBalance','smsHistory','smsRechargeRequests','smsWalletTransactions','updatedAt'].forEach(key=>delete snapshot[key]);e24Store.collection('users').doc(activeDataUid).collection('data').doc('main').set({...snapshot,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(err=>{console.error('E24 Firestore save:',err);showToast('Cloud-এ হিসাব সংরক্ষণ হয়নি');});}
       function validTransactions() {
         const customerIds=new Set(db.customers.map(c=>String(c.id)));
         return db.transactions.filter(t=>customerIds.has(String(t.customerId)));
@@ -3014,7 +3014,37 @@ async function e24LoadReferralPanel(){
 }
 function e24AuthMessage(err){const m={'auth/email-already-in-use':'এই Email দিয়ে আগে থেকেই অ্যাকাউন্ট আছে।','auth/invalid-email':'সঠিক Email address লিখুন।','auth/weak-password':'Password কমপক্ষে ৬ অক্ষরের হতে হবে।','auth/user-not-found':'এই Email দিয়ে কোনো অ্যাকাউন্ট পাওয়া যায়নি।','auth/wrong-password':'Password সঠিক নয়।','auth/invalid-credential':'Email অথবা Password সঠিক নয়।','auth/too-many-requests':'অনেকবার চেষ্টা হয়েছে। পরে চেষ্টা করুন।','auth/network-request-failed':'ইন্টারনেট সংযোগ পরীক্ষা করুন।'};return m[err&&err.code]||'কাজটি সম্পন্ন হয়নি। আবার চেষ্টা করুন।';}
 function e24SetAuthMode(mode){authMode=mode;document.getElementById("e24-launch-splash").hidden=true;document.querySelector(".e24-auth-card").classList.remove("launching");document.getElementById("e24-auth-subtitle").hidden=false;document.getElementById('e24-login-form').hidden=mode!=='login';document.getElementById('e24-register-form').hidden=mode!=='register';document.getElementById('e24-verify-panel').hidden=true;document.getElementById('e24-forgot-panel').hidden=true;document.getElementById('e24-forgot-password-link').hidden=mode!=='login';document.getElementById('e24-auth-switch').hidden=false;document.getElementById('e24-auth-subtitle').textContent=mode==='login'?'আপনার হিসাব নিরাপদে সংরক্ষণ করতে লগইন করুন':'নতুন E24 Hisab অ্যাকাউন্ট তৈরি করুন';document.getElementById('e24-auth-switch').textContent=mode==='login'?'নতুন অ্যাকাউন্ট তৈরি করবেন?':'আগে অ্যাকাউন্ট আছে? লগইন করুন';document.getElementById('e24-auth-error').textContent='';}
-async function e24LoadData(uid){const started=performance.now();activeDataUid=uid;const ref=e24Store.collection('users').doc(uid).collection('data').doc('main'),snap=await ref.get(),elapsed=(performance.now()-started)/1000;if(snap.exists)db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি',...snap.data()};else{let legacy=null;try{const old=JSON.parse(localStorage.getItem(KEY));if(old&&Array.isArray(old.customers)&&Array.isArray(old.transactions))legacy=old;}catch(_){}db=legacy||{customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি'};}const patch={};if(!Object.prototype.hasOwnProperty.call(db,'smsWalletBalance')||!Number.isFinite(Number(db.smsWalletBalance))){db.smsWalletBalance=0;patch.smsWalletBalance=0;}if(!Array.isArray(db.smsHistory)){db.smsHistory=[];patch.smsHistory=[];}if(!Array.isArray(db.smsRechargeRequests)){db.smsRechargeRequests=[];patch.smsRechargeRequests=[];}if(!Array.isArray(db.smsWalletTransactions)){db.smsWalletTransactions=[];patch.smsWalletTransactions=[];}if(Number(db.smsWalletBalance)===500&&db.smsWalletTransactions.length===0&&db.smsHistory.length===0&&!db.smsRechargeRequests.some(x=>String(x.status||'').toUpperCase()==='APPROVED')){db.smsWalletBalance=0;patch.smsWalletBalance=0;}if(!snap.exists||Object.keys(patch).length){await ref.set({...db,...patch,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});if(legacy)localStorage.removeItem(KEY);}e24ProcessLoadedNotifications(uid);refreshAll();renderSmsWallet();if(isAdmin&&typeof e24AdminUpdateSummary==='function')e24AdminUpdateSummary();const timing=document.getElementById('e24-load-timing');if(timing){timing.textContent='ডেটা: '+elapsed.toFixed(2)+' সেকেন্ড · অ্যাপ চালু: '+((performance.now()-e24BootStartedAt)/1000).toFixed(2)+' সেকেন্ড';timing.hidden=false;}}
+async function e24LoadData(uid){
+ const started=performance.now();activeDataUid=uid;
+ const ref=e24Store.collection('users').doc(uid).collection('data').doc('main');
+ e24Diagnostic('main-data-read-start',{uidSuffix:String(uid||'').slice(-6),path:'users/{uid}/data/main'});
+ let snap;
+ try{snap=await ref.get();}catch(err){e24Diagnostic('main-data-read-failed',{code:err&&err.code||'unknown',message:err&&err.message||String(err),path:'users/{uid}/data/main'});throw err;}
+ const elapsed=(performance.now()-started)/1000;
+ e24Diagnostic('main-data-read-success',{exists:snap.exists,elapsedSeconds:Number(elapsed.toFixed(2))});
+ let legacy=null;
+ if(snap.exists)db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি',...snap.data()};
+ else{
+  if(currentUser&&currentUser.uid===uid){try{const old=JSON.parse(localStorage.getItem(KEY));if(old&&Array.isArray(old.customers)&&Array.isArray(old.transactions))legacy=old;}catch(_){}}
+  db=legacy||{customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি'};
+ }
+ if(!Number.isFinite(Number(db.smsWalletBalance)))db.smsWalletBalance=0;
+ if(!Array.isArray(db.smsHistory))db.smsHistory=[];
+ if(!Array.isArray(db.smsRechargeRequests))db.smsRechargeRequests=[];
+ if(!Array.isArray(db.smsWalletTransactions))db.smsWalletTransactions=[];
+ if(!snap.exists){
+  db.smsWalletBalance=0;db.smsHistory=[];db.smsRechargeRequests=[];db.smsWalletTransactions=[];
+  const initial={...db,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  e24Diagnostic('main-data-write-start',{reason:'document-missing',patchFields:Object.keys(initial)});
+  try{await ref.set(initial,{merge:true});e24Diagnostic('main-data-write-success',{reason:'document-missing'});}
+  catch(err){e24Diagnostic('main-data-write-failed',{code:err&&err.code||'unknown',message:err&&err.message||String(err),path:'users/{uid}/data/main'});throw err;}
+  if(legacy)localStorage.removeItem(KEY);
+ }
+ e24ProcessLoadedNotifications(uid);refreshAll();renderSmsWallet();
+ if(isAdmin&&typeof e24AdminUpdateSummary==='function')e24AdminUpdateSummary();
+ const timing=document.getElementById('e24-load-timing');
+ if(timing){timing.textContent='ডেটা: '+elapsed.toFixed(2)+' সেকেন্ড · অ্যাপ চালু: '+((performance.now()-e24BootStartedAt)/1000).toFixed(2)+' সেকেন্ড';timing.hidden=false;}
+}
 
 let e24NotificationPollTimer=null;
 function e24EnsureNotificationData(){
@@ -3121,9 +3151,8 @@ document.addEventListener('click',event=>{
 async function e24CheckRechargeStatusFromCloud(){
  if(!currentUser||!activeDataUid)return;
  try{
-  const ref=e24Store.collection('users').doc(activeDataUid).collection('data').doc('main'),snap=await ref.get();
-  if(!snap.exists)return;
-  const remote=snap.data()||{},latest=Array.isArray(remote.smsRechargeRequests)?remote.smsRechargeRequests:[];
+  const result=await e24AdminApi('/wallet/recharge');
+  const latest=Array.isArray(result.requests)?result.requests:[];
   e24EnsureNotificationData();
   let changed=false;
   latest.forEach(request=>{
@@ -3137,6 +3166,7 @@ async function e24CheckRechargeStatusFromCloud(){
   });
   db.smsRechargeRequests=latest;
   if(changed){await e24PersistNotificationState();e24RenderNotifications();}
+  renderSmsWallet();
  }catch(err){console.error('Recharge notification sync failed:',err);}
 }
 function e24TrackNewRechargeRequests(requests){
@@ -3208,7 +3238,7 @@ window.e24OrgName = '';
 function e24SetProfilePhotoPreview(dataUrl){
   const preview=document.getElementById('e24-profile-photo-preview');if(!preview)return;
   preview.innerHTML='';
-  if(dataUrl){const img=document.createElement('img');img.src=dataUrl;img.alt='প্রোফাইল ছবি';img.style.cssText='width:100%;height:100%;object-fit:cover';preview.appendChild(img);}
+  if(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(String(dataUrl||''))&&String(dataUrl).length<=320000){const img=document.createElement('img');img.src=dataUrl;img.alt='প্রোফাইল ছবি';img.style.cssText='width:100%;height:100%;object-fit:cover';preview.appendChild(img);}
   else preview.innerHTML='<i class="fa-solid fa-user"></i>';
 }
 function e24PrepareProfilePhoto(file){
@@ -3270,7 +3300,7 @@ async function e24SaveProfile(){
 async function e24ChangeEmail(){
   if(!currentUser)return;
   const email=prompt('নতুন Email address লিখুন:');if(!email)return;
-  try{await currentUser.updateEmail(email.trim());await e24Store.collection('users').doc(currentUser.uid).set({email:email.trim()},{merge:true});document.getElementById('e24-account-email').textContent=email.trim();showToast('Email পরিবর্তন হয়েছে। নতুন Email যাচাই করুন।');}
+  try{await currentUser.updateEmail(email.trim());await currentUser.getIdToken(true);const updatedEmail=currentUser.email||email.trim();await e24Store.collection('users').doc(currentUser.uid).set({email:updatedEmail,emailVerified:false},{merge:true});await currentUser.sendEmailVerification();document.getElementById('e24-account-email').textContent=updatedEmail;showToast('Email পরিবর্তন হয়েছে। নতুন Email-এর Verification link পাঠানো হয়েছে।');}
   catch(e){showToast(e.code==='auth/requires-recent-login'?'নিরাপত্তার জন্য লগআউট করে আবার লগইন করে চেষ্টা করুন।':'Email পরিবর্তন করা যায়নি। Email সঠিক কি না দেখুন।');}
 }
 async function e24ResetPassword(){
@@ -3338,7 +3368,7 @@ async function e24RenderAdminRechargeRequests(){
   const result=await e24AdminApi('/admin/recharge');
   const pending=result.requests||[];
   e24TrackNewRechargeRequests(pending);
-  list.innerHTML=pending.length?pending.map(x=>'<div class="sms-admin-request"><b>'+e24Money(x.amount)+'</b> · '+e24SmsEscape(x.date||'')+'<br><span class="sms-wallet-note">'+e24SmsEscape(x.email||'')+' · '+e24SmsEscape(x.paymentMethod||'Payment')+' · Pending</span><br><span class="sms-wallet-note">প্রাপক: '+e24SmsEscape(x.receiverNumber||'01737-537688')+'<br>TrxID: <b>'+e24SmsEscape(x.transactionId||'-')+'</b></span><br><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px"><button type="button" class="btn btn-green" data-sms-approve="'+e24SmsEscape(x.id)+'" data-sms-owner="'+e24SmsEscape(x.uid)+'">টাকা যাচাই করে Approve</button><button type="button" class="btn btn-logout" data-sms-cancel="'+e24SmsEscape(x.id)+'" data-sms-owner="'+e24SmsEscape(x.uid)+'">রিকোয়েস্ট Cancel</button></div></div>').join(''):'<div class="sms-wallet-note" style="margin-top:7px">কোনো Pending Request নেই।</div>';
+  list.innerHTML=pending.length?pending.map(x=>'<div class="sms-admin-request"><b>'+e24Money(x.amount)+'</b> · '+e24SmsEscape(x.date||'')+'<br><span class="sms-wallet-note">'+e24SmsEscape(x.customerName||x.email||'')+' · '+e24SmsEscape(x.paymentMethod||'Payment')+' · Pending</span><br><span class="sms-wallet-note">প্রাপক: '+e24SmsEscape(x.receiverNumber||'01737-537688')+'<br>TrxID: <b>'+e24SmsEscape(x.transactionId||'-')+'</b></span><br><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">'+(x.legacy?'<span class="sms-wallet-note">পুরোনো Request — নিরাপত্তার জন্য সরাসরি Approve বন্ধ। যাচাই শেষে Cancel করলে একই TrxID দিয়ে আবার জমা দেওয়া যাবে।</span>':'<button type="button" class="btn btn-green" data-sms-approve="'+e24SmsEscape(x.id)+'" data-sms-owner="'+e24SmsEscape(x.uid)+'">টাকা যাচাই করে Approve</button>')+'<button type="button" class="btn btn-logout" data-sms-cancel="'+e24SmsEscape(x.id)+'" data-sms-owner="'+e24SmsEscape(x.uid)+'">রিকোয়েস্ট Cancel</button></div></div>').join(''):'<div class="sms-wallet-note" style="margin-top:7px">কোনো Pending Request নেই।</div>';
   if(e24AdminRole==='limited')list.querySelectorAll('[data-sms-cancel]').forEach(button=>button.style.display='none');
  }catch(err){console.error('Admin recharge requests load failed:',err);list.innerHTML='<div class="sms-wallet-note">Recharge Request লোড হয়নি। Admin API সংযোগ ও অনুমতি পরীক্ষা করুন।</div>';}
 }
@@ -3437,12 +3467,24 @@ if(autoRecharge)autoRecharge.addEventListener('click',async()=>{
 if(customerSelect)customerSelect.addEventListener('change',()=>e24ApplySmsCustomer(e24SmsSelectedCustomer()));if(defaultButton)defaultButton.addEventListener('click',()=>{const m=document.getElementById('sms-test-message');if(m)m.value=e24SmsDefaultMessage(e24SmsSelectedCustomer());});
 if(phonebook)phonebook.addEventListener('click',()=>{if(window.AndroidContacts&&typeof window.AndroidContacts.pickPhoneNumber==='function')window.AndroidContacts.pickPhoneNumber();else showToast('Phone Book সুবিধা শুধু Android APK-তে পাওয়া যাবে');});
 window.e24SetPhoneBookContact=(name,phone)=>{const f=document.getElementById('sms-test-phone'),v=String(phone||'').trim(),norm=x=>String(x||'').replace(/[\s()+.-]/g,'').replace(/^\+?88/,'0'),sel=document.getElementById('sms-customer-select'),match=(db.customers||[]).find(c=>norm(c.phone)===norm(v));if(match&&sel){sel.value=String(match.id);e24ApplySmsCustomer(match);}if(f){f.value=v;f.dispatchEvent(new Event('input',{bubbles:true}));f.dispatchEvent(new Event('change',{bubbles:true}));f.focus();}showToast(f&&v?'Phone Book থেকে নম্বর যোগ হয়েছে':'ফোন নম্বর পাওয়া যায়নি');};
-if(send)send.addEventListener('click',async()=>{if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন');return;}if(isAdmin&&activeDataUid!==currentUser.uid){showToast('Admin হিসেবে অন্য ব্যবহারকারীর SMS পাঠানো বন্ধ');return;}const phone=(document.getElementById('sms-test-phone')?.value||'').replace(/[\s-]/g,''),message=(document.getElementById('sms-test-message')?.value||'').trim()||e24SmsDefaultMessage(e24SmsSelectedCustomer());if(!/^01[3-9]\d{8}$/.test(phone)){showToast('সঠিক ১১ সংখ্যার বাংলাদেশি নম্বর লিখুন');return;}if(!message){showToast('মেসেজ লিখুন');return;}const btn=send,smsId=id(),date=new Date().toLocaleString('bn-BD');btn.disabled=true;
-try{const ref=e24Store.collection('users').doc(currentUser.uid).collection('data').doc('main');let next=0;await e24Store.runTransaction(async tx=>{const snap=await tx.get(ref),data=snap.exists?snap.data():{},bal=Number.isFinite(Number(data.smsWalletBalance))?Number(data.smsWalletBalance):0;if(bal<1)throw new Error('LOW_BALANCE');const hist=Array.isArray(data.smsHistory)?data.smsHistory:[];if(hist.some(x=>x.id===smsId))throw new Error('DUPLICATE');const ledger=Array.isArray(data.smsWalletTransactions)?data.smsWalletTransactions:[];next=Number((bal-1).toFixed(2));hist.push({id:smsId,phone,message:message.slice(0,500),status:'SUCCESS',date,mode:'TEST',cost:1});ledger.push({id:'SMS-'+smsId,type:'DEBIT',title:'Test SMS পাঠানো',amount:1,balanceAfter:next,date,mode:'TEST',referenceId:smsId});tx.set(ref,{...data,smsWalletBalance:next,smsHistory:hist.slice(-200),smsWalletTransactions:ledger.slice(-300),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});});
-db.smsWalletBalance=next;db.smsHistory=(db.smsHistory||[]).concat([{id:smsId,phone,message:message.slice(0,500),status:'SUCCESS',date,mode:'TEST',cost:1}]).slice(-200);db.smsWalletTransactions=(db.smsWalletTransactions||[]).concat([{id:'SMS-'+smsId,type:'DEBIT',title:'Test SMS পাঠানো',amount:1,balanceAfter:next,date,mode:'TEST',referenceId:smsId}]).slice(-300);renderSmsWallet();showToast('TEST MODE: Demo SMS সফল। ৳১ কাটা হয়েছে।');
-}catch(err){showToast(err.message==='LOW_BALANCE'?'ওয়ালেটে পর্যাপ্ত ব্যালেন্স নেই':err.message==='DUPLICATE'?'এই SMS ইতিমধ্যে হিসাবভুক্ত হয়েছে।':'Test SMS সম্পন্ন হয়নি। কোনো টাকা কাটা হয়নি.');}finally{btn.disabled=false;}});
-if(request)request.addEventListener('click',async()=>{if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন');return;}if(isAdmin&&activeDataUid!==currentUser.uid){showToast('Recharge request দিতে নিজের অ্যাকাউন্ট নির্বাচন করুন');return;}const field=document.getElementById('sms-recharge-amount'),methodField=document.getElementById('sms-recharge-method'),trxField=document.getElementById('sms-recharge-trxid'),amount=Number(field?.value),paymentMethod=methodField?.value||'bKash',transactionId=(trxField?.value||'').trim().replace(/\s+/g,'').toUpperCase();if(!Number.isFinite(amount)||amount<10||amount>10000||Math.round(amount*100)!==amount*100){showToast('১০ থেকে ১০,০০০ টাকার মধ্যে সঠিক পরিমাণ লিখুন');return;}if(!transactionId||transactionId.length<5){showToast('সঠিক Transaction ID লিখুন');trxField?.focus();return;}const req={id:id(),amount:Number(amount.toFixed(2)),status:'PENDING',date:new Date().toLocaleString('bn-BD'),mode:'MANUAL',paymentMethod,receiverNumber:'01737537688',transactionId};request.disabled=true;
-try{const ref=e24Store.collection('users').doc(currentUser.uid).collection('data').doc('main');await e24Store.runTransaction(async tx=>{const snap=await tx.get(ref),data=snap.exists?snap.data():{},list=Array.isArray(data.smsRechargeRequests)?data.smsRechargeRequests:[];if(list.some(x=>String(x.transactionId||'').toUpperCase()===transactionId))throw new Error('DUPLICATE_TRX');list.push(req);tx.set(ref,{...data,smsRechargeRequests:list.slice(-100),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});});db.smsRechargeRequests=(db.smsRechargeRequests||[]).concat([req]);e24EnsureNotificationData();db.notificationMeta.rechargeStatusById[req.id]='PENDING';e24PersistNotificationState();field.value='';trxField.value='';renderSmsWallet();showToast('পেমেন্ট তথ্য জমা হয়েছে। টাকা যাচাই করে Admin অনুমোদন করবেন।');}catch(err){showToast(err.message==='DUPLICATE_TRX'?'এই Transaction ID দিয়ে আগে Request করা হয়েছে।':'Recharge Request পাঠানো যায়নি। আবার চেষ্টা করুন।');}finally{request.disabled=false;}});
+if(send)send.addEventListener('click',async()=>{if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন');return;}if(isAdmin&&activeDataUid!==currentUser.uid){showToast('Admin হিসেবে অন্য ব্যবহারকারীর SMS পাঠানো বন্ধ');return;}const phone=(document.getElementById('sms-test-phone')?.value||'').replace(/[\s-]/g,''),message=(document.getElementById('sms-test-message')?.value||'').trim()||e24SmsDefaultMessage(e24SmsSelectedCustomer());if(!/^01[3-9]\d{8}$/.test(phone)){showToast('সঠিক ১১ সংখ্যার বাংলাদেশি নম্বর লিখুন');return;}if(!message){showToast('মেসেজ লিখুন');return;}const btn=send,smsId=id();btn.disabled=true;
+try{
+ const result=await e24AdminApi('/wallet/test-sms',{method:'POST',body:{id:smsId,phone,message:message.slice(0,500)}});
+ db.smsWalletBalance=Number(result.balance)||0;
+ db.smsHistory=(db.smsHistory||[]).filter(x=>String(x.id)!==String(result.smsRecord.id)).concat([result.smsRecord]).slice(-200);
+ db.smsWalletTransactions=(db.smsWalletTransactions||[]).filter(x=>String(x.id)!==String(result.ledger.id)).concat([result.ledger]).slice(-300);
+ renderSmsWallet();showToast('TEST MODE: Demo SMS সফল। ৳১ কাটা হয়েছে।');
+}catch(err){showToast(err.message==='LOW_BALANCE'?'ওয়ালেটে পর্যাপ্ত ব্যালেন্স নেই':err.message==='SMS_DEBIT_CONFLICT'?'হিসাব আপডেট হয়নি। আবার চেষ্টা করুন।':'Test SMS সম্পন্ন হয়নি। কোনো টাকা কাটা হয়নি.');}
+finally{btn.disabled=false;}});
+if(request)request.addEventListener('click',async()=>{if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন');return;}if(isAdmin&&activeDataUid!==currentUser.uid){showToast('Recharge request দিতে নিজের অ্যাকাউন্ট নির্বাচন করুন');return;}const field=document.getElementById('sms-recharge-amount'),methodField=document.getElementById('sms-recharge-method'),trxField=document.getElementById('sms-recharge-trxid'),amount=Number(field?.value),paymentMethod=methodField?.value||'bKash',transactionId=(trxField?.value||'').trim().replace(/\s+/g,'').toUpperCase();if(!Number.isFinite(amount)||amount<10||amount>10000||Math.round(amount*100)!==amount*100){showToast('১০ থেকে ১০,০০০ টাকার মধ্যে সঠিক পরিমাণ লিখুন');return;}if(!transactionId||transactionId.length<5){showToast('সঠিক Transaction ID লিখুন');trxField?.focus();return;}const requestPayload={amount:Number(amount.toFixed(2)),paymentMethod,transactionId};request.disabled=true;
+try{
+ const result=await e24AdminApi('/wallet/recharge',{method:'POST',body:requestPayload});
+ const req=result.request;
+ db.smsRechargeRequests=(db.smsRechargeRequests||[]).filter(x=>String(x.id)!==String(req.id)).concat([req]).slice(-100);
+ e24EnsureNotificationData();db.notificationMeta.rechargeStatusById[req.id]='PENDING';e24PersistNotificationState();
+ field.value='';trxField.value='';renderSmsWallet();showToast('পেমেন্ট তথ্য জমা হয়েছে। টাকা যাচাই করে Admin অনুমোদন করবেন।');
+}catch(err){showToast(err.message==='DUPLICATE_TRX'?'এই Transaction ID দিয়ে আগে Request করা হয়েছে।':err.message==='TOO_MANY_PENDING_REQUESTS'?'আপনার ৫টি Pending Request আছে। আগে সেগুলোর সমাধান করুন।':err.message==='INVALID_PAYMENT_METHOD'?'সঠিক Payment Method নির্বাচন করুন।':'Recharge Request পাঠানো যায়নি। আবার চেষ্টা করুন।');}
+finally{request.disabled=false;}});
 
 /*
 AUTO PAYMENT API — FUTURE INTEGRATION (DISABLED)
@@ -3468,7 +3510,7 @@ if(adminList)adminList.addEventListener('click',async e=>{
   showToast(isCancel?'Recharge Request Cancel করা হয়েছে। Wallet Balance অপরিবর্তিত আছে।':'Wallet Recharge অনুমোদিত হয়েছে।');
  }catch(err){
   console.error('Recharge request action failed:',err);
-  showToast(err.message==='REQUEST_NOT_PENDING'?'রিকোয়েস্টটি আগেই অনুমোদিত বা Cancel করা হয়েছে।':'রিকোয়েস্টের কাজটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।');
+  showToast(err.message==='REQUEST_NOT_PENDING'?'রিকোয়েস্টটি আগেই অনুমোদিত বা Cancel করা হয়েছে।':err.message==='LEGACY_REQUEST_REQUIRES_REVIEW'?'পুরোনো Request নিরাপত্তার জন্য সরাসরি Approve করা যাবে না।':'রিকোয়েস্টের কাজটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।');
  }finally{button.disabled=false;}
 });
 }

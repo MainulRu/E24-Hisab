@@ -1,0 +1,11 @@
+# Isolated Admin Worker for the E24 Hisab staging Firebase project.
+# Dedicated Firebase STAGING project only; never point this config at production.
+name = "e24-hisab-admin-staging"
+main = "src/index.js"
+compatibility_date = "2026-11-21"
+
+[vars]
+FIREBASE_PROJECT_ID = "e24-hisab-staging"
+FIREBASE_API_KEY = "AIzaSyAupETzeBR2x7Jz0PG7HbzLihgr4b5taQQ"
+MAIN_ADMIN_UID = "zoz7HgipuFTh67x5XIXkQ9dOmKo2"
+MAIN_ADMIN_EMAIL = ""

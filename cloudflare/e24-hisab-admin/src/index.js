@@ -1,5 +1,8 @@
 const MAIN_UID = "exITNpwyRNaWpoMWpW6BgMcMGbf2";
 const MAIN_EMAIL = "mainul.ru.ac.bd@gmail.com";
+
+function mainAdminUid(env) { return String(env.MAIN_ADMIN_UID || MAIN_UID); }
+function mainAdminEmail(env) { return String(env.MAIN_ADMIN_EMAIL ?? MAIN_EMAIL).toLowerCase(); }
 const ORIGIN = "https://mainulru.github.io";
 
 const reply = (body, status = 200, origin = ORIGIN) => new Response(JSON.stringify(body), {
@@ -156,7 +159,7 @@ async function getRole(env, token, uid) {
   }
 }
 async function getAdmin(env, token, caller) {
-  if (caller.uid === MAIN_UID || (caller.email === MAIN_EMAIL && caller.emailVerified)) {
+  if (caller.uid === mainAdminUid(env) || (mainAdminEmail(env) && caller.email === mainAdminEmail(env) && caller.emailVerified)) {
     return { role: "main", managedUsers: [] };
   }
   if (!caller.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
@@ -444,7 +447,7 @@ async function route(request, env) {
       const uid = String(body.uid || "").trim();
       const role = String(body.role || "");
       const managedUsers = Array.isArray(body.managedUsers) ? [...new Set(body.managedUsers.map(String))].filter(x => x && x !== uid).slice(0, 100) : [];
-      if (!uid || uid.length > 128 || uid === MAIN_UID || !["limited", "full", "none"].includes(role)) throw new Error("INVALID_ROLE_INPUT");
+      if (!uid || uid.length > 128 || uid === mainAdminUid(env) || !["limited", "full", "none"].includes(role)) throw new Error("INVALID_ROLE_INPUT");
       // Only provision roles for existing E24 Hisab profiles.
       await fs(env, token, "users/" + encodeURIComponent(uid));
       for (const managedUid of managedUsers) await fs(env, token, "users/" + encodeURIComponent(managedUid));
@@ -565,7 +568,7 @@ async function route(request, env) {
     if (del && request.method === "DELETE") {
       if (!main) throw new Error("MAIN_ADMIN_REQUIRED");
       const uid = decodeURIComponent(del[1]);
-      if (!uid || uid === MAIN_UID || uid === caller.uid) throw new Error("CANNOT_DELETE_MAIN_ADMIN");
+      if (!uid || uid === mainAdminUid(env) || uid === caller.uid) throw new Error("CANNOT_DELETE_MAIN_ADMIN");
       // Delete Firebase Authentication first. If a later Firestore cleanup fails,
       // a retry by Main Admin can continue; USER_NOT_FOUND is treated as already deleted.
       const authDelete = await fetch("https://identitytoolkit.googleapis.com/v1/projects/" + encodeURIComponent(env.FIREBASE_PROJECT_ID) + "/accounts:delete", {

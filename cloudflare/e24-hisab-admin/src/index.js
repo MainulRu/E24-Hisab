@@ -170,7 +170,7 @@ async function adminReferralRewardWrites(env, token, referredUid, now) {
   const referredDoc = referredResult.data;
   const referred = decodeFields(referredDoc.fields || {});
   const referrerUid = String(referred.referredBy || "");
-  if (!referrerUid || referred.referralRewardPaid === true) return [];
+  if (!referrerUid || referrerUid === referredUid || referred.referralRewardPaid === true) return [];
   const rewardPath = "e24ReferralRewards/" + encodeURIComponent(referredUid);
   const existingReward = await fs(env, token, rewardPath, { allow404: true });
   if (existingReward.status !== 404) return [];

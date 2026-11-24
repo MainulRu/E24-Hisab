@@ -287,8 +287,13 @@ async function debitTestSms(env, token, uid, body) {
   const eventId = await sha256Hex(uid + ":" + id);
   const eventPath = "e24SmsDebitEvents/" + eventId;
   const previous = await fs(env, token, eventPath, { allow404: true });
-  if (previous.status !== 404) return decodeFields(previous.data.fields || {});
   const mainPath = "users/" + encodeURIComponent(uid) + "/data/main";
+  if (previous.status !== 404) {
+    const savedEvent = decodeFields(previous.data.fields || {});
+    const currentMain = await fs(env, token, mainPath);
+    savedEvent.balance = Number(decodeFields(currentMain.data.fields || {}).smsWalletBalance) || 0;
+    return savedEvent;
+  }
   const mainDoc = await fs(env, token, mainPath);
   const data = decodeFields(mainDoc.data.fields || {});
   const balance = Number(data.smsWalletBalance || 0);

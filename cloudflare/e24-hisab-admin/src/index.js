@@ -621,7 +621,7 @@ async function route(request, env) {
   } catch (e) {
     // Log only sanitized diagnostic metadata; never log request bodies, tokens, or credentials.
     console.error("E24 Admin Worker request failed", {
-      path,
+      path: url.pathname,
       method: request.method,
       errorName: String(e?.name || "Error").slice(0, 80),
       errorCode: String(e?.message || "UNKNOWN_ERROR").slice(0, 120),

@@ -242,11 +242,6 @@ async function makeReferralCode(uid, salt = 0) {
   const suffix = Array.from(bytes.slice(0, 6)).map(x => x.toString(16).padStart(2, "0")).join("").toUpperCase();
   return "E24" + suffix;
 }
-async function referralValidate(code) {
-  const normalized = String(code || "").trim().toUpperCase();
-  if (!/^E24[A-F0-9]{12}$/.test(normalized)) return false;
-  return !!(await queryUserByReferralCode(env, normalized));
-}
 async function referralSetup(env, user, requestedCode) {
   const profilePath = "/users/" + encodeURIComponent(user.uid);
   const profileDoc = await getDocument(env, profilePath);
@@ -330,11 +325,17 @@ async function referralRewardWrites(env, referredUid, now) {
     referrerUid, referredUid, amount: 5, wallet: "SMS",
     type: "FIRST_SUCCESSFUL_RECHARGE", createdAt: now
   };
-  const writes = [{
-    update: { name: referredDoc.name, fields: {
-      referralRewardPaid: { booleanValue: true },
-      referralRewardedAt: { timestampValue: now }
-    }},
+  const refMainName = documentsBase(env) + referrerMainPath;
+  const refMainFields = {
+    smsWalletBalance: firestoreValue(nextBalance),
+    smsWalletTransactions: firestoreValue((Array.isArray(referrerMain.smsWalletTransactions) ? referrerMain.smsWalletTransactions : []).concat([ledger]).slice(-300)),
+    updatedAt: { timestampValue: now }
+  };
+  const refMainWrite = referrerMainDoc
+    ? { update: { name: refMainName, fields: refMainFields }, updateMask: { fieldPaths: ["smsWalletBalance", "smsWalletTransactions", "updatedAt"] }, currentDocument: { updateTime: referrerMainDoc.updateTime } }
+    : { create: { name: refMainName, fields: refMainFields } };
+  return [{
+    update: { name: referredDoc.name, fields: { referralRewardPaid: { booleanValue: true }, referralRewardedAt: { timestampValue: now } }},
     updateMask: { fieldPaths: ["referralRewardPaid", "referralRewardedAt"] },
     currentDocument: { updateTime: referredDoc.updateTime }
   },{
@@ -345,19 +346,9 @@ async function referralRewardWrites(env, referredUid, now) {
     }},
     updateMask: { fieldPaths: ["referralSuccessfulCount", "referralBonusTotal", "referralUpdatedAt"] },
     currentDocument: { updateTime: referrerDoc.updateTime }
-  },{
-    update: { name: documentsBase(env) + referrerMainPath, fields: {
-      smsWalletBalance: firestoreValue(nextBalance),
-      smsWalletTransactions: firestoreValue((Array.isArray(referrerMain.smsWalletTransactions) ? referrerMain.smsWalletTransactions : []).concat([ledger]).slice(-300)),
-      updatedAt: { timestampValue: now }
-    }},
-    updateMask: { fieldPaths: ["smsWalletBalance", "smsWalletTransactions", "updatedAt"] },
-    ...(referrerMainDoc ? { currentDocument: { updateTime: referrerMainDoc.updateTime } } : { currentDocument: { exists: false } })
-  },{
-    update: { name: documentsBase(env) + rewardPath, fields: Object.fromEntries(Object.entries(rewardFields).map(([k,v]) => [k, firestoreValue(v)])) },
-    currentDocument: { exists: false }
+  },refMainWrite,{
+    create: { name: documentsBase(env) + rewardPath, fields: Object.fromEntries(Object.entries(rewardFields).map(([k,v]) => [k, firestoreValue(v)])) }
   }];
-  return writes;
 }
 async function commitValidatedPayment(env, session, validation) {
   const uid = session.uid;

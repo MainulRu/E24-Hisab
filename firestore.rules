@@ -100,11 +100,11 @@ service cloud.firestore {
           || (signedIn()
             && request.auth.uid == userId
             && (documentId != 'main'
-              || (!('smsWalletBalance' in request.resource.data)
-                || request.resource.data.smsWalletBalance == 0)
-              && (!('smsRechargeRequests' in request.resource.data)
-                || (request.resource.data.smsRechargeRequests is list
-                  && request.resource.data.smsRechargeRequests.size() == 0))));
+              || ((!('smsWalletBalance' in request.resource.data)
+                  || request.resource.data.smsWalletBalance == 0)
+                && (!('smsRechargeRequests' in request.resource.data)
+                  || (request.resource.data.smsRechargeRequests is list
+                    && request.resource.data.smsRechargeRequests.size() == 0))));
 
         // The legacy embedded recharge-request array is read-only for clients.
         // New requests and status changes are written only by the trusted Worker.

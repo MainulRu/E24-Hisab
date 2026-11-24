@@ -181,10 +181,17 @@ async function adminReferralRewardWrites(env, token, referredUid, now) {
     referenceId: referredUid
   };
   const docName = path => "projects/" + env.FIREBASE_PROJECT_ID + "/databases/(default)/documents/" + path;
+  const refMainName = docName(refMainPath);
+  const refMainFields = {
+    smsWalletBalance: encodeValue(nextBalance),
+    smsWalletTransactions: encodeValue((Array.isArray(refMain.smsWalletTransactions) ? refMain.smsWalletTransactions : []).concat([ledger]).slice(-300)),
+    updatedAt: { timestampValue: now }
+  };
+  const refMainWrite = refMainDoc
+    ? { update: { name: refMainName, fields: refMainFields }, updateMask: { fieldPaths: ["smsWalletBalance", "smsWalletTransactions", "updatedAt"] }, currentDocument: { updateTime: refMainDoc.updateTime } }
+    : { create: { name: refMainName, fields: refMainFields } };
   return [{
-    update: { name: docName(referredPath), fields: {
-      referralRewardPaid: { booleanValue: true }, referralRewardedAt: { timestampValue: now }
-    }},
+    update: { name: docName(referredPath), fields: { referralRewardPaid: { booleanValue: true }, referralRewardedAt: { timestampValue: now } }},
     updateMask: { fieldPaths: ["referralRewardPaid", "referralRewardedAt"] },
     currentDocument: { updateTime: referredDoc.updateTime }
   },{
@@ -195,20 +202,11 @@ async function adminReferralRewardWrites(env, token, referredUid, now) {
     }},
     updateMask: { fieldPaths: ["referralSuccessfulCount", "referralBonusTotal", "referralUpdatedAt"] },
     currentDocument: { updateTime: referrerDoc.updateTime }
-  },{
-    update: { name: docName(refMainPath), fields: {
-      smsWalletBalance: encodeValue(nextBalance),
-      smsWalletTransactions: encodeValue((Array.isArray(refMain.smsWalletTransactions) ? refMain.smsWalletTransactions : []).concat([ledger]).slice(-300)),
-      updatedAt: { timestampValue: now }
-    }},
-    updateMask: { fieldPaths: ["smsWalletBalance", "smsWalletTransactions", "updatedAt"] },
-    ...(refMainDoc ? { currentDocument: { updateTime: refMainDoc.updateTime } } : { currentDocument: { exists: false } })
-  },{
-    update: { name: docName(rewardPath), fields: encodeFields({
+  },refMainWrite,{
+    create: { name: docName(rewardPath), fields: encodeFields({
       referrerUid, referredUid, amount: 5, wallet: "SMS",
       type: "FIRST_SUCCESSFUL_RECHARGE", createdAt: now
-    })},
-    currentDocument: { exists: false }
+    })}
   }];
 }
 async function commitAdminWrites(env, token, writes) {

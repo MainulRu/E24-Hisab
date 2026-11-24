@@ -3483,7 +3483,7 @@ try{
  db.smsRechargeRequests=(db.smsRechargeRequests||[]).filter(x=>String(x.id)!==String(req.id)).concat([req]).slice(-100);
  e24EnsureNotificationData();db.notificationMeta.rechargeStatusById[req.id]='PENDING';e24PersistNotificationState();
  field.value='';trxField.value='';renderSmsWallet();showToast('পেমেন্ট তথ্য জমা হয়েছে। টাকা যাচাই করে Admin অনুমোদন করবেন।');
-}catch(err){showToast(err.message==='DUPLICATE_TRX'?'এই Transaction ID দিয়ে আগে Request করা হয়েছে।':err.message==='INVALID_PAYMENT_METHOD'?'সঠিক Payment Method নির্বাচন করুন।':'Recharge Request পাঠানো যায়নি। আবার চেষ্টা করুন।');}
+}catch(err){showToast(err.message==='DUPLICATE_TRX'?'এই Transaction ID দিয়ে আগে Request করা হয়েছে।':err.message==='TOO_MANY_PENDING_REQUESTS'?'আপনার ৫টি Pending Request আছে। আগে সেগুলোর সমাধান করুন।':err.message==='INVALID_PAYMENT_METHOD'?'সঠিক Payment Method নির্বাচন করুন।':'Recharge Request পাঠানো যায়নি। আবার চেষ্টা করুন।');}
 finally{request.disabled=false;}});
 
 /*

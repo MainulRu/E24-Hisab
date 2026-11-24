@@ -152,6 +152,80 @@ async function deleteDocumentTree(env, token, documentPath) {
   await fs(env, token, documentPath, { method: "DELETE", allow404: true });
 }
 
+/* E24_REFERRAL_BONUS_V1: grant only once, atomically with manual recharge approval. */
+async function adminReferralRewardWrites(env, token, referredUid, now) {
+  const referredPath = "users/" + encodeURIComponent(referredUid);
+  const referredResult = await fs(env, token, referredPath, { allow404: true });
+  if (referredResult.status === 404) return [];
+  const referredDoc = referredResult.data;
+  const referred = decodeFields(referredDoc.fields || {});
+  const referrerUid = String(referred.referredBy || "");
+  if (!referrerUid || referred.referralRewardPaid === true) return [];
+  const rewardPath = "e24ReferralRewards/" + encodeURIComponent(referredUid);
+  const existingReward = await fs(env, token, rewardPath, { allow404: true });
+  if (existingReward.status !== 404) return [];
+  const referrerPath = "users/" + encodeURIComponent(referrerUid);
+  const referrerResult = await fs(env, token, referrerPath, { allow404: true });
+  if (referrerResult.status === 404) return [];
+  const referrerDoc = referrerResult.data;
+  const referrer = decodeFields(referrerDoc.fields || {});
+  const refMainPath = referrerPath + "/data/main";
+  const refMainResult = await fs(env, token, refMainPath, { allow404: true });
+  const refMainDoc = refMainResult.status === 404 ? null : refMainResult.data;
+  const refMain = decodeFields(refMainDoc?.fields || {});
+  const nextBalance = Number((Number(refMain.smsWalletBalance || 0) + 5).toFixed(2));
+  const ledger = {
+    id: "REFERRAL-" + referredUid, type: "CREDIT", mode: "BONUS",
+    title: "Referral Bonus", amount: 5, balanceAfter: nextBalance,
+    date: new Date(now).toLocaleString("en-GB", { timeZone: "Asia/Dhaka" }),
+    referenceId: referredUid
+  };
+  const docName = path => "projects/" + env.FIREBASE_PROJECT_ID + "/databases/(default)/documents/" + path;
+  return [{
+    update: { name: docName(referredPath), fields: {
+      referralRewardPaid: { booleanValue: true }, referralRewardedAt: { timestampValue: now }
+    }},
+    updateMask: { fieldPaths: ["referralRewardPaid", "referralRewardedAt"] },
+    currentDocument: { updateTime: referredDoc.updateTime }
+  },{
+    update: { name: docName(referrerPath), fields: {
+      referralSuccessfulCount: encodeValue(Number(referrer.referralSuccessfulCount || 0) + 1),
+      referralBonusTotal: encodeValue(Number((Number(referrer.referralBonusTotal || 0) + 5).toFixed(2))),
+      referralUpdatedAt: { timestampValue: now }
+    }},
+    updateMask: { fieldPaths: ["referralSuccessfulCount", "referralBonusTotal", "referralUpdatedAt"] },
+    currentDocument: { updateTime: referrerDoc.updateTime }
+  },{
+    update: { name: docName(refMainPath), fields: {
+      smsWalletBalance: encodeValue(nextBalance),
+      smsWalletTransactions: encodeValue((Array.isArray(refMain.smsWalletTransactions) ? refMain.smsWalletTransactions : []).concat([ledger]).slice(-300)),
+      updatedAt: { timestampValue: now }
+    }},
+    updateMask: { fieldPaths: ["smsWalletBalance", "smsWalletTransactions", "updatedAt"] },
+    ...(refMainDoc ? { currentDocument: { updateTime: refMainDoc.updateTime } } : { currentDocument: { exists: false } })
+  },{
+    update: { name: docName(rewardPath), fields: encodeFields({
+      referrerUid, referredUid, amount: 5, wallet: "SMS",
+      type: "FIRST_SUCCESSFUL_RECHARGE", createdAt: now
+    })},
+    currentDocument: { exists: false }
+  }];
+}
+async function commitAdminWrites(env, token, writes) {
+  const url = "https://firestore.googleapis.com/v1/projects/" + encodeURIComponent(env.FIREBASE_PROJECT_ID) + "/databases/(default)/documents:commit";
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+    body: JSON.stringify({ writes })
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(response.status === 409 || response.status === 400 ? "RECHARGE_COMMIT_CONFLICT" : "RECHARGE_COMMIT_FAILED");
+    error.status = response.status;
+    throw error;
+  }
+  return result;
+}
 async function route(request, env) {
   const origin = request.headers.get("Origin") || "";
   const allowedOrigin = origin === ORIGIN || origin === "null" || origin === "http://localhost" || origin === "http://127.0.0.1" ? origin : ORIGIN;
@@ -290,7 +364,23 @@ async function route(request, env) {
         items[i] = { ...req, status: "CANCELLED", cancelledAt, cancelledBy: caller.uid };
       }
       data.smsRechargeRequests = items;
-      await fs(env, token, path, { method: "PATCH", currentDocumentUpdateTime: doc.data.updateTime, body: { fields: encodeFields(data) } });
+      if (action === "approve") {
+        const now = new Date().toISOString();
+        const docName = "projects/" + env.FIREBASE_PROJECT_ID + "/databases/(default)/documents/" + path;
+        const writes = [{
+          update: { name: docName, fields: {
+            smsWalletBalance: encodeValue(data.smsWalletBalance),
+            smsWalletTransactions: encodeValue(data.smsWalletTransactions),
+            smsRechargeRequests: encodeValue(data.smsRechargeRequests)
+          }},
+          updateMask: { fieldPaths: ["smsWalletBalance", "smsWalletTransactions", "smsRechargeRequests"] },
+          currentDocument: { updateTime: doc.data.updateTime }
+        }];
+        writes.push(...await adminReferralRewardWrites(env, token, uid, now));
+        await commitAdminWrites(env, token, writes);
+      } else {
+        await fs(env, token, path, { method: "PATCH", currentDocumentUpdateTime: doc.data.updateTime, body: { fields: encodeFields(data) } });
+      }
       return reply({ success: true, message: action === "approve" ? "RECHARGE_APPROVED" : "REQUEST_CANCELLED" }, 200, allowedOrigin);
     }
 

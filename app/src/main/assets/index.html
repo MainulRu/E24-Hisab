@@ -189,6 +189,28 @@
     .current-due-heading { display:flex; align-items:center; gap:7px; font-size:12px; font-weight:700; }
     .current-due-amount { font-size:21px; font-weight:700; line-height:1.5; color:#b3261e; }
     .current-due-note { font-size:9px; color:#8c1d18; }
+    .supplier-home-panel{margin-top:10px;padding:12px;border:1px solid #c8dced;border-left:4px solid #28699d;border-radius:11px;background:#f1f7fc;color:#174d7a;cursor:pointer}
+    .supplier-home-head{display:flex;align-items:center;gap:8px}
+    .supplier-home-icon{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#dcebf7;color:#245d91;font-size:16px}
+    .supplier-home-title{font-size:13px;font-weight:700;flex:1}
+    .supplier-home-link{font-size:10px;font-weight:600;color:#245d91;white-space:nowrap}
+    .supplier-home-balance-label{font-size:10px;color:#58758e;margin-top:9px}
+    .supplier-home-balance{font-size:22px;line-height:1.35;font-weight:800;color:#174d7a}
+    .supplier-home-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px;padding-top:8px;border-top:1px solid #d6e5f1}
+    .supplier-home-metrics div{display:flex;flex-direction:column;gap:2px}
+    .supplier-home-metrics span{font-size:9px;color:#58758e}
+    .supplier-home-metrics strong{font-size:13px;color:#245d91}
+    .supplier-report-panel{margin:12px 0;padding:11px;border:1px solid #c8dced;border-radius:10px;background:#f5f9fd}
+    .supplier-report-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px;color:#245d91;font-size:13px;font-weight:700}
+    .supplier-report-heading small{font-size:9px;font-weight:500;color:#668097}
+    .supplier-report-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+    .supplier-report-metric{display:flex;flex-direction:column;gap:4px;padding:9px;border-radius:7px;background:#e7f0f8;min-width:0}
+    .supplier-report-metric span{font-size:10px;color:#58758e}
+    .supplier-report-metric strong{font-size:14px;color:#245d91;overflow-wrap:anywhere}
+    .supplier-report-outstanding{grid-column:1/-1;background:#dcebf7}
+    .supplier-report-outstanding strong{font-size:17px;color:#174d7a}
+    @media(prefers-color-scheme:dark){.supplier-home-panel,.supplier-report-panel{background:#172b3b;border-color:#35536b;color:#dcebf7}.supplier-home-icon,.supplier-report-metric{background:#203c52}.supplier-home-title,.supplier-home-balance,.supplier-home-metrics strong,.supplier-report-heading,.supplier-report-metric strong,.supplier-report-outstanding strong{color:#dcebf7}.supplier-home-balance-label,.supplier-home-metrics span,.supplier-report-heading small,.supplier-report-metric span{color:#a9c1d5}.supplier-home-metrics{border-color:#35536b}.supplier-report-outstanding{background:#24445d}}
+
 
     .transaction-list, .customer-list, .transaction-history, .settings-menu {
       list-style: none; display: flex; flex-direction: column; gap: 6px;
@@ -2348,10 +2370,18 @@
               <div class="stat-label">মোট গ্রাহক</div>
               <div class="stat-amount" id="customer-count">0 জন</div>
             </div>
-            <div class="stat-card bg-purple" onclick="switchPage('9')">
-              <i class="fa-solid fa-truck"></i>
-              <div class="stat-label">সাপ্লায়ারের বকেয়া</div>
-              <div class="stat-amount" id="supplier-total-due">৳ 0</div>
+          </div>
+          <div class="supplier-home-panel" onclick="switchPage('9')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchPage('9')}">
+            <div class="supplier-home-head">
+              <span class="supplier-home-icon"><i class="fa-solid fa-truck"></i></span>
+              <span class="supplier-home-title">সাপ্লায়ার ব্যবস্থাপনা</span>
+              <span class="supplier-home-link">হিসাব দেখুন <i class="fa-solid fa-chevron-right"></i></span>
+            </div>
+            <div class="supplier-home-balance-label">সাপ্লায়ারকে মোট পরিশোধযোগ্য</div>
+            <div class="supplier-home-balance" id="supplier-total-due">৳ 0</div>
+            <div class="supplier-home-metrics">
+              <div><span>মোট ক্রয়</span><strong id="supplier-total-purchase">৳ 0</strong></div>
+              <div><span>মোট পরিশোধ</span><strong id="supplier-total-paid">৳ 0</strong></div>
             </div>
           </div>
           <div class="current-due-card">
@@ -2555,11 +2585,14 @@
             <div class="summary-box box-red"><span>সময়ের বাকি</span><strong id="report-total-due">৳ 0</strong></div>
             <div class="summary-box box-blue"><span>অগ্রিম</span><strong id="report-total-advance">৳ 0</strong></div>
           </div>
-          <div class="report-summary-grid" style="margin-top:8px">
-            <div class="summary-box box-blue"><span>মোট ক্রয়</span><strong id="report-supplier-purchase">৳ 0</strong></div>
-            <div class="summary-box box-green"><span>মোট পরিশোধ</span><strong id="report-supplier-paid">৳ 0</strong></div>
-            <div class="summary-box box-red"><span>সাপ্লায়ারের বর্তমান বকেয়া</span><strong id="report-supplier-due">৳ 0</strong></div>
-          </div>
+          <section class="supplier-report-panel">
+            <div class="supplier-report-heading"><span><i class="fa-solid fa-truck"></i> সাপ্লায়ার রিপোর্ট</span><small>নির্বাচিত সময়ের হিসাব</small></div>
+            <div class="supplier-report-grid">
+              <div class="supplier-report-metric"><span>মোট ক্রয়</span><strong id="report-supplier-purchase">৳ 0</strong></div>
+              <div class="supplier-report-metric"><span>মোট পরিশোধ</span><strong id="report-supplier-paid">৳ 0</strong></div>
+              <div class="supplier-report-metric supplier-report-outstanding"><span>বর্তমান বকেয়া</span><strong id="report-supplier-due">৳ 0</strong></div>
+            </div>
+          </section>
           <div class="chart-container">
             <div class="pie-chart" id="report-pie-chart" style="background:transparent"></div>
             <div class="chart-legend">
@@ -3033,7 +3066,10 @@
         set('today-due',money(todayTotals.due));
         set('customer-count',db.customers.length.toLocaleString('bn-BD')+' জন');
         set('current-total-due',money(currentDue));
+        const supplierTxs=db.supplierTransactions||[];
         set('supplier-total-due',money((db.suppliers||[]).reduce((sum,s)=>sum+supplierBalance(s.id),0)));
+        set('supplier-total-purchase',money(supplierTxs.filter(x=>x.type===1||x.type==='purchase').reduce((sum,x)=>sum+(Number(x.amount)||0),0)));
+        set('supplier-total-paid',money(supplierTxs.filter(x=>x.type===2||x.type==='payment').reduce((sum,x)=>sum+(Number(x.amount)||0),0)));
         refreshReport();
         const recent=txs;
         const ul=document.querySelector('#page-1 .transaction-list');

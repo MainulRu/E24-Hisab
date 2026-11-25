@@ -917,6 +917,26 @@ async function handlePasswordResetComplete(request, env) {
 
 var worker_default = {
   async fetch(request, env) {
+    const origin = request.headers.get("Origin");
+    const defaultOrigins = [
+      "https://mainulru.github.io",
+      "https://main-security-copy.e24-hisab-security-preview.pages.dev",
+      "http://localhost:5500",
+      "http://127.0.0.1:5500",
+      "null"
+    ];
+    const configuredOrigins = String(env.ALLOWED_ORIGINS || "")
+      .split(",").map(value => value.trim()).filter(Boolean);
+    const allowedOrigins = configuredOrigins.length ? configuredOrigins : defaultOrigins;
+    if (origin && !allowedOrigins.includes(origin)) {
+      return new Response(JSON.stringify({
+        success: false,
+        message: "Origin is not allowed."
+      }), {
+        status: 403,
+        headers: { "Content-Type": "application/json; charset=utf-8" }
+      });
+    }
     const url = new URL(request.url);
     if (request.method === "OPTIONS") {
       return new Response(null, {

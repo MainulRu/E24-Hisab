@@ -42,7 +42,10 @@ public class MainActivity extends Activity {
 
         Window window = getWindow();
         window.setStatusBarColor(Color.TRANSPARENT);
-        window.setNavigationBarColor(Color.TRANSPARENT);
+        window.setNavigationBarColor(Color.rgb(237, 243, 239));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.setNavigationBarContrastEnforced(false);
+        }
 
         // Draw edge-to-edge, then place the WebView inside the system-bar insets.
         // This keeps the HTML app bar at its original position on Android 15 (targetSdk 35).
@@ -321,8 +324,32 @@ public class MainActivity extends Activity {
         public void setColor(String color) {
             activity.runOnUiThread(() -> {
                 try {
+                    int parsedColor = Color.parseColor(color);
                     if (activity.navigationBarBackground != null) {
-                        activity.navigationBarBackground.setBackgroundColor(Color.parseColor(color));
+                        activity.navigationBarBackground.setBackgroundColor(parsedColor);
+                    }
+                    activity.rootLayout.setBackgroundColor(parsedColor);
+                    Window window = activity.getWindow();
+                    window.setNavigationBarColor(parsedColor);
+                    boolean lightIcons = (Color.red(parsedColor) * 299
+                        + Color.green(parsedColor) * 587
+                        + Color.blue(parsedColor) * 114) / 1000 > 150;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        android.view.WindowInsetsController controller = window.getInsetsController();
+                        if (controller != null) {
+                            int appearance = lightIcons
+                                ? android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS : 0;
+                            controller.setSystemBarsAppearance(
+                                appearance,
+                                android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+                            );
+                        }
+                    } else {
+                        View decor = window.getDecorView();
+                        int flags = decor.getSystemUiVisibility();
+                        if (lightIcons) flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                        else flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                        decor.setSystemUiVisibility(flags);
                     }
                 } catch (IllegalArgumentException ignored) {
                     // Ignore invalid colors from the WebView.

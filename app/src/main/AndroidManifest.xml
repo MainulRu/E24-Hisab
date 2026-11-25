@@ -3,7 +3,7 @@
     <application
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:label="E24 Hisab"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:supportsRtl="true">
         <activity
             android:name=".MainActivity"

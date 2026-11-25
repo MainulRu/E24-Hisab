@@ -44,6 +44,22 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /e24PaymentSessions/{transactionId} {
+      allow read, write: if false;
+    }
+
+    match /e24ReferralRewards/{referredUid} {
+      allow read, write: if false;
+    }
+
+    match /e24RechargeTransactionIndex/{transactionHash} {
+      allow read, write: if false;
+    }
+
+    match /e24SmsDebitEvents/{eventId} {
+      allow read, write: if false;
+    }
+
     match /users/{userId} {
       // Only the account owner and Full/Main Admin may open a user profile.
       allow get: if signedIn() && (request.auth.uid == userId || canManageUser(userId));

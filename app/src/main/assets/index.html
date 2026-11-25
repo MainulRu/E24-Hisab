@@ -2186,21 +2186,22 @@
     html, body { min-height:100%; }
     .card-wrapper { min-height:100vh; }
     .phone-screen {
-      display:flex !important;
-      flex-direction:column !important;
-      height:100vh !important;
-      height:100dvh !important;
       min-height:100vh !important;
-      overflow:hidden !important;
+      overflow:visible !important;
     }
     .screen-body {
-      flex:1 1 auto !important;
-      min-height:0 !important;
-      overflow-y:auto !important;
-      overscroll-behavior-y:contain;
+      padding-bottom:88px !important;
     }
-    .app-page { height:auto !important; min-height:100%; }
-    .bottom-nav { flex:0 0 auto !important; position:relative; margin-top:auto; }
+    .bottom-nav {
+      position:fixed !important;
+      left:50% !important;
+      bottom:0 !important;
+      transform:translateX(-50%);
+      width:min(100%,1200px) !important;
+      margin:0 !important;
+      padding-bottom:max(4px,env(safe-area-inset-bottom)) !important;
+      z-index:100 !important;
+    }
 
 </style>
 </head>

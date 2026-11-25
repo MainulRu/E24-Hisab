@@ -60,10 +60,10 @@ public class MainActivity extends Activity {
         rootLayout.setBackgroundColor(Color.rgb(0, 92, 46));
 
         webView = new WebView(this);
-        // Allow Android Autofill services (including Google Password Manager) to inspect
-        // HTML login fields and offer to save/fill credentials in this WebView.
+        // Disable Android system Autofill services (including Google Autofill)
+        // for this WebView so saved names, phone numbers and addresses are not suggested.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            webView.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES);
+            webView.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
         }
         webView.setBackgroundColor(Color.rgb(248, 249, 250));
         WebSettings settings = webView.getSettings();

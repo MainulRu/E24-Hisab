@@ -1786,6 +1786,21 @@ body {
 
     /* Keep the web safe-area/footer extension in sync with dark mode. */
     .phone-screen.e24-dark .bottom-nav{background:#17221c!important;border-top-color:#34463b!important}
+
+    /* Customer receivable card: visually distinct from the blue supplier panel. */
+    .customer-receivable-card{margin-top:10px!important;padding:14px 15px!important;border:1px solid #bfe5ce!important;border-left:5px solid #119653!important;border-radius:14px!important;background:linear-gradient(120deg,#e9f8ef 0%,#f7fcf8 100%)!important;box-shadow:0 4px 14px rgba(17,150,83,.10)!important;color:#185b39!important;overflow:hidden}
+    .customer-receivable-top{display:flex;align-items:center;gap:9px}
+    .customer-receivable-icon{width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex:0 0 34px;border-radius:10px;background:#d0f0dc;color:#087a35;font-size:17px}
+    .customer-receivable-heading{font-size:14px;font-weight:800;color:#17643b;flex:1}
+    .customer-receivable-tag{font-size:9px;font-weight:700;color:#087a35;background:#d6f2e0;border-radius:20px;padding:4px 8px;white-space:nowrap}
+    .customer-receivable-note{margin:9px 0 0 43px;font-size:10px;color:#557c65}
+    .customer-receivable-amount{margin-left:42px!important;margin-top:1px;font-size:27px!important;line-height:1.35!important;font-weight:800!important;color:#087a35!important;letter-spacing:.2px}
+    .phone-screen.e24-dark .screen-body .customer-receivable-card{background:linear-gradient(120deg,#193b2a,#203b2d)!important;border-color:#356b4b!important;color:#e1f5e8!important}
+    .phone-screen.e24-dark .screen-body .customer-receivable-heading,.phone-screen.e24-dark .screen-body .customer-receivable-amount{color:#8ee0ad!important}
+    .phone-screen.e24-dark .screen-body .customer-receivable-note{color:#b1d4bd!important}
+    .phone-screen.e24-dark .screen-body .customer-receivable-icon,.phone-screen.e24-dark .screen-body .customer-receivable-tag{background:#28563a!important;color:#a9e8bd!important}
+    @media(prefers-color-scheme:dark){.customer-receivable-card{background:linear-gradient(120deg,#193b2a,#203b2d)!important;border-color:#356b4b!important;color:#e1f5e8!important}.customer-receivable-heading,.customer-receivable-amount{color:#8ee0ad!important}.customer-receivable-note{color:#b1d4bd!important}.customer-receivable-icon,.customer-receivable-tag{background:#28563a!important;color:#a9e8bd!important}}
+
 </style>
 </head>
 <body>
@@ -1895,6 +1910,16 @@ body {
               <div class="stat-amount" id="customer-count">0 জন</div>
             </div>
           </div>
+          <div class="current-due-card customer-receivable-card">
+            <div class="customer-receivable-top">
+              <span class="customer-receivable-icon"><i class="fa-solid fa-wallet"></i></span>
+              <span class="customer-receivable-heading">গ্রাহকের কাছে পাবো</span>
+              <span class="customer-receivable-tag">সব গ্রাহক</span>
+            </div>
+            <div class="customer-receivable-note">সকল গ্রাহকের কাছ থেকে মোট পাওনা</div>
+            <div class="current-due-amount customer-receivable-amount" id="current-total-due">৳ 0</div>
+            <!-- Developer note: বর্তমান পাওনা = আগের বাকি + নতুন বাকি − পরবর্তী জমা। -->
+          </div>
           <div class="supplier-home-panel" onclick="switchPage('9')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchPage('9')}">
             <div class="supplier-home-head">
               <span class="supplier-home-icon"><i class="fa-solid fa-truck"></i></span>
@@ -1908,13 +1933,6 @@ body {
               <div><span>মোট পরিশোধ</span><strong id="supplier-total-paid">৳ 0</strong></div>
             </div>
           </div>
-          <div class="current-due-card">
-            <div class="current-due-heading"><i class="fa-solid fa-wallet"></i> বর্তমান মোট বাকি</div>
-            <div class="current-due-note">সব গ্রাহক</div>
-            <div class="current-due-amount" id="current-total-due">৳ 0</div>
-            <!-- Developer note: বর্তমান বকেয়া = আগের বাকি + আজকের নতুন বাকি − পরবর্তী জমা। -->
-          </div>
-
           <div class="section-banner"><i class="fa-solid fa-chart-line"></i> সাম্প্রতিক লেনদেন</div>
           <ul class="transaction-list">
             <li class="transaction-item" onclick="switchPage('3')">

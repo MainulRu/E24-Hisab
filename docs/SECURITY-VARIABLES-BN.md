@@ -71,10 +71,16 @@ OTP Worker-এ `ALLOWED_ORIGINS` না দিলে code-এর default allowli
 
 ## Registration flow-এর বর্তমান অবস্থা
 
-- `app/src/main/assets/index.html` এখন প্রথমে `/register/send-email-otp` endpoint-এ OTP পাঠায়। এই ধাপে Firebase account তৈরি হয় না।
+- `docs/index.html` (GitHub Pages Web App) এবং `app/src/main/assets/index.html` (Android WebView) এখন প্রথমে `/register/send-email-otp` endpoint-এ OTP পাঠায়। এই ধাপে Firebase account তৈরি হয় না।
 - সঠিক OTP ও Password দিয়ে `/register/verify-email-otp` সফল হওয়ার পরই OTP Worker Firebase account তৈরি করে এবং `emailVerified=true` সেট করে। এরপর Frontend Firebase Login করে user profile ও Referral setup সম্পন্ন করে।
 - Android `MainActivity.java` একই `file:///android_asset/index.html` লোড করে; তাই Android app-ও একই OTP-first registration flow ব্যবহার করে। আলাদা Android registration implementation নেই।
 - পুরোনো authenticated `/send-email-otp` ও `/verify-email-otp` endpoint login-পরবর্তী legacy verification flow-এর জন্য রাখা হয়েছে।
+
+## Firebase-level enforcement-এর সীমাবদ্ধতা
+
+বর্তমান পরিবর্তন E24 Hisab-এর Web/Android registration UI-তে OTP-first flow বাধ্যতামূলক করে এবং Firestore-এ unverified profile তৈরি হতে দেয় না। তবে Firebase Web API key client config-এ থাকে; কেউ UI এড়িয়ে সরাসরি Firebase Identity Toolkit `accounts:signUp` API ডাকলে Firebase Auth-এ unverified account তৈরি করার চেষ্টা করতে পারে। তাই একে এখনো Firebase service-level absolute block বলা যাবে না।
+
+পুরো Firebase Auth স্তরে direct signup-ও বন্ধ করতে Firebase Authentication with Identity Platform upgrade করে `beforeUserCreated` blocking function configure/deploy করতে হবে। সেই function ছাড়া কেবল Frontend ও Worker পরিবর্তন দিয়ে Firebase-এর public signup endpoint সম্পূর্ণ বন্ধ করা সম্ভব নয়। এই project-এর জন্য blocking function এখনো configure/deploy করা হয়নি।
 
 ## Preview পরীক্ষা করার আগে জরুরি সতর্কতা
 

@@ -2884,7 +2884,7 @@
         imageInput.onchange=async()=>{
           const file=imageInput.files&&imageInput.files[0];transactionImage='';imagePreview.innerHTML='';
           if(!file)return;
-          if(!/^image\\/(jpeg|png|webp)$/.test(file.type)||file.size>8*1024*1024){imageInput.value='';showToast('JPG, PNG বা WebP ছবি দিন (সর্বোচ্চ ৮ MB)');return;}
+          if(!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size>8*1024*1024){imageInput.value='';showToast('JPG, PNG বা WebP ছবি দিন (সর্বোচ্চ ৮ MB)');return;}
           imageProcessing=true;showToast('ছবি প্রস্তুত করা হচ্ছে...');
           try{
             const objectUrl=URL.createObjectURL(file);

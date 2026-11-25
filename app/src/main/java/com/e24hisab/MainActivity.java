@@ -96,7 +96,7 @@ public class MainActivity extends Activity {
 
         navigationBarBackground = new View(this);
         // Match the Android system navigation area to the app's light-mode body background.
-        navigationBarBackground.setBackgroundColor(Color.rgb(245, 248, 246));
+        navigationBarBackground.setBackgroundColor(Color.rgb(237, 243, 239));
         FrameLayout.LayoutParams navParams = new FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT, 0, Gravity.BOTTOM
         );

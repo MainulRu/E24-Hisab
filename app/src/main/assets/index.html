@@ -2348,6 +2348,11 @@
               <div class="stat-label">মোট গ্রাহক</div>
               <div class="stat-amount" id="customer-count">0 জন</div>
             </div>
+            <div class="stat-card bg-purple" onclick="switchPage('9')">
+              <i class="fa-solid fa-truck"></i>
+              <div class="stat-label">সাপ্লায়ারের বকেয়া</div>
+              <div class="stat-amount" id="supplier-total-due">৳ 0</div>
+            </div>
           </div>
           <div class="current-due-card">
             <div class="current-due-heading"><i class="fa-solid fa-wallet"></i> বর্তমান মোট বাকি</div>
@@ -2549,6 +2554,11 @@
             <div class="summary-box box-green"><span>মোট জমা</span><strong id="report-total-paid">৳ 0</strong></div>
             <div class="summary-box box-red"><span>সময়ের বাকি</span><strong id="report-total-due">৳ 0</strong></div>
             <div class="summary-box box-blue"><span>অগ্রিম</span><strong id="report-total-advance">৳ 0</strong></div>
+          </div>
+          <div class="report-summary-grid" style="margin-top:8px">
+            <div class="summary-box box-blue"><span>মোট ক্রয়</span><strong id="report-supplier-purchase">৳ 0</strong></div>
+            <div class="summary-box box-green"><span>মোট পরিশোধ</span><strong id="report-supplier-paid">৳ 0</strong></div>
+            <div class="summary-box box-red"><span>সাপ্লায়ারের বর্তমান বকেয়া</span><strong id="report-supplier-due">৳ 0</strong></div>
           </div>
           <div class="chart-container">
             <div class="pie-chart" id="report-pie-chart" style="background:transparent"></div>
@@ -3013,6 +3023,7 @@
         set('today-due',money(todayTotals.due));
         set('customer-count',db.customers.length.toLocaleString('bn-BD')+' জন');
         set('current-total-due',money(currentDue));
+        set('supplier-total-due',money((db.suppliers||[]).reduce((sum,s)=>sum+supplierBalance(s.id),0)));
         refreshReport();
         const recent=txs;
         const ul=document.querySelector('#page-1 .transaction-list');
@@ -3041,8 +3052,13 @@
         const labelEl=document.getElementById('report-period-label');if(labelEl)labelEl.innerHTML='<i class="fa-regular fa-calendar"></i> '+label;
         const rows=validTransactions().filter(t=>{const dt=reportDate(t.date);return dt&&dt>=start&&dt<end;}).sort((a,b)=>(reportDate(b.date)||0)-(reportDate(a.date)||0));
         const totals=calculateBalances(rows);
+        const supplierRows=(db.supplierTransactions||[]).filter(x=>{const dt=reportDate(x.date);return dt&&dt>=start&&dt<end;});
+        const supplierPurchases=supplierRows.filter(x=>x.type===1||x.type==='purchase').reduce((sum,x)=>sum+(Number(x.amount)||0),0);
+        const supplierPayments=supplierRows.filter(x=>x.type===2||x.type==='payment').reduce((sum,x)=>sum+(Number(x.amount)||0),0);
+        const supplierDue=(db.suppliers||[]).reduce((sum,s)=>sum+supplierBalance(s.id),0);
         const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
         set('report-total-sales',money(totals.sales));set('report-total-paid',money(totals.paid));set('report-total-due',money(totals.due));set('report-total-advance',money(totals.advance));
+        set('report-supplier-purchase',money(supplierPurchases));set('report-supplier-paid',money(supplierPayments));set('report-supplier-due',money(supplierDue));
         const total=totals.sales,paidPct=total?Math.round(Math.min(totals.sales,totals.paid-totals.advance)/total*100):0,duePct=total?Math.round(totals.due/total*100):0;
         const pie=document.getElementById('report-pie-chart');if(pie){if(total<=0){pie.innerHTML='';pie.style.background='transparent';}else if(paidPct<=0||paidPct>=100){pie.innerHTML='';pie.style.background=paidPct<=0?'var(--accent-red)':'var(--primary-green)';}else{const size=55,center=size/2,radius=center,splitDeg=paidPct*3.6,endX=center+radius*Math.sin(splitDeg*Math.PI/180),endY=center-radius*Math.cos(splitDeg*Math.PI/180),largeArc=splitDeg>180?1:0;pie.style.background='transparent';pie.innerHTML=`<svg viewBox="0 0 55 55" width="55" height="55" aria-hidden="true"><defs><clipPath id="reportPieClip"><circle cx="27.5" cy="27.5" r="27.5"/></clipPath></defs><g clip-path="url(#reportPieClip)"><circle cx="27.5" cy="27.5" r="27.5" fill="var(--primary-green)"/><path d="M 27.5 27.5 L 27.5 0 A 27.5 27.5 0 ${largeArc} 1 ${endX} ${endY} Z" fill="var(--accent-red)"/><path d="M 27.5 27.5 L 27.5 0 M 27.5 27.5 L ${endX} ${endY}" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="butt"/></g></svg>`;}}
         set('report-paid-label',`জমা (${paidPct}%)`);set('report-due-label',`বাকি (${duePct}%)`);set('report-tx-count','লেনদেন: '+rows.length.toLocaleString('bn-BD')+'টি');
@@ -3050,13 +3066,13 @@
         if(list)list.innerHTML=rows.length?rows.map(t=>{const c=db.customers.find(x=>String(x.id)===String(t.customerId));const isDue=t.type==='বাকি';return `<li class="history-item"><span class="tx-icon ${isDue?'icon-down':'icon-up'}"><i class="fa-solid ${isDue?'fa-arrow-down':'fa-arrow-up'}"></i></span><div class="tx-info"><span class="tx-name">${esc(c?.name||'গ্রাহক')} — ${isDue?'বিক্রি':'জমা'}</span><span class="${isDue?'red-text':'green-text'}" style="font-weight:700">${money(t.amount)}${isDue&&Number(t.paid)>0?' · তাৎক্ষণিক জমা '+money(t.paid):''}${t.note?' · '+esc(t.note):''}</span></div><span class="tx-date">${esc(t.date)}</span></li>`;}).join(''):'<li class="report-empty">এই সময়ে কোনো লেনদেন নেই</li>';
       }
       window.printReport=()=>{document.body.classList.add('report-printing');if(window.AndroidPrint&&typeof window.AndroidPrint.printReport==='function'){window.AndroidPrint.printReport();setTimeout(()=>document.body.classList.remove('report-printing'),1800);}else{window.print();setTimeout(()=>document.body.classList.remove('report-printing'),500);}};
-      function supplierBalance(sid){return (db.supplierTransactions||[]).filter(x=>String(x.supplierId)===String(sid)).reduce((v,x)=>v+(x.type==='purchase'?(+x.amount||0):-(+x.amount||0)),0);}
+      function supplierBalance(sid){return (db.supplierTransactions||[]).filter(x=>String(x.supplierId)===String(sid)).reduce((v,x)=>v+((x.type===1||x.type==='purchase')?(+x.amount||0):-(+x.amount||0)),0);}
 function renderSupplierPage(){const ul=document.getElementById('supplier-list'),list=document.getElementById('supplier-list-view'),form=document.getElementById('supplier-form-view'),detail=document.getElementById('supplier-detail-view');if(!ul||!list||!form||!detail)return;list.hidden=false;form.hidden=true;detail.hidden=true;ul.innerHTML=(db.suppliers||[]).map(s=>'<li class="customer-item" data-sid="'+esc(s.id)+'"><div class="customer-name">'+esc(s.name)+'<small style="display:block">'+esc(s.phone||s.address||'')+'</small></div><strong>'+money(supplierBalance(s.id))+'</strong></li>').join('')||'<li>এখনো কোনো সাপ্লায়ার নেই</li>';ul.querySelectorAll('[data-sid]').forEach(el=>el.onclick=()=>e24ShowSupplier(el.dataset.sid));const search=document.getElementById('supplier-search');if(search&&!search.dataset.bound){search.dataset.bound='1';search.addEventListener('input',()=>ul.querySelectorAll('[data-sid]').forEach(el=>el.hidden=!el.textContent.toLowerCase().includes(search.value.toLowerCase())));}}
 window.e24OpenSupplierForm=()=>{document.getElementById('supplier-list-view').hidden=true;document.getElementById('supplier-detail-view').hidden=true;document.getElementById('supplier-form-view').hidden=false;['supplier-name','supplier-phone','supplier-address'].forEach(k=>document.getElementById(k).value='');};
 window.e24CancelSupplierForm=()=>renderSupplierPage();
 window.e24SaveSupplier=()=>{const name=document.getElementById('supplier-name').value.trim();if(!name){showToast('সাপ্লায়ারের নাম লিখুন');return;}db.suppliers=db.suppliers||[];const s={id:id(),name,phone:document.getElementById('supplier-phone').value.trim(),address:document.getElementById('supplier-address').value.trim()};db.suppliers.push(s);db.selectedSupplierId=s.id;save();e24ShowSupplier(s.id);showToast('সাপ্লায়ার সংরক্ষিত হয়েছে');};
-window.e24ShowSupplier=(sid)=>{const s=(db.suppliers||[]).find(x=>String(x.id)===String(sid));if(!s)return;db.selectedSupplierId=s.id;document.getElementById('supplier-list-view').hidden=true;document.getElementById('supplier-form-view').hidden=true;const d=document.getElementById('supplier-detail-view');d.hidden=false;const rows=(db.supplierTransactions||[]).filter(x=>String(x.supplierId)===String(sid)).slice().reverse();d.innerHTML='<button class="btn btn-logout" onclick="renderSupplierPage()">সাপ্লায়ার তালিকা</button><div class="supplier-card"><strong>'+esc(s.name)+'</strong><div>'+esc(s.phone||'')+'</div><div>'+esc(s.address||'')+'</div><strong>বকেয়া: '+money(supplierBalance(sid))+'</strong></div><div class="supplier-actions"><button class="btn btn-blue" onclick="e24SupplierEntry(1)">মাল ক্রয়</button><button class="btn btn-green" onclick="e24SupplierEntry(2)">টাকা পরিশোধ</button></div><div class="section-banner">ক্রয় ও পরিশোধের ইতিহাস</div><ul class="supplier-history">'+(rows.map(x=>'<li>'+(x.type===1?'মাল ক্রয়':'টাকা পরিশোধ')+' · '+esc(x.date)+'<strong>'+money(x.amount)+'</strong></li>').join('')||'<li>এখনো কোনো হিসাব নেই</li>')+'</ul>';};
-window.e24SupplierEntry=(type)=>{const raw=prompt(type===1?'ক্রয়ের টাকার পরিমাণ':'পরিশোধের টাকার পরিমাণ');if(raw===null)return;const amount=Number(raw);if(!Number.isSafeInteger(amount)||amount<=0){showToast('সঠিক টাকার পরিমাণ লিখুন');return;}db.supplierTransactions=db.supplierTransactions||[];db.supplierTransactions.push({id:id(),supplierId:db.selectedSupplierId,type,amount,date:new Date().toLocaleDateString('bn-BD')});save();e24ShowSupplier(db.selectedSupplierId);showToast('হিসাব সংরক্ষিত হয়েছে');};
+window.e24ShowSupplier=(sid)=>{const s=(db.suppliers||[]).find(x=>String(x.id)===String(sid));if(!s)return;db.selectedSupplierId=s.id;document.getElementById('supplier-list-view').hidden=true;document.getElementById('supplier-form-view').hidden=true;const d=document.getElementById('supplier-detail-view');d.hidden=false;const rows=(db.supplierTransactions||[]).filter(x=>String(x.supplierId)===String(sid)).slice().reverse();d.innerHTML='<button class="btn btn-logout" onclick="renderSupplierPage()">সাপ্লায়ার তালিকা</button><div class="supplier-card"><strong>'+esc(s.name)+'</strong><div>'+esc(s.phone||'')+'</div><div>'+esc(s.address||'')+'</div><strong>বকেয়া: '+money(supplierBalance(sid))+'</strong></div><div class="supplier-actions"><button class="btn btn-blue" onclick="e24SupplierEntry(1)">মাল ক্রয়</button><button class="btn btn-green" onclick="e24SupplierEntry(2)">টাকা পরিশোধ</button></div><div class="section-banner">ক্রয় ও পরিশোধের ইতিহাস</div><ul class="supplier-history">'+(rows.map(x=>'<li>'+((x.type===1||x.type==='purchase')?'মাল ক্রয়':'টাকা পরিশোধ')+' · '+esc(x.date)+'<strong>'+money(x.amount)+'</strong></li>').join('')||'<li>এখনো কোনো হিসাব নেই</li>')+'</ul>';};
+window.e24SupplierEntry=(type)=>{const raw=prompt(type===1?'ক্রয়ের টাকার পরিমাণ':'পরিশোধের টাকার পরিমাণ');if(raw===null)return;const amount=Number(raw);if(!Number.isSafeInteger(amount)||amount<=0){showToast('সঠিক টাকার পরিমাণ লিখুন');return;}db.supplierTransactions=db.supplierTransactions||[];db.supplierTransactions.push({id:id(),supplierId:db.selectedSupplierId,type,amount,date:new Date().toLocaleDateString('bn-BD')});save();e24ShowSupplier(db.selectedSupplierId);refreshHome();showToast('হিসাব সংরক্ষিত হয়েছে');};
 function refreshAll(){renderCustomers();renderLedger();renderTransactionForm(db.txType);refreshHome();renderSupplierPage();}
       window.beginTransaction=(type)=>{renderTransactionForm(type||'বাকি');switchPage('4');};
       window.switchPage = ((old)=>function(pageKey){if(String(pageKey)==='3')renderLedger();if(String(pageKey)==='4'){db.txType='বাকি';renderTransactionForm('বাকি');}if(String(pageKey)==='9')renderSupplierPage();old(String(pageKey));if(String(pageKey)==='1')refreshHome();})(window.switchPage);

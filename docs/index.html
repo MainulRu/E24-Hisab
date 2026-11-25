@@ -258,18 +258,20 @@
     #page-9 .customer-list{display:block;margin:0!important;padding:0!important;width:100%;max-width:100%;box-sizing:border-box}
     #page-9 .form-input{display:block;width:100%;max-width:100%;min-width:0;margin-left:0!important;margin-right:0!important;box-sizing:border-box}
     #page-9 .section-title{margin-top:0}
-    /* Responsive add-customer dialog */
-    /* Keep the dialog strictly inside the phone/app screen, including desktop live preview */
-    .customer-modal-backdrop{position:absolute;inset:0;width:100%;height:100%;background:rgba(0,0,0,.62);z-index:9998;display:none;align-items:center;justify-content:center;padding:12px;box-sizing:border-box;overflow:hidden}
+    /* Full-screen customer add/edit page */
+    .customer-modal-backdrop{position:fixed;inset:0;width:100%;height:100%;background:#f5f7f6;z-index:9998;display:none;align-items:stretch;justify-content:stretch;padding:0;box-sizing:border-box;overflow:hidden}
     .customer-modal-backdrop.show{display:flex}
-    .customer-modal{box-sizing:border-box;width:100%;max-width:320px;max-height:calc(100% - 24px);overflow-y:auto;background:#fff;border-radius:6px;padding:16px 18px 12px;box-shadow:0 10px 24px rgba(0,0,0,.22);color:#222}
-    .customer-modal h2{font-size:19px;line-height:1.25;font-weight:500;margin:0 0 10px}
-    .customer-modal input{box-sizing:border-box;display:block;width:100%;height:38px;border:0;border-bottom:1.5px solid #777;border-radius:0;background:transparent;outline:0;font:inherit;font-size:15px;margin:0 0 12px;padding:2px 0;color:#222}
-    .customer-modal input:focus{border-bottom-color:#008f7a}.customer-modal textarea{box-sizing:border-box;display:block;width:100%;min-height:42px;border:0;border-bottom:1.5px solid #777;background:transparent;outline:0;font:inherit;font-size:15px;margin:0 0 12px;padding:5px 0;color:#222;resize:vertical}.customer-modal textarea:focus{border-bottom-color:#008f7a}
-    .customer-modal-actions{display:flex;justify-content:flex-end;gap:18px;margin-top:12px}
-    .customer-modal-actions button{border:0;background:transparent;color:#008f7a;font:inherit;font-size:14px;font-weight:600;padding:5px 0;cursor:pointer}
-    @media(max-width:360px){.customer-modal-backdrop{padding:10px}.customer-modal{padding:14px 16px 10px}.customer-modal h2{font-size:18px;margin-bottom:8px}.customer-modal input{height:35px;font-size:14px;margin-bottom:10px}.customer-modal-actions{gap:16px;margin-top:9px}}
-    @media(max-height:520px){.customer-modal{max-height:calc(100% - 16px);padding-top:10px;padding-bottom:8px}.customer-modal h2{margin-bottom:6px}.customer-modal input{height:32px;margin-bottom:8px}.customer-modal-actions{margin-top:7px}}
+    .customer-modal{box-sizing:border-box;width:100%;max-width:none;height:100%;max-height:100%;overflow-y:auto;background:#f5f7f6;border-radius:0;padding:0;box-shadow:none;color:#222;display:flex;flex-direction:column}
+    .customer-page-header{height:58px;min-height:58px;display:flex;align-items:center;gap:16px;padding:0 16px;background:#087a35;color:#fff;box-sizing:border-box}
+    .customer-page-header button{width:36px;height:40px;border:0;background:transparent;color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;padding:0}
+    .customer-page-header h2{font-size:18px;line-height:1.25;font-weight:600;margin:0;color:#fff}
+    .customer-page-content{padding:28px 20px 20px;display:flex;flex-direction:column;gap:18px;flex:1}
+    .customer-page-avatar{width:88px;height:88px;border-radius:50%;background:#e2eee6;color:#087a35;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 12px}
+    .customer-modal input{box-sizing:border-box;display:block;width:100%;height:48px;border:1px solid #d9e1dc;border-radius:8px;background:#fff;outline:0;font:inherit;font-size:15px;margin:0;padding:0 13px;color:#222}
+    .customer-modal input:focus{border-color:#087a35}.customer-modal textarea{box-sizing:border-box;display:block;width:100%;min-height:86px;border:1px solid #d9e1dc;border-radius:8px;background:#fff;outline:0;font:inherit;font-size:15px;margin:0;padding:12px 13px;color:#222;resize:vertical}.customer-modal textarea:focus{border-color:#087a35}
+    .customer-modal-actions{padding:12px 20px calc(14px + env(safe-area-inset-bottom));background:#f5f7f6;display:flex;flex-direction:column;margin-top:auto}
+    .customer-modal-actions button{width:100%;height:48px;border:0;border-radius:8px;background:#087a35;color:#fff;font:inherit;font-size:16px;font-weight:600;padding:0 16px;cursor:pointer}
+    @media(max-width:360px){.customer-page-content{padding:22px 16px 16px;gap:15px}.customer-modal-actions{padding-left:16px;padding-right:16px}}
     /* In-app confirmation popup: always constrained to the phone screen */
     .app-confirm-backdrop{position:absolute;inset:0;width:100%;height:100%;padding:12px;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.62);z-index:10000;box-sizing:border-box;overflow:hidden}
     .app-confirm-backdrop.show{display:flex}
@@ -2229,11 +2231,14 @@ body {
 
   <div class="customer-modal-backdrop" id="customer-modal-backdrop" aria-hidden="true">
     <form class="customer-modal" id="customer-modal" autocomplete="off">
-      <h2 id="customer-modal-title">নতুন গ্রাহক</h2>
-      <input id="new-customer-name" type="text" placeholder="গ্রাহকের নাম" required maxlength="80">
-      <input id="new-customer-phone" type="tel" inputmode="tel" placeholder="মোবাইল নম্বর (ঐচ্ছিক)" maxlength="20">
-      <textarea id="new-customer-address" name="customer-address" rows="2" maxlength="250" placeholder="ঠিকানা (ঐচ্ছিক)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
-      <div class="customer-modal-actions"><button type="button" id="customer-cancel">বাতিল</button><button type="submit" id="customer-submit-label">সংরক্ষণ</button></div>
+      <div class="customer-page-header"><button type="button" id="customer-cancel" aria-label="ফিরে যান"><i class="fa-solid fa-arrow-left"></i></button><h2 id="customer-modal-title">নতুন গ্রাহক</h2></div>
+      <div class="customer-page-content">
+        <div class="customer-page-avatar"><i class="fa-solid fa-user"></i></div>
+        <input id="new-customer-name" type="text" placeholder="গ্রাহকের নাম" required maxlength="80">
+        <input id="new-customer-phone" type="tel" inputmode="tel" placeholder="মোবাইল নম্বর (ঐচ্ছিক)" maxlength="20" autocomplete="off">
+        <textarea id="new-customer-address" name="customer-address" rows="2" maxlength="250" placeholder="ঠিকানা (ঐচ্ছিক)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+      </div>
+      <div class="customer-modal-actions"><button type="submit" id="customer-submit-label">নিশ্চিত করুন</button></div>
     </form>
   </div>
   <div class="app-confirm-backdrop" id="app-confirm-backdrop" aria-hidden="true">
@@ -2574,7 +2579,6 @@ function refreshAll(){renderCustomers();renderLedger();renderTransactionForm(db.
         const closeCustomerModal=()=>{modal.classList.remove('show');modal.setAttribute('aria-hidden','true');transactionAddCustomer=false;editingCustomerId=null;document.getElementById('customer-modal-title').textContent='নতুন গ্রাহক';document.getElementById('customer-submit-label').textContent='সংরক্ষণ';};
         if(add)add.onclick=()=>{editingCustomerId=null;nameField.value='';phoneField.value='';document.getElementById('customer-modal-title').textContent='নতুন গ্রাহক';document.getElementById('customer-submit-label').textContent='সংরক্ষণ';modal.classList.add('show');modal.setAttribute('aria-hidden','false');setTimeout(()=>nameField.focus(),80);};
         document.getElementById('customer-cancel').onclick=closeCustomerModal;
-        modal.addEventListener('click',e=>{if(e.target===modal)closeCustomerModal();});
         customerForm.addEventListener('submit',e=>{e.preventDefault();const name=nameField.value.trim(),phone=phoneField.value.trim(),address=addressField.value.trim();if(!name){showToast('গ্রাহকের নাম লিখুন');nameField.focus();return;}if(editingCustomerId){const c=db.customers.find(x=>x.id===editingCustomerId);if(!c){showToast('গ্রাহক পাওয়া যায়নি');closeCustomerModal();return;}c.name=name;c.phone=phone;c.address=address;db.selectedCustomerId=c.id;save();refreshAll();closeCustomerModal();showToast('গ্রাহকের তথ্য আপডেট হয়েছে');switchPage('3');}else{const fromTransaction=transactionAddCustomer;const c={id:id(),name,phone,address,photo:''};db.customers.push(c);db.selectedCustomerId=c.id;save();refreshAll();closeCustomerModal();showToast('গ্রাহক সংরক্ষিত হয়েছে');if(fromTransaction){renderTransactionForm(db.txType);}}});
         const search=document.getElementById('search-input');if(search)search.addEventListener('input',()=>{document.querySelectorAll('#page-2 .customer-item').forEach(el=>{el.style.display=el.textContent.toLowerCase().includes(search.value.toLowerCase())?'':'none';});});
          // Initial render waits for the authenticated user's cloud data.

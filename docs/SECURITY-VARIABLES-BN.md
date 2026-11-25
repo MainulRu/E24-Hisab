@@ -64,4 +64,15 @@ Security Worker-গুলো `ALLOWED_ORIGINS` ব্যবহার করে�
 - OTP Worker-এ D1 binding `E24_HISAB_OTP_DB` এবং DO binding `OTP_DO` ঠিক আছে কি না যাচাই করুন।
 - এই নথি দেখে Production-এ কোনো Secret বা Variable পরিবর্তন করবেন না; আগে Preview-তে যাচাই করুন।
 
-**বর্তমান সীমাবদ্ধতা:** Frontend registration flow এখনো pre-registration OTP endpoint-এর সঙ্গে সম্পূর্ণভাবে যুক্ত করা হয়নি। তাই এই Worker hardening একাই “OTP verify না হলে Firebase account তৈরি হবে না” শর্ত পূরণ করে না। Registration UI ও Android WebView flow integration এবং end-to-end test শেষ না হওয়া পর্যন্ত এটিকে সম্পূর্ণ নিরাপদ registration বলে গণ্য করবেন না।
+## Registration flow-এর বর্তমান অবস্থা
+
+- `app/src/main/assets/index.html` এখন প্রথমে `/register/send-email-otp` endpoint-এ OTP পাঠায়। এই ধাপে Firebase account তৈরি হয় না।
+- সঠিক OTP ও Password দিয়ে `/register/verify-email-otp` সফল হওয়ার পরই OTP Worker Firebase account তৈরি করে এবং `emailVerified=true` সেট করে। এরপর Frontend Firebase Login করে user profile ও Referral setup সম্পন্ন করে।
+- Android `MainActivity.java` একই `file:///android_asset/index.html` লোড করে; তাই Android app-ও একই OTP-first registration flow ব্যবহার করে। আলাদা Android registration implementation নেই।
+- পুরোনো authenticated `/send-email-otp` ও `/verify-email-otp` endpoint login-পরবর্তী legacy verification flow-এর জন্য রাখা হয়েছে।
+
+## Preview পরীক্ষা করার আগে জরুরি সতর্কতা
+
+এই branch-এর HTML-এ Firebase project config এবং `E24_OTP_API`, `E24_PAYMENT_API`, `E24_ADMIN_API` endpoint hardcoded আছে। বর্তমানে সেগুলো production project/Worker URL নির্দেশ করতে পারে। তাই Preview URL দিয়ে নতুন account, referral, recharge বা wallet mutation পরীক্ষা করবেন না—এতে production data পরিবর্তিত হতে পারে। আলাদা staging Firebase project, staging Worker URL এবং staging service-account secret বসিয়ে isolation নিশ্চিত না করা পর্যন্ত শুধু static/code review করুন।
+
+**পরীক্ষার সীমা:** Registration flow-এর code path ও Firestore Rules staticভাবে মিলিয়ে দেখা হয়েছে; production account তৈরি করে end-to-end test চালানো হয়নি। Production endpoint-এ mutation না করার জন্য live test ইচ্ছাকৃতভাবে বাদ রাখা হয়েছে।

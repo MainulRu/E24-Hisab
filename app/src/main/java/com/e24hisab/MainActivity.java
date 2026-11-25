@@ -147,6 +147,7 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new AndroidPrintBridge(this, webView), "AndroidPrint");
         webView.addJavascriptInterface(new AndroidContactsBridge(this), "AndroidContacts");
         webView.addJavascriptInterface(new AndroidBackupBridge(this), "AndroidBackup");
+        webView.addJavascriptInterface(new AndroidNavBarBridge(this), "AndroidNavBar");
     }
 
     private void removeAppJavascriptInterfaces() {
@@ -154,6 +155,7 @@ public class MainActivity extends Activity {
         webView.removeJavascriptInterface("AndroidPrint");
         webView.removeJavascriptInterface("AndroidContacts");
         webView.removeJavascriptInterface("AndroidBackup");
+        webView.removeJavascriptInterface("AndroidNavBar");
     }
 
     private boolean openExternalOrBlock(Uri uri) {
@@ -203,6 +205,20 @@ public class MainActivity extends Activity {
         public void onPageFinished(WebView view, String url) {
             if (isTrustedAppAsset(Uri.parse(url))) {
                 installAppJavascriptInterfaces();
+                view.evaluateJavascript(
+                    "(function(){" +
+                    "function sync(){var n=document.querySelector('.bottom-nav');if(!n||!window.AndroidNavBar)return;" +
+                    "var c=getComputedStyle(n).backgroundColor,m=c.match(/[0-9.]+/g);if(!m||m.length<3)return;" +
+                    "var h='#'+m.slice(0,3).map(function(v){return Math.round(Number(v)).toString(16).padStart(2,'0')}).join('');" +
+                    "window.AndroidNavBar.setColor(h);}" +
+                    "sync();var root=document.querySelector('.phone-screen')||document.documentElement;" +
+                    "if(window.__e24NavColorObserver)window.__e24NavColorObserver.disconnect();" +
+                    "window.__e24NavColorObserver=new MutationObserver(sync);" +
+                    "window.__e24NavColorObserver.observe(root,{attributes:true,attributeFilter:['class','style'],subtree:true});" +
+                    "var nav=document.querySelector('.bottom-nav');if(nav)window.__e24NavColorObserver.observe(nav,{attributes:true,attributeFilter:['class','style']});" +
+                    "return true;})()",
+                    null
+                );
             } else {
                 removeAppJavascriptInterfaces();
             }
@@ -295,6 +311,23 @@ public class MainActivity extends Activity {
                 "})()",
                 null
             ));
+        }
+    }
+
+    public static class AndroidNavBarBridge {
+        private final MainActivity activity;
+        AndroidNavBarBridge(MainActivity activity) { this.activity = activity; }
+        @JavascriptInterface
+        public void setColor(String color) {
+            activity.runOnUiThread(() -> {
+                try {
+                    if (activity.navigationBarBackground != null) {
+                        activity.navigationBarBackground.setBackgroundColor(Color.parseColor(color));
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    // Ignore invalid colors from the WebView.
+                }
+            });
         }
     }
 

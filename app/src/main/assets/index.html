@@ -2180,6 +2180,28 @@
   #page-3 .profile-header{box-shadow:none!important;border:1px solid #ddd!important}
 }
 
+
+
+    /* Keep the bottom navigation anchored to the viewport on short pages. */
+    html, body { min-height:100%; }
+    .card-wrapper { min-height:100vh; }
+    .phone-screen {
+      display:flex !important;
+      flex-direction:column !important;
+      height:100vh !important;
+      height:100dvh !important;
+      min-height:100vh !important;
+      overflow:hidden !important;
+    }
+    .screen-body {
+      flex:1 1 auto !important;
+      min-height:0 !important;
+      overflow-y:auto !important;
+      overscroll-behavior-y:contain;
+    }
+    .app-page { height:auto !important; min-height:100%; }
+    .bottom-nav { flex:0 0 auto !important; position:relative; margin-top:auto; }
+
 </style>
 </head>
 <body>

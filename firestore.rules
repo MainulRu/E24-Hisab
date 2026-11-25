@@ -70,7 +70,7 @@ service cloud.firestore {
       allow create: if signedIn()
         && request.auth.uid == userId
         && request.resource.data.keys().hasOnly(['email', 'mobile', 'emailVerified', 'createdAt'])
-        && request.resource.data.email is string
+        && request.resource.data.email == request.auth.token.email
         && request.resource.data.emailVerified == request.auth.token.email_verified
         && (!('mobile' in request.resource.data) || request.resource.data.mobile is string);
 
@@ -82,7 +82,7 @@ service cloud.firestore {
             'email', 'mobile', 'emailVerified',
             'name', 'organizationName', 'profilePhotoData', 'updatedAt'
           ])
-          && request.resource.data.email is string
+          && request.resource.data.email == request.auth.token.email
           && request.resource.data.emailVerified == request.auth.token.email_verified
           && (!('mobile' in request.resource.data) || request.resource.data.mobile is string)
           && (!('name' in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() <= 100))
@@ -95,10 +95,17 @@ service cloud.firestore {
       function ownerWalletBalanceCannotIncrease() {
         return !('smsWalletBalance' in resource.data)
           ? (!('smsWalletBalance' in request.resource.data)
-              || request.resource.data.smsWalletBalance == 0)
+              || (request.resource.data.smsWalletBalance is number
+                && request.resource.data.smsWalletBalance == 0))
           : ('smsWalletBalance' in request.resource.data
               && request.resource.data.smsWalletBalance is number
+              && request.resource.data.smsWalletBalance >= 0
               && request.resource.data.smsWalletBalance <= resource.data.smsWalletBalance);
+      }
+
+      // Recharge requests are server-owned; clients cannot forge or approve them.
+      match /rechargeRequests/{requestId} {
+        allow read, write: if false;
       }
 
       match /data/{documentId} {

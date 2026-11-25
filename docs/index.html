@@ -2278,7 +2278,15 @@
       const money = n => '৳ ' + Number(n || 0).toLocaleString('en-IN');
       const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       const id = () => 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-      const avatar = (photo, large=false) => photo ? `<img src="${photo}" alt="গ্রাহকের ছবি">` : '<i class="fa-solid fa-user"></i>'; 
+      const safeCustomerPhoto = photo => {
+        const value = typeof photo === 'string' ? photo : '';
+        // Only allow bounded raster-image data URLs; never interpolate attacker-controlled HTML or URL schemes.
+        return value.length <= 512000 && /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(value) ? value : '';
+      };
+      const avatar = (photo, large=false) => {
+        const safePhoto = safeCustomerPhoto(photo);
+        return safePhoto ? `<img src="${safePhoto}" alt="গ্রাহকের ছবি">` : '<i class="fa-solid fa-user"></i>';
+      }; 
       function save(){if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন');return;}const snapshot=JSON.parse(JSON.stringify(db));e24Store.collection('users').doc(activeDataUid).collection('data').doc('main').set({...snapshot,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(err=>{console.error('E24 Firestore save:',err);showToast('Cloud-এ হিসাব সংরক্ষণ হয়নি');});}
       function validTransactions() {
         const customerIds=new Set(db.customers.map(c=>String(c.id)));

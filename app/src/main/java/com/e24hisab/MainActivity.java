@@ -85,9 +85,7 @@ public class MainActivity extends Activity {
         }
 
         webView.setWebChromeClient(new WebChromeClient());
-        webView.addJavascriptInterface(new AndroidPrintBridge(this, webView), "AndroidPrint");
-        webView.addJavascriptInterface(new AndroidContactsBridge(this), "AndroidContacts");
-        webView.addJavascriptInterface(new AndroidBackupBridge(this), "AndroidBackup");
+        installAppJavascriptInterfaces();
         webView.setWebViewClient(new E24SecureWebViewClient());
 
         FrameLayout.LayoutParams webParams = new FrameLayout.LayoutParams(
@@ -143,16 +141,28 @@ public class MainActivity extends Activity {
             && "/android_asset/index.html".equals(uri.getPath());
     }
 
+    private void installAppJavascriptInterfaces() {
+        if (webView == null) return;
+        webView.addJavascriptInterface(new AndroidPrintBridge(this, webView), "AndroidPrint");
+        webView.addJavascriptInterface(new AndroidContactsBridge(this), "AndroidContacts");
+        webView.addJavascriptInterface(new AndroidBackupBridge(this), "AndroidBackup");
+    }
+
+    private void removeAppJavascriptInterfaces() {
+        if (webView == null) return;
+        webView.removeJavascriptInterface("AndroidPrint");
+        webView.removeJavascriptInterface("AndroidContacts");
+        webView.removeJavascriptInterface("AndroidBackup");
+    }
+
     private boolean openExternalOrBlock(Uri uri) {
         if (uri == null) return true;
         String scheme = uri.getScheme();
-        if ("https".equalsIgnoreCase(scheme)
-                || "tel".equalsIgnoreCase(scheme)
-                || "mailto".equalsIgnoreCase(scheme)) {
+        if ("tel".equalsIgnoreCase(scheme) || "mailto".equalsIgnoreCase(scheme)) {
             try {
                 startActivity(new Intent(Intent.ACTION_VIEW, uri));
             } catch (Exception ignored) {
-                // Block unsupported external destinations without loading them in the WebView.
+                // Block unsupported external destinations.
             }
         }
         return true;
@@ -161,10 +171,19 @@ public class MainActivity extends Activity {
     private final class E24SecureWebViewClient extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            // Do not allow iframes or other subframes to navigate.
-            if (!request.isForMainFrame()) return true;
             Uri uri = request.getUrl();
+            if (!request.isForMainFrame()) {
+                // App pages cannot embed frames. Frames on external HTTPS pages are allowed
+                // only after the native JavaScript bridges have been removed.
+                return isTrustedAppAsset(Uri.parse(view.getUrl()))
+                    || !"https".equalsIgnoreCase(uri.getScheme());
+            }
             if (isTrustedAppAsset(uri)) return false;
+            if ("https".equalsIgnoreCase(uri.getScheme())) {
+                // Keep hosted payment pages in the WebView, but never expose app bridges there.
+                removeAppJavascriptInterfaces();
+                return false;
+            }
             return openExternalOrBlock(uri);
         }
 
@@ -172,7 +191,20 @@ public class MainActivity extends Activity {
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             Uri uri = Uri.parse(url);
             if (isTrustedAppAsset(uri)) return false;
+            if ("https".equalsIgnoreCase(uri.getScheme())) {
+                removeAppJavascriptInterfaces();
+                return false;
+            }
             return openExternalOrBlock(uri);
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            if (isTrustedAppAsset(Uri.parse(url))) {
+                installAppJavascriptInterfaces();
+            } else {
+                removeAppJavascriptInterfaces();
+            }
         }
 
         @Override
@@ -317,6 +349,10 @@ public class MainActivity extends Activity {
     @SuppressWarnings("deprecation")
     public void onBackPressed() {
         if (webView != null) {
+            if (!isTrustedAppAsset(Uri.parse(webView.getUrl())) && webView.canGoBack()) {
+                webView.goBack();
+                return;
+            }
             webView.evaluateJavascript(
                 "(function(){var active=document.querySelector('.app-page.active-page');" +
                 "if(active && active.id !== 'page-1'){switchPage('1');return 'handled';}" +

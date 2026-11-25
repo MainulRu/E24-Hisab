@@ -258,7 +258,7 @@
     .customer-modal{box-sizing:border-box;width:100%;max-width:320px;max-height:calc(100% - 24px);overflow-y:auto;background:#fff;border-radius:6px;padding:16px 18px 12px;box-shadow:0 10px 24px rgba(0,0,0,.22);color:#222}
     .customer-modal h2{font-size:19px;line-height:1.25;font-weight:500;margin:0 0 10px}
     .customer-modal input{box-sizing:border-box;display:block;width:100%;height:38px;border:0;border-bottom:1.5px solid #777;border-radius:0;background:transparent;outline:0;font:inherit;font-size:15px;margin:0 0 12px;padding:2px 0;color:#222}
-    .customer-modal input:focus{border-bottom-color:#008f7a}
+    .customer-modal input:focus{border-bottom-color:#008f7a}.customer-modal textarea{box-sizing:border-box;display:block;width:100%;min-height:42px;border:0;border-bottom:1.5px solid #777;background:transparent;outline:0;font:inherit;font-size:15px;margin:0 0 12px;padding:5px 0;color:#222;resize:vertical}.customer-modal textarea:focus{border-bottom-color:#008f7a}
     .customer-modal-actions{display:flex;justify-content:flex-end;gap:18px;margin-top:12px}
     .customer-modal-actions button{border:0;background:transparent;color:#008f7a;font:inherit;font-size:14px;font-weight:600;padding:5px 0;cursor:pointer}
     @media(max-width:360px){.customer-modal-backdrop{padding:10px}.customer-modal{padding:14px 16px 10px}.customer-modal h2{font-size:18px;margin-bottom:8px}.customer-modal input{height:35px;font-size:14px;margin-bottom:10px}.customer-modal-actions{gap:16px;margin-top:9px}}
@@ -2555,7 +2555,7 @@ window.e24ShowSupplier=(sid)=>{const s=(db.suppliers||[]).find(x=>String(x.id)==
 window.e24SupplierEntry=(type)=>{const raw=prompt(type===1?'ক্রয়ের টাকার পরিমাণ':'পরিশোধের টাকার পরিমাণ');if(raw===null)return;const amount=Number(raw);if(!Number.isSafeInteger(amount)||amount<=0){showToast('সঠিক টাকার পরিমাণ লিখুন');return;}db.supplierTransactions=db.supplierTransactions||[];db.supplierTransactions.push({id:id(),supplierId:db.selectedSupplierId,type,amount,date:new Date().toLocaleDateString('bn-BD')});save();e24ShowSupplier(db.selectedSupplierId);showToast('হিসাব সংরক্ষিত হয়েছে');};
 function refreshAll(){renderCustomers();renderLedger();renderTransactionForm(db.txType);refreshHome();renderSupplierPage();}
       window.beginTransaction=(type)=>{renderTransactionForm(type||'বাকি');switchPage('4');};
-      window.switchPage = ((old)=>function(pageKey){if(String(pageKey)==='3')renderLedger();if(String(pageKey)==='4'){db.txType='বাকি';renderTransactionForm('বাকি');}old(String(pageKey));if(String(pageKey)==='1')refreshHome();})(window.switchPage);
+      window.switchPage = ((old)=>function(pageKey){if(String(pageKey)==='3')renderLedger();if(String(pageKey)==='4'){db.txType='বাকি';renderTransactionForm('বাকি');}if(String(pageKey)==='9')renderSupplierPage();old(String(pageKey));if(String(pageKey)==='1')refreshHome();})(window.switchPage);
       document.addEventListener('DOMContentLoaded',()=>{const homeFab=document.getElementById('home-transaction-fab');const homePage=document.getElementById('page-1');if(homeFab)homeFab.style.display=homePage&&homePage.classList.contains('active-page')?'flex':'none';});
       document.addEventListener('DOMContentLoaded',()=>{
          // Firebase data loads after authentication.

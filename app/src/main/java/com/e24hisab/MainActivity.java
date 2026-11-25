@@ -12,6 +12,9 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.SslErrorHandler;
+import android.net.http.SslError;
 import android.webkit.JavascriptInterface;
 import android.content.Context;
 import android.print.PrintManager;
@@ -68,15 +71,24 @@ public class MainActivity extends Activity {
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
+        // File access is needed only to load the bundled app asset. Prevent file-origin
+        // JavaScript from reading other file URLs or reaching arbitrary network origins.
         settings.setAllowFileAccess(true);
+        settings.setAllowFileAccessFromFileURLs(false);
+        settings.setAllowUniversalAccessFromFileURLs(false);
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        settings.setJavaScriptCanOpenWindowsAutomatically(false);
+        settings.setSupportMultipleWindows(false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            settings.setSafeBrowsingEnabled(true);
+        }
 
         webView.setWebChromeClient(new WebChromeClient());
         webView.addJavascriptInterface(new AndroidPrintBridge(this, webView), "AndroidPrint");
         webView.addJavascriptInterface(new AndroidContactsBridge(this), "AndroidContacts");
         webView.addJavascriptInterface(new AndroidBackupBridge(this), "AndroidBackup");
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new E24SecureWebViewClient());
 
         FrameLayout.LayoutParams webParams = new FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT,
@@ -122,6 +134,52 @@ public class MainActivity extends Activity {
         setContentView(rootLayout);
         rootLayout.requestApplyInsets();
         webView.loadUrl("file:///android_asset/index.html");
+    }
+
+    private boolean isTrustedAppAsset(Uri uri) {
+        return uri != null
+            && "file".equalsIgnoreCase(uri.getScheme())
+            && uri.getHost() == null
+            && "/android_asset/index.html".equals(uri.getPath());
+    }
+
+    private boolean openExternalOrBlock(Uri uri) {
+        if (uri == null) return true;
+        String scheme = uri.getScheme();
+        if ("https".equalsIgnoreCase(scheme)
+                || "tel".equalsIgnoreCase(scheme)
+                || "mailto".equalsIgnoreCase(scheme)) {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW, uri));
+            } catch (Exception ignored) {
+                // Block unsupported external destinations without loading them in the WebView.
+            }
+        }
+        return true;
+    }
+
+    private final class E24SecureWebViewClient extends WebViewClient {
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            // Do not allow iframes or other subframes to navigate.
+            if (!request.isForMainFrame()) return true;
+            Uri uri = request.getUrl();
+            if (isTrustedAppAsset(uri)) return false;
+            return openExternalOrBlock(uri);
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            Uri uri = Uri.parse(url);
+            if (isTrustedAppAsset(uri)) return false;
+            return openExternalOrBlock(uri);
+        }
+
+        @Override
+        public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+            // Never bypass TLS certificate errors.
+            handler.cancel();
+        }
     }
 
     private void openPhoneBook() {

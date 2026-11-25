@@ -2,7 +2,7 @@ name: Build E24 Hisab APK
 on:
   workflow_dispatch:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, main-security-copy ]
     paths:
       - 'app/**'
       - 'gradle/**'

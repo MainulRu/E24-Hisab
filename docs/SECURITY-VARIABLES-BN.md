@@ -37,6 +37,7 @@ Worker: `floral-mouse-c0eae24-hisab-otp`
 | Name | Type | ব্যবহার |
 |---|---|---|
 | `FIREBASE_WEB_API_KEY` | Variable | Firebase Identity Toolkit API key; hardcoded fallback সরানো হয়েছে |
+| `ALLOWED_ORIGINS` | Variable (ঐচ্ছিক) | অনুমোদিত Origin comma দিয়ে আলাদা; `null` Android file-based WebView-এর জন্য রাখতে হবে |
 | `FIREBASE_SERVICE_ACCOUNT` | Secret | Firebase Admin service-account JSON সম্পূর্ণ text |
 | `BREVO_API_KEY` | Secret | Brevo API key |
 | `BREVO_SENDER_EMAIL` | Variable | Brevo-তে verified sender email |
@@ -63,6 +64,10 @@ Security Worker-গুলো `ALLOWED_ORIGINS` ব্যবহার করে�
 - Payment Worker-এ প্রথমে `SANDBOX` mode ও Sandbox credential দিয়ে পরীক্ষা করুন।
 - OTP Worker-এ D1 binding `E24_HISAB_OTP_DB` এবং DO binding `OTP_DO` ঠিক আছে কি না যাচাই করুন।
 - এই নথি দেখে Production-এ কোনো Secret বা Variable পরিবর্তন করবেন না; আগে Preview-তে যাচাই করুন।
+
+## OTP Worker Origin Allowlist
+
+OTP Worker-এ `ALLOWED_ORIGINS` না দিলে code-এর default allowlist ব্যবহৃত হবে: `https://mainulru.github.io`, `https://main-security-copy.e24-hisab-security-preview.pages.dev`, `http://localhost:5500`, `http://127.0.0.1:5500`, এবং `null`। Android `file:///android_asset/index.html` থেকে request পাঠালে Origin সাধারণত `null` হয়। নিজে `ALLOWED_ORIGINS` Variable সেট করলে comma-separated list-এ প্রয়োজনীয় সব origin এবং Android ব্যবহারের জন্য `null` রাখুন।
 
 ## Registration flow-এর বর্তমান অবস্থা
 

@@ -2223,8 +2223,8 @@ body {
       <div class="customer-page-header"><button type="button" id="customer-cancel" aria-label="ফিরে যান"><i class="fa-solid fa-arrow-left"></i></button><h2 id="customer-modal-title">নতুন গ্রাহক</h2></div>
       <div class="customer-page-content">
         <div class="customer-page-avatar"><i class="fa-solid fa-user"></i></div>
-        <input id="new-customer-name" type="text" placeholder="গ্রাহকের নাম" required maxlength="80">
-        <input id="new-customer-phone" type="tel" inputmode="tel" placeholder="মোবাইল নম্বর (ঐচ্ছিক)" maxlength="20" autocomplete="off">
+        <input id="new-customer-name" name="customer-name-entry" type="text" placeholder="গ্রাহকের নাম" required maxlength="80" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <input id="new-customer-phone" name="customer-phone-entry" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর (ঐচ্ছিক)" maxlength="20" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
         <textarea id="new-customer-address" name="customer-address" rows="2" maxlength="250" placeholder="ঠিকানা (ঐচ্ছিক)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
       </div>
       <div class="customer-modal-actions"><button type="submit" id="customer-submit-label">নিশ্চিত করুন</button></div>

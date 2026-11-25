@@ -45,24 +45,28 @@
       justify-content: center;
     }
 
-    .card-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+    /* MOBILE CARD LAYOUT (kept for future reuse):
+        .card-wrapper {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+    */
 
-    .phone-screen {
-      width: 320px;
-      height: 600px;
-      background: #ffffff;
-      border-radius: 36px;
-      border: 10px solid #1a1a1a;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
-    }
+    /* MOBILE PHONE FRAME (kept for future reuse):
+        .phone-screen {
+          width: 320px;
+          height: 600px;
+          background: #ffffff;
+          border-radius: 36px;
+          border: 10px solid #1a1a1a;
+          box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          position: relative;
+        }
+    */
 
     .label-badge {
       margin-top: 15px;
@@ -804,24 +808,28 @@
       justify-content: center;
     }
 
-    .card-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+    /* MOBILE CARD LAYOUT (kept for future reuse):
+        .card-wrapper {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+    */
 
-    .phone-screen {
-      width: 320px;
-      height: 600px;
-      background: #ffffff;
-      border-radius: 36px;
-      border: 10px solid #1a1a1a;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
-    }
+    /* MOBILE PHONE FRAME (kept for future reuse):
+        .phone-screen {
+          width: 320px;
+          height: 600px;
+          background: #ffffff;
+          border-radius: 36px;
+          border: 10px solid #1a1a1a;
+          box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          position: relative;
+        }
+    */
 
     .label-badge {
       margin-top: 15px;
@@ -1669,6 +1677,37 @@
   #page-3 .ledger-customer-nav{display:none!important}
   #page-3 .profile-header{box-shadow:none!important;border:1px solid #ddd!important}
 }
+
+
+/* WEB DESKTOP LAYOUT: remove the 320px phone mockup while keeping the app markup intact. */
+html, body { width:100%; min-height:100%; }
+body {
+  min-height:100vh;
+  padding:0;
+  display:block;
+  background:#f4f7f5;
+}
+.card-wrapper {
+  display:block;
+  width:100%;
+  min-height:100vh;
+  margin:0;
+}
+.phone-screen {
+  box-sizing:border-box;
+  width:100%;
+  max-width:1200px;
+  min-height:100vh;
+  height:auto;
+  margin:0 auto;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  overflow:hidden;
+  position:relative;
+}
+.label-badge { display:none; }
+/* END WEB DESKTOP LAYOUT */
 
 </style>
 </head>

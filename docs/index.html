@@ -1895,7 +1895,7 @@ body {
         <!-- 4. NEW TRANSACTION PAGE (নতুন লেনদেন) -->
         <div class="app-page" id="page-4">
           <div class="type-selector">
-            <button class="type-btn active-green" id="tx-due"><i class="fa-solid fa-arrow-down"></i> বাকি</button>
+            <button class="type-btn active-green" id="tx-due"><i class="fa-solid fa-arrow-down"></i> বিক্রি</button>
             <button class="type-btn inactive-red" id="tx-paid"><i class="fa-solid fa-arrow-up"></i> জমা</button>
           </div>
           <div class="form-group">
@@ -2403,12 +2403,38 @@ body {
       function renderTransactionForm(type) {
         db.txType=type||'বাকি'; const p=document.getElementById('page-4'); if(!p)return;
         const isSale=db.txType==='বাকি';
-        p.innerHTML=`<div class="type-selector"><button class="type-btn ${isSale?'active-green':'inactive-red'}" id="tx-due"><i class="fa-solid fa-arrow-down"></i> বাকি</button><button class="type-btn ${!isSale?'active-green':'inactive-red'}" id="tx-paid"><i class="fa-solid fa-arrow-up"></i> জমা</button></div><div class="form-group"><label class="form-label">গ্রাহক নির্বাচন:</label><select class="form-input" id="tx-customer">${db.customers.map(c=>`<option value="${esc(c.id)}" ${selected()?.id===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">লেনদেনের তারিখ:</label><input class="form-input" id="tx-date" type="date" value="${(()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")})()}"></div><div class="form-group"><label class="form-label">${isSale?'বিক্রির মোট মূল্য (৳):':'জমার পরিমাণ (৳):'}</label><input class="form-input" id="tx-amount" type="number" min="1" step="1" inputmode="numeric" placeholder="টাকার পরিমাণ"></div>${isSale?`<div class="form-group"><label class="form-label">এখন জমা (৳):</label><input class="form-input" id="tx-initial-paid" type="number" min="0" step="1" inputmode="numeric" placeholder="প্রাথমিক জমা"></div><div class="form-group" style="padding:10px;background:#f5f7fa;border-radius:8px"><span>অবশিষ্ট বাকি: </span><strong id="tx-remaining">৳ 0</strong></div>`:''}<div class="form-group"><label class="form-label">বিবরণ (ঐচ্ছিক):</label><input class="form-input" id="tx-note" type="text" placeholder="লেনদেনের বিবরণ"></div><button class="btn btn-green shadow-btn" id="tx-save"><i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন</button>`;
+        p.innerHTML=`<div class="type-selector"><button class="type-btn ${isSale?'active-green':'inactive-red'}" id="tx-due"><i class="fa-solid fa-arrow-down"></i> বিক্রি</button><button class="type-btn ${!isSale?'active-green':'inactive-red'}" id="tx-paid"><i class="fa-solid fa-arrow-up"></i> জমা</button></div><div class="form-group"><label class="form-label">গ্রাহক নির্বাচন:</label><select class="form-input" id="tx-customer">${db.customers.map(c=>`<option value="${esc(c.id)}" ${selected()?.id===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">লেনদেনের তারিখ:</label><input class="form-input" id="tx-date" type="date" value="${(()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")})()}"></div><div class="form-group"><label class="form-label">${isSale?'বিক্রির মোট মূল্য (৳):':'জমার পরিমাণ (৳):'}</label><input class="form-input" id="tx-amount" type="number" min="1" step="1" inputmode="numeric" placeholder="টাকার পরিমাণ"></div>${isSale?`<div class="form-group"><label class="form-label">এখন জমা (৳):</label><input class="form-input" id="tx-initial-paid" type="number" min="0" step="1" inputmode="numeric" placeholder="প্রাথমিক জমা"></div><div class="form-group" style="padding:10px;background:#f5f7fa;border-radius:8px"><span>অবশিষ্ট বাকি: </span><strong id="tx-remaining">৳ 0</strong></div>`:''}<div class="form-group"><label class="form-label">বিবরণ (ঐচ্ছিক):</label><input class="form-input" id="tx-note" type="text" placeholder="লেনদেনের বিবরণ"></div><div class="form-group"><label class="form-label">ছবি যোগ করুন (ঐচ্ছিক):</label><input class="form-input" id="tx-image" type="file" accept="image/jpeg,image/png,image/webp"><small style="display:block;color:#64748b;margin-top:5px">JPG, PNG বা WebP ছবি দিন (সর্বোচ্চ ৮ MB)।</small><div id="tx-image-preview" style="margin-top:8px"></div></div><button class="btn btn-green shadow-btn" id="tx-save"><i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন</button>`;
         document.getElementById('tx-paid').onclick=()=>renderTransactionForm('জমা'); document.getElementById('tx-due').onclick=()=>renderTransactionForm('বাকি');
         const amountField=document.getElementById('tx-amount'),paidField=document.getElementById('tx-initial-paid'),remaining=document.getElementById('tx-remaining');
         const updateRemaining=()=>{if(remaining){const cid=document.getElementById('tx-customer').value,oldDue=customerTotals(cid).due;remaining.textContent=money(Math.max(0,oldDue+(Number(amountField.value)||0)-(Number(paidField.value)||0)));}};
         if(paidField){amountField.addEventListener('input',updateRemaining);paidField.addEventListener('input',updateRemaining);document.getElementById('tx-customer').addEventListener('change',updateRemaining);updateRemaining();}
-        document.getElementById('tx-save').onclick=()=>{
+        let transactionImage='',imageProcessing=false;
+        const imageInput=document.getElementById('tx-image'),imagePreview=document.getElementById('tx-image-preview');
+        imageInput.onchange=async()=>{
+          const file=imageInput.files&&imageInput.files[0];transactionImage='';imagePreview.innerHTML='';
+          if(!file)return;
+          if(!/^image\\/(jpeg|png|webp)$/.test(file.type)||file.size>8*1024*1024){imageInput.value='';showToast('JPG, PNG বা WebP ছবি দিন (সর্বোচ্চ ৮ MB)');return;}
+          imageProcessing=true;showToast('ছবি প্রস্তুত করা হচ্ছে...');
+          try{
+            const objectUrl=URL.createObjectURL(file);
+            try{
+              const img=new Image();await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error('ছবি খোলা যায়নি'));img.src=objectUrl;});
+              const canvas=document.createElement('canvas');let scale=Math.min(1,1000/Math.max(img.naturalWidth,img.naturalHeight)),data='';
+              for(let pass=0;pass<5;pass++){
+                canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+                const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
+                for(const quality of [0.76,0.64,0.52,0.42]){data=canvas.toDataURL('image/jpeg',quality);if(data.length<=120000)break;}
+                if(data.length<=120000)break;scale*=0.72;
+              }
+              if(data.length>120000)throw new Error('ছবির আকার কমানো যায়নি');
+              transactionImage=data;imagePreview.innerHTML='<img alt="লেনদেনের ছবি" src="'+data+'" style="max-width:150px;max-height:130px;border-radius:8px;border:1px solid #dce5df;object-fit:contain">';
+              showToast('ছবি যোগ হয়েছে');
+            }finally{URL.revokeObjectURL(objectUrl);}
+          }catch(err){imageInput.value='';transactionImage='';showToast(err.message||'ছবি যোগ করা যায়নি');}
+          finally{imageProcessing=false;}
+        };
+        document.getElementById('tx-save').onclick=async()=>{
+          if(imageProcessing){showToast('ছবি প্রস্তুত হওয়া পর্যন্ত অপেক্ষা করুন');return;}
           const cid=document.getElementById('tx-customer').value,amount=Number(amountField.value),note=document.getElementById('tx-note').value.trim(),dateValue=document.getElementById('tx-date').value;
           const initialPaid=isSale?Number(paidField.value||0):0;
           if(!cid){showToast('আগে একজন গ্রাহক যোগ করুন');return;}
@@ -2417,7 +2443,7 @@ body {
           if(isSale&&(!Number.isSafeInteger(initialPaid)||initialPaid<0||initialPaid>customerTotals(cid).due+amount)){showToast('জমার পরিমাণ আগের বাকি ও নতুন বিক্রির মোট টাকার বেশি হতে পারবে না');return;}
           const selectedDate=new Date(dateValue+'T12:00:00');
           const previousDue=customerTotals(cid).due,transactionId=id();
-          db.transactions.push({id:transactionId,customerId:cid,type:db.txType,amount,paid:initialPaid,note,date:selectedDate.toLocaleDateString('bn-BD')});
+          db.transactions.push({id:transactionId,customerId:cid,type:db.txType,amount,paid:initialPaid,note,...(transactionImage?{image:transactionImage}:{}),date:selectedDate.toLocaleDateString('bn-BD')});
           const updatedDue=customerTotals(cid).due;
           if(previousDue>0&&updatedDue<=0){e24EnsureNotificationData();const now=new Date(),dayKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0'),reminder=[...db.notifications,...(db.notificationArchive||[])].find(x=>String(x.id)==='due-reminder-'+String(cid)+'-'+dayKey);if(reminder)reminder.read=true;const customer=db.customers.find(x=>String(x.id)===String(cid));e24QueueNotification('customer-paid-'+transactionId,'customer-paid','বকেয়া সম্পূর্ণ পরিশোধ',String(customer?.name||'গ্রাহক')+'-এর বকেয়া সম্পূর্ণ পরিশোধ হয়েছে।','3',cid);}
           db.selectedCustomerId=cid;save();refreshAll();e24RenderNotifications();showToast('লেনদেন সংরক্ষিত হয়েছে');switchPage('3');

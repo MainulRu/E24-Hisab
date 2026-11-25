@@ -1,12 +1,6 @@
 name: Deploy Main Copy Preview
 
 on:
-  push:
-    branches:
-      - main-security-copy
-    paths:
-      - "docs/**"
-      - ".github/workflows/deploy-main-copy-preview.yml"
   workflow_dispatch:
 
 permissions:

@@ -3693,11 +3693,21 @@ body.e24-long-page .purchase-page-shell{
         page.innerHTML=`<section class="e24-tx-detail"><div class="e24-tx-detail-grid">
           <div class="e24-tx-detail-column"><div class="e24-tx-detail-head">বিবরণ</div><div class="e24-tx-detail-description">
             <strong class="e24-tx-detail-date">${date}</strong><small class="e24-tx-detail-time">ছোট লেনদেন ইনপুট সময়: ${time}</small>
-            <div class="e24-tx-detail-text">${description}</div><span class="e24-tx-detail-type ${t.type==='বাকি'?'is-due':'is-paid'}">${t.type==='বাকি'?'বাকি':'জমা'}</span>${transactionImage}
+            <div class="e24-tx-detail-text">${description}</div><span class="e24-tx-detail-type ${t.type==='বাকি'?'is-due':'is-paid'}">${t.type==='বাকি'?'বাকি':'জমা'}</span><div id="e24-tx-detail-picture-slot">${transactionImage}</div>
           </div></div>
           <div class="e24-tx-detail-column"><div class="e24-tx-detail-head">বিক্রি করলাম</div><div class="e24-tx-detail-amount red-text">${gave?money(gave):'—'}</div></div>
           <div class="e24-tx-detail-column"><div class="e24-tx-detail-head">জমা নিলাম</div><div class="e24-tx-detail-amount green-text">${got?money(got):'—'}</div></div>
         </div><div class="e24-tx-detail-actions"><button type="button" class="btn btn-red" id="e24-tx-delete"><i class="fa-solid fa-trash"></i> ডিলেট</button><button type="button" class="btn btn-blue" id="e24-tx-edit"><i class="fa-solid fa-pen-to-square"></i> এডিট</button></div><div id="e24-tx-edit-area"></div></section>`;
+        if(!transactionImage&&activeDataUid&&t.id){
+          const imageDocId='tximg_'+String(t.id).replace(/[^A-Za-z0-9_-]/g,'_');
+          e24Store.collection('users').doc(activeDataUid).collection('data').doc(imageDocId).get().then(snapshot=>{
+            const storedImage=snapshot.exists?snapshot.data()?.image:'';
+            if(typeof storedImage==='string'&&/^data:image\\/(?:jpeg|png|webp);base64,/.test(storedImage)){
+              const slot=document.getElementById('e24-tx-detail-picture-slot');
+              if(slot)slot.innerHTML='<img class="e24-tx-detail-picture" src="'+storedImage+'" alt="লেনদেনের ছবি">';
+            }
+          }).catch(error=>console.warn('E24 transaction image load failed:',error));
+        }
         document.getElementById('e24-tx-delete').onclick=async()=>{if(!(await showAppConfirm('এই লেনদেনটি স্থায়ীভাবে ডিলেট করবেন?','লেনদেন ডিলেট করবেন?')))return;const index=db.transactions.findIndex(x=>String(x.id)===String(t.id));if(index<0)return;const removed=db.transactions.splice(index,1)[0];if(!await save()){db.transactions.splice(index,0,removed);return;}refreshReport();switchPage(e24TransactionReturnPage);showToast('লেনদেন ডিলেট করা হয়েছে','success');};
         document.getElementById('e24-tx-edit').onclick=()=>{
           const d=reportDate(t.date)||new Date(),iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');

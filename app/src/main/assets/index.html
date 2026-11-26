@@ -3308,14 +3308,14 @@ body.e24-long-page .purchase-page-shell{
         try{
           const imageTransactions=(db.transactions||[]).filter(t=>t&&t.id&&typeof t.image==='string'&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(t.image));
           const pendingImages=imageTransactions.filter(t=>!e24SavedTransactionImageIds.has(String(t.id)));
-          for(let start=0;start<pendingImages.length;start+=400){
+          for(let start=0;start<pendingImages.length;start+=5){
             const batch=e24Store.batch();
-            pendingImages.slice(start,start+400).forEach(t=>{
+            pendingImages.slice(start,start+5).forEach(t=>{
               const imageId='tximg_'+String(t.id).replace(/[^A-Za-z0-9_-]/g,'_');
               batch.set(dataRef.doc(imageId),{kind:'transaction-image',transactionId:String(t.id),image:t.image,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
             });
             await batch.commit();
-            pendingImages.slice(start,start+400).forEach(t=>e24SavedTransactionImageIds.add(String(t.id)));
+            pendingImages.slice(start,start+5).forEach(t=>e24SavedTransactionImageIds.add(String(t.id)));
           }
           const snapshot={...db,transactions:(db.transactions||[]).map(t=>{const copy={...t};delete copy.image;return copy;})};
           await dataRef.doc('main').set({...snapshot,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});

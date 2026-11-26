@@ -2633,10 +2633,7 @@ body.e24-long-page .purchase-page-shell{
     .e24-tx-detail-description{display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:11px 8px;min-width:0}
     .e24-tx-detail-date{color:var(--text-dark);font-size:12px;font-weight:700;line-height:1.4}
     .e24-tx-detail-time{color:var(--text-muted);font-size:10px;line-height:1.5;overflow-wrap:anywhere}
-    .e24-tx-detail-text{font-size:12px;color:var(--text-dark);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}
-    .e24-tx-detail-type{display:inline-flex;align-items:center;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700}
-    .e24-tx-detail-type.is-due{background:#fff0ef;color:#c62828}
-    .e24-tx-detail-type.is-paid{background:#eaf6ee;color:#187a3d}
+    .e24-tx-detail-due{display:block;color:#c62828;font-size:15px;font-weight:800;line-height:1.4;overflow-wrap:anywhere}
     .e24-tx-detail-picture{display:block;width:100%;height:auto;max-height:150px;object-fit:contain;border-radius:7px;border:1px solid var(--border-color)}
     .e24-tx-detail-amount{padding:14px 4px;text-align:center;font-size:13px;font-weight:700;overflow-wrap:anywhere;min-height:52px}
     .e24-tx-detail-actions{display:flex;gap:10px;margin-top:auto}
@@ -3688,12 +3685,10 @@ body.e24-long-page .purchase-page-shell{
         if(!t){page.innerHTML='<div class="e24-tx-detail"><p class="report-empty">লেনদেনটি পাওয়া যায়নি।</p><button class="btn btn-blue" type="button" onclick="switchPage(\'\${e24TransactionReturnPage}\')">রিপোর্টে ফিরে যান</button></div>';return;}
         const customer=(db.customers||[]).find(x=>String(x.id)===String(t.customerId)),gave=t.type==='বাকি'?Number(t.amount)||0:0,got=t.type==='বাকি'?(Number(t.paid)||0):(Number(t.amount)||0);
         const parsedDate=reportDate(t.date),date=esc(parsedDate?parsedDate.toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'}):(t.date||'')),time=esc(t.time||'সময় উল্লেখ নেই');
-        const description=esc(t.note||'ছোট লেনদেন');
         const transactionImage=typeof t.image==='string'&&/^data:image\/(?:jpeg|png|webp);base64,/.test(t.image)?'<img class="e24-tx-detail-picture" src="'+t.image+'" alt="লেনদেনের ছবি">':'';
         page.innerHTML=`<section class="e24-tx-detail"><div class="e24-tx-detail-grid">
           <div class="e24-tx-detail-column"><div class="e24-tx-detail-head">বিবরণ</div><div class="e24-tx-detail-description">
-            <strong class="e24-tx-detail-date">${date}</strong><small class="e24-tx-detail-time">ছোট লেনদেন ইনপুট সময়: ${time}</small>
-            <div class="e24-tx-detail-text">${description}</div><span class="e24-tx-detail-type ${t.type==='বাকি'?'is-due':'is-paid'}">${t.type==='বাকি'?'বাকি':'জমা'}</span><div id="e24-tx-detail-picture-slot">${transactionImage}</div>
+            <strong class="e24-tx-detail-date">${date}</strong><small class="e24-tx-detail-time">${time}</small><strong class="e24-tx-detail-due">বাকি: ${money(gave)}</strong><div id="e24-tx-detail-picture-slot">${transactionImage}</div>
           </div></div>
           <div class="e24-tx-detail-column"><div class="e24-tx-detail-head">বিক্রি করলাম</div><div class="e24-tx-detail-amount red-text">${gave?money(gave):'—'}</div></div>
           <div class="e24-tx-detail-column"><div class="e24-tx-detail-head">জমা নিলাম</div><div class="e24-tx-detail-amount green-text">${got?money(got):'—'}</div></div>

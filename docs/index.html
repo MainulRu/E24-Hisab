@@ -2100,6 +2100,25 @@ body.e24-long-page .purchase-page-shell{
 .phone-screen.e24-dark #page-7 .supplier-report-outstanding{
   background:#24445d!important;
 }
+
+    /* Keep the common app header visible while every page scrolls. */
+    body:not(.e24-long-page) .status-bar{
+      position:fixed!important;
+      top:0!important;
+      left:0!important;
+      right:0!important;
+      z-index:10020!important;
+    }
+    body:not(.e24-long-page) #dynamic-app-bar{
+      position:fixed!important;
+      top:24px!important;
+      left:0!important;
+      right:0!important;
+      z-index:10019!important;
+    }
+    body:not(.e24-long-page) .screen-body{
+      padding-top:94px!important;
+    }
 </style>
 </head>
 <body>

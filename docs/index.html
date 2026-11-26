@@ -332,6 +332,16 @@
     .supplier-detail-history{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}.supplier-detail-history li{display:flex;align-items:center;gap:10px;background:var(--card-bg,#fff);border:1px solid var(--border-color,#e2e8f0);border-radius:10px;padding:11px 10px;min-width:0}.supplier-history-icon{width:36px;height:36px;flex:0 0 36px;border-radius:9px;display:grid;place-items:center}.is-purchase .supplier-history-icon{background:#eaf3fc;color:#1769aa}.is-payment .supplier-history-icon{background:#e8f5ec;color:#16834a}.supplier-history-info{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}.supplier-history-info strong{font-size:12px;color:var(--text-color,#172b3a)}.supplier-history-info small{font-size:10px;color:var(--muted-text,#718096);overflow-wrap:anywhere}.supplier-history-amount{font-size:12px;white-space:nowrap;color:#1769aa}.is-payment .supplier-history-amount{color:#16834a}.supplier-detail-empty{justify-content:center;color:var(--muted-text,#718096);font-size:12px;padding:22px!important}
     @media(prefers-color-scheme:dark){.supplier-detail-due{background:#142d43;border-color:#244766;color:#9dccf5}.supplier-detail-due small{color:#b4cce0}.supplier-detail-avatar{background:#18354d;color:#9dccf5}.is-purchase .supplier-history-icon{background:#18354d;color:#9dccf5}.is-payment .supplier-history-icon{background:#173b2b;color:#8dd5a7}}
 
+    /* Purchase page uses the same blue palette as supplier management. */
+    .purchase-page-shell{background:#f1f7fc;border-color:#c8dced;color:#174d7a}
+    .purchase-page-top{background:#245d91;border-radius:12px 12px 0 0}
+    .purchase-page-top small{color:#dcebf7}
+    .purchase-page-shell .form-label{color:#174d7a}
+    .purchase-page-shell .form-input{border-color:#c8dced;color:#174d7a}
+    .purchase-supplier-label,.purchase-total-box{background:#dcebf7;border-color:#c8dced;color:#174d7a}
+    .purchase-supplier-label strong{color:#174d7a}
+    .purchase-actions .btn-green{background:#245d91;border-color:#245d91}
+    @media(prefers-color-scheme:dark){.purchase-page-shell{background:#172b3a;border-color:#31516b;color:#dcebf7}.purchase-page-top{background:#245d91}.purchase-page-shell .form-label{color:#b9d5ec}.purchase-page-shell .form-input{background:#1b3549;border-color:#426783;color:#e3eff8}.purchase-supplier-label,.purchase-total-box{background:#203e56;border-color:#365a76;color:#dcebf7}.purchase-supplier-label strong{color:#e3eff8}}
     /* Supplier page: align its outer edges and inner content with the other app pages on Web and Android. */
     #page-9{display:flex;flex-direction:column;gap:10px;flex:1 0 auto;width:100%;max-width:920px;min-width:0;margin:0 auto!important;padding:0!important;align-self:stretch;box-sizing:border-box;overflow-x:hidden}
     #page-9>div,#page-9 #supplier-list-view,#page-9 #supplier-form-view,#page-9 #supplier-detail-view{display:block;width:100%;max-width:100%;min-width:0;margin-left:0!important;margin-right:0!important;box-sizing:border-box}

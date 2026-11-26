@@ -3674,6 +3674,7 @@ body.e24-long-page .purchase-page-shell{
 
       let e24ReportSelectedTransactionId=null;let e24TransactionReturnPage='3';
       function e24RenderReportTransactionDetail(){
+        const headerTitle=document.querySelector('#dynamic-app-bar #bar-title');if(headerTitle)headerTitle.textContent='লেনদেন';
         const page=document.getElementById('page-13'),t=(db.transactions||[]).find(x=>String(x.id)===String(e24ReportSelectedTransactionId));if(!page)return;
         if(!t){page.innerHTML='<div class="e24-tx-detail"><p class="report-empty">লেনদেনটি পাওয়া যায়নি।</p><button class="btn btn-blue" type="button" onclick="switchPage(\'\${e24TransactionReturnPage}\')">রিপোর্টে ফিরে যান</button></div>';return;}
         const customer=(db.customers||[]).find(x=>String(x.id)===String(t.customerId)),gave=t.type==='বাকি'?Number(t.amount)||0:0,got=t.type==='বাকি'?(Number(t.paid)||0):(Number(t.amount)||0),date=esc(t.date||''),time=esc(t.time||'সময় উল্লেখ নেই');
@@ -3729,6 +3730,7 @@ body.e24-long-page .purchase-page-shell{
             const old={...t};if(nextGave>0){t.type='বাকি';t.amount=nextGave;t.paid=nextGot;}else{t.type='জমা';t.amount=nextGot;delete t.paid;}
             t.note=nextNote;t.date=new Date(nextDate+'T12:00:00').toLocaleDateString('bn-BD');
             if(editImage)t.image=editImage;else delete t.image;
+            if(e24SavedTransactionImageIds)e24SavedTransactionImageIds.delete(String(t.id));
             if(!await save()){Object.keys(t).forEach(key=>delete t[key]);Object.assign(t,old);return;}
             if(!editImage){try{await e24Store.collection('users').doc(activeDataUid).collection('data').doc('tximg_'+String(t.id).replace(/[^A-Za-z0-9_-]/g,'_')).delete();}catch(err){console.warn('E24 old transaction image cleanup failed:',err);}}
             refreshReport();switchPage(e24TransactionReturnPage);showToast('লেনদেন আপডেট হয়েছে','success');

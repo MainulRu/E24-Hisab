@@ -3,6 +3,11 @@ package com.e24hisab;
 import android.app.Activity;
 import android.os.Bundle;
 import android.graphics.Color;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
+import java.io.InputStream;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.Gravity;
@@ -249,6 +254,65 @@ public class MainActivity extends Activity {
         }
     }
 
+    private boolean compressTransactionCameraImage(Uri imageUri) {
+        if (imageUri == null) return false;
+        Bitmap decoded = null;
+        Bitmap oriented = null;
+        try {
+            android.graphics.BitmapFactory.Options bounds = new android.graphics.BitmapFactory.Options();
+            bounds.inJustDecodeBounds = true;
+            try (InputStream input = getContentResolver().openInputStream(imageUri)) {
+                if (input == null) return false;
+                BitmapFactory.decodeStream(input, null, bounds);
+            }
+            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return false;
+
+            int sample = 1;
+            while (Math.max(bounds.outWidth / sample, bounds.outHeight / sample) > 1280) sample *= 2;
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = sample;
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
+            try (InputStream input = getContentResolver().openInputStream(imageUri)) {
+                if (input == null) return false;
+                decoded = BitmapFactory.decodeStream(input, null, options);
+            }
+            if (decoded == null) return false;
+
+            int rotation = 0;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                try (InputStream exifInput = getContentResolver().openInputStream(imageUri)) {
+                    if (exifInput != null) {
+                        int orientation = new ExifInterface(exifInput).getAttributeInt(
+                            ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL
+                        );
+                        if (orientation == ExifInterface.ORIENTATION_ROTATE_90) rotation = 90;
+                        else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) rotation = 180;
+                        else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) rotation = 270;
+                    }
+                } catch (Exception ignored) { }
+            }
+            if (rotation != 0) {
+                Matrix matrix = new Matrix();
+                matrix.postRotate(rotation);
+                oriented = Bitmap.createBitmap(decoded, 0, 0, decoded.getWidth(), decoded.getHeight(), matrix, true);
+            } else {
+                oriented = decoded;
+            }
+
+            try (OutputStream output = getContentResolver().openOutputStream(imageUri, "wt")) {
+                if (output == null || !oriented.compress(Bitmap.CompressFormat.JPEG, 78, output)) return false;
+                output.flush();
+            }
+            return true;
+        } catch (Exception e) {
+            android.util.Log.w("E24Hisab", "Camera image compression skipped", e);
+            return false;
+        } finally {
+            if (oriented != null && oriented != decoded) oriented.recycle();
+            if (decoded != null && !decoded.isRecycled()) decoded.recycle();
+        }
+    }
+
     private void openTransactionImagePicker() {
         try {
             ContentValues values = new ContentValues();
@@ -317,6 +381,11 @@ public class MainActivity extends Activity {
         if (requestCode == REQUEST_TRANSACTION_IMAGE) {
             Uri selected = resultCode == RESULT_OK && data != null ? data.getData() : null;
             if (selected == null && resultCode == RESULT_OK) selected = transactionCameraUri;
+            // Downsample camera output natively before WebView receives it; full-resolution
+            // camera JPEGs can exhaust memory on lower-RAM Android phones.
+            if (selected != null && selected.equals(transactionCameraUri)) {
+                compressTransactionCameraImage(selected);
+            }
             if (transactionImageCallback != null) {
                 transactionImageCallback.onReceiveValue(
                     selected == null ? null : new Uri[] { selected }

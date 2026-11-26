@@ -2456,8 +2456,9 @@ body {
       try{const saved=sessionStorage.getItem('e24-session-page-'+String(uid||''));if(/^(?:[1-9]|10)$/.test(saved||''))pageKey=saved;}catch(_){pageKey='1';}
       if(pageKey==='3'&&!db.selectedCustomerId)pageKey='2';
       if(pageKey==='9'&&!Array.isArray(db.suppliers))db.suppliers=[];
+      // Always restore the supplier management list after refresh, not the last opened supplier detail.
+      if(pageKey==='9')db.selectedSupplierId='';
       switchPage(pageKey);
-      if(pageKey==='9'&&db.selectedSupplierId&&(db.suppliers||[]).some(s=>String(s.id)===String(db.selectedSupplierId)))e24ShowSupplier(db.selectedSupplierId);
     }
     function switchPage(pageKey) {
       if(window.e24ActivePageUid){try{sessionStorage.setItem('e24-session-page-'+String(window.e24ActivePageUid),String(pageKey));}catch(_){}}

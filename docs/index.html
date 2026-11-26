@@ -3144,7 +3144,7 @@ window.e24SaveSupplierPayment=()=>{const input=document.getElementById('supplier
         list.innerHTML=rows.length?rows.map(t=>{
           const parsed=reportDate(t.date),dateLabel=parsed?parsed.toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'}):esc(t.date||'তারিখ নেই');
           const timeLabel=t.time?esc(t.time):'সময় সংরক্ষিত নেই';
-          const image=typeof t.image==='string'&&/^data:image\\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(t.image)?'<img class="customer-report-image" src="'+t.image+'" alt="লেনদেনের ছবি">':'';
+          const image=typeof t.image==='string'&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(t.image)?'<img class="customer-report-image" src="'+t.image+'" alt="লেনদেনের ছবি">':'';
           const note=t.note?'<div class="customer-report-note">'+esc(t.note)+'</div>':'';
           const dueLabel=t._balance>0?'বাকি '+money(t._balance):t._balance<0?'অগ্রিম '+money(Math.abs(t._balance)):'পরিশোধিত';
           const balanceClass=t._balance<0?'customer-report-balance advance':'customer-report-balance';

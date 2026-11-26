@@ -2951,7 +2951,7 @@ body.e24-long-page .purchase-page-shell{
           db.transactions.push({id:transactionId,customerId:cid,type:db.txType,amount,paid:initialPaid,note,...(transactionImage?{image:transactionImage}:{}),date:selectedDate.toLocaleDateString('bn-BD')});
           const updatedDue=customerTotals(cid).due;
           if(previousDue>0&&updatedDue<=0){e24EnsureNotificationData();const now=new Date(),dayKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0'),reminder=[...db.notifications,...(db.notificationArchive||[])].find(x=>String(x.id)==='due-reminder-'+String(cid)+'-'+dayKey);if(reminder)reminder.read=true;const customer=db.customers.find(x=>String(x.id)===String(cid));e24QueueNotification('customer-paid-'+transactionId,'customer-paid','বকেয়া সম্পূর্ণ পরিশোধ',String(customer?.name||'গ্রাহক')+'-এর বকেয়া সম্পূর্ণ পরিশোধ হয়েছে।','3',cid);}
-          db.selectedCustomerId=cid;save('লেনদেন সংরক্ষিত হয়েছে');refreshAll();e24RenderNotifications();switchPage('3');
+          db.selectedCustomerId=cid;save('লেনদেন সংরক্ষিত হয়েছে');refreshAll();e24RenderNotifications();
         };
       }
       function refreshHome() {

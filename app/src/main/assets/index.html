@@ -2932,7 +2932,7 @@
     // E24 Hisab: persistent customer and transaction data (local device/browser storage)
     (() => {
       const KEY = 'e24hisab_records_v1';
-      let db = { customers: [], transactions: [], selectedCustomerId: null, txType: 'বাকি' }; let editingCustomerId=null,transactionAddCustomer=false,customerEntryType='customer',customerEntryPhoto='';
+      window.db = { customers: [], transactions: [], selectedCustomerId: null, txType: 'বাকি' }; let editingCustomerId=null,transactionAddCustomer=false,customerEntryType='customer',customerEntryPhoto='';
       const money = n => '৳ ' + Number(n || 0).toLocaleString('en-IN');
       const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       const id = () => 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);

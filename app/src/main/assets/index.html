@@ -195,6 +195,10 @@
     .supplier-page-shell{background:#f1f7fc;border:1px solid #c8dced;border-radius:0;padding:0 12px 14px;color:#174d7a;min-height:100%;overflow:auto}
     #page-9.active-page,#page-10.active-page{height:auto!important;min-height:100%;flex:0 0 auto;overflow:visible!important}
     .supplier-page-shell,.purchase-page-shell{overflow:visible!important}
+    /* Supplier and purchase pages: keep headers square and let the screen body scroll. */
+    body:has(#page-9.active-page) .screen-body,body:has(#page-10.active-page) .screen-body{overflow-y:auto!important;overflow-x:hidden!important;min-height:0!important;flex:1 1 auto!important;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+    #page-9.active-page,#page-10.active-page{height:auto!important;min-height:100%!important;flex:0 0 auto!important;overflow:visible!important}
+    #page-9 .supplier-page-top,#page-9 .supplier-detail-header,#page-10 .purchase-page-top{border-radius:0!important}
     .supplier-page-top{margin:0 -12px 12px;padding:14px 15px;background:#245d91;color:#fff;display:flex;align-items:center;gap:12px;border-radius:0}
     .purchase-page-shell{background:#effaf2;border:1px solid #c9e8d0;border-radius:0;padding:0 14px 16px;min-height:100%;overflow:auto}
     .purchase-page-top{display:flex;align-items:center;gap:12px;margin:0 -14px 16px;padding:14px 15px;background:#087a35;color:#fff;border-radius:0}

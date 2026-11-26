@@ -2938,31 +2938,40 @@ body.e24-long-page .purchase-page-shell{
           const file=imageInput.files&&imageInput.files[0];transactionImage='';imagePreview.innerHTML='';
           if(imageLabel)imageLabel.textContent='ছবি যোগ করুন';
           if(!file)return;
-          if(!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size>8*1024*1024){imageInput.value='';showToast('JPG, PNG বা WebP ছবি দিন (সর্বোচ্চ ৮ MB)');return;}
+          if(!/^image\\/(jpeg|png|webp)$/.test(file.type)||file.size>8*1024*1024){imageInput.value='';showToast('JPG, PNG বা WebP ছবি দিন (সর্বোচ্চ ৮ MB)');return;}
           imageProcessing=true;showToast('ছবি প্রস্তুত করা হচ্ছে...');
           let bitmap=null,objectUrl='';
           try{
-            // Resize during decoding where supported, avoiding a full-resolution
-            // camera bitmap in the WebView on lower-memory phones.
             if(typeof createImageBitmap==='function'){
-              bitmap=await createImageBitmap(file,{resizeWidth:640,resizeHeight:640,resizeQuality:'low'});
+              bitmap=await createImageBitmap(file,{resizeWidth:640,resizeQuality:'low'});
             }else{
               objectUrl=URL.createObjectURL(file);
               bitmap=new Image();
               await new Promise((resolve,reject)=>{bitmap.onload=resolve;bitmap.onerror=()=>reject(new Error('ছবি খোলা যায়নি'));bitmap.src=objectUrl;});
             }
             const width=bitmap.naturalWidth||bitmap.width,height=bitmap.naturalHeight||bitmap.height;
-            const canvas=document.createElement('canvas');let scale=Math.min(1,640/Math.max(width,height)),data='';
-            for(let pass=0;pass<4;pass++){
+            const canvas=document.createElement('canvas');let scale=Math.min(1,640/Math.max(width,height)),blob=null;
+            for(let pass=0;pass<5;pass++){
               canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
               const ctx=canvas.getContext('2d',{alpha:false});if(!ctx)throw new Error('ছবি প্রস্তুত করা যায়নি');
               ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
-              for(const quality of [0.76,0.64,0.52,0.42]){data=canvas.toDataURL('image/jpeg',quality);if(data.length<=60000)break;}
-              if(data.length<=60000)break;scale*=0.72;
+              for(const quality of [0.72,0.58,0.46]){
+                blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+                if(!blob)throw new Error('ছবি কমপ্রেস করা যায়নি');
+                if(blob.size<=44*1024)break;
+              }
+              if(blob&&blob.size<=44*1024)break;
+              scale*=0.78;
             }
             canvas.width=canvas.height=1;
-            if(data.length>60000)throw new Error('ছবির আকার কমানো যায়নি');
-            transactionImage=data;if(imageLabel)imageLabel.textContent='ছবি যোগ হয়েছে';imagePreview.innerHTML='<img alt="লেনদেনের ছবি" src="'+data+'" style="max-width:150px;max-height:130px;border-radius:8px;border:1px solid #dce5df;object-fit:contain">';
+            if(!blob||blob.size>44*1024)throw new Error('ছবির আকার কমানো যায়নি');
+            const data=await new Promise((resolve,reject)=>{
+              const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('ছবি পড়া যায়নি'));reader.readAsDataURL(blob);
+            });
+            if(data.length>60000)throw new Error('ছবির আকার বেশি হয়েছে');
+            transactionImage=data;
+            if(imageLabel)imageLabel.textContent='ছবি যোগ হয়েছে';
+            imagePreview.innerHTML='<img alt="লেনদেনের ছবি" src="'+data+'" style="max-width:150px;max-height:130px;border-radius:8px;border:1px solid #dce5df;object-fit:contain">';
             showToast('ছবি যোগ হয়েছে');
           }catch(err){imageInput.value='';transactionImage='';if(imageLabel)imageLabel.textContent='ছবি যোগ করুন';showToast(err.message||'ছবি যোগ করা যায়নি');}
           finally{if(bitmap&&typeof bitmap.close==='function')bitmap.close();if(objectUrl)URL.revokeObjectURL(objectUrl);imageInput.value='';imageProcessing=false;}

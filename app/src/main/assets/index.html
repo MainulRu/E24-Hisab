@@ -2625,16 +2625,22 @@ body.e24-long-page .purchase-page-shell{
     .e24-tx-detail-actions #e24-tx-delete{background:#d93025;color:#fff;border:0}.e24-tx-detail-actions #e24-tx-edit-cancel{background:#64748b;color:#fff;border:0}
 
     
-    .e24-tx-detail{background:#fff;border:1px solid var(--border-color);border-radius:10px;padding:14px;min-height:100%}
-    .e24-tx-detail-date{text-align:center;color:var(--text-muted);font-size:12px;margin-bottom:12px}
-    .e24-tx-detail-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;border:1px solid var(--border-color);border-radius:8px;overflow:hidden}
-    .e24-tx-detail-grid>div{padding:11px 7px;text-align:center;min-width:0;border-right:1px solid var(--border-color);overflow-wrap:anywhere}
-    .e24-tx-detail-grid>div:last-child{border-right:0}
-    .e24-tx-detail-head{background:#e8f3ec;color:var(--dark-green);font-weight:700;font-size:12px}
-    .e24-tx-detail-value{font-size:13px;font-weight:700;color:var(--text-dark);min-height:46px;display:flex;align-items:center;justify-content:center}
-    .e24-tx-detail-note{margin-top:12px;padding:11px;background:#f5f7f8;border-radius:8px;font-size:12px;color:var(--text-dark);white-space:pre-wrap}
-    .e24-tx-detail-actions{display:flex;gap:10px;margin-top:18px}
-    .e24-tx-detail-actions button{flex:1;min-height:43px}
+    .e24-tx-detail{background:var(--card-bg,#fff);border:1px solid var(--border-color);border-radius:12px;padding:12px;min-height:100%;display:flex;flex-direction:column;gap:16px}
+    .e24-tx-detail-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,.85fr) minmax(0,.85fr);border:1px solid var(--border-color);border-radius:10px;overflow:hidden;background:var(--card-bg,#fff)}
+    .e24-tx-detail-column{min-width:0;border-right:1px solid var(--border-color)}
+    .e24-tx-detail-column:last-child{border-right:0}
+    .e24-tx-detail-head{min-height:39px;display:flex;align-items:center;justify-content:center;padding:7px 4px;background:#e8f3ec;color:var(--dark-green);font-weight:700;font-size:12px;text-align:center;line-height:1.35}
+    .e24-tx-detail-description{display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:11px 8px;min-width:0}
+    .e24-tx-detail-date{color:var(--text-dark);font-size:12px;font-weight:700;line-height:1.4}
+    .e24-tx-detail-time{color:var(--text-muted);font-size:10px;line-height:1.5;overflow-wrap:anywhere}
+    .e24-tx-detail-text{font-size:12px;color:var(--text-dark);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}
+    .e24-tx-detail-type{display:inline-flex;align-items:center;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700}
+    .e24-tx-detail-type.is-due{background:#fff0ef;color:#c62828}
+    .e24-tx-detail-type.is-paid{background:#eaf6ee;color:#187a3d}
+    .e24-tx-detail-picture{display:block;width:100%;height:auto;max-height:150px;object-fit:contain;border-radius:7px;border:1px solid var(--border-color)}
+    .e24-tx-detail-amount{padding:14px 4px;text-align:center;font-size:13px;font-weight:700;overflow-wrap:anywhere;min-height:52px}
+    .e24-tx-detail-actions{display:flex;gap:10px;margin-top:auto}
+    .e24-tx-detail-actions button{flex:1;min-height:45px;display:flex;align-items:center;justify-content:center;gap:7px;font-weight:700}
     .e24-tx-edit-form{display:grid;gap:12px;margin-top:16px}
     .e24-tx-edit-form label{display:block;font-size:12px;font-weight:700;margin-bottom:5px;color:var(--text-dark)}
     .e24-tx-edit-form input,.e24-tx-edit-form textarea{width:100%;border:1px solid var(--border-color);border-radius:8px;padding:10px;background:#fff;color:#202124;font-size:13px}
@@ -2660,7 +2666,7 @@ body.e24-long-page .purchase-page-shell{
     .e24-dark .e24-tx-edit-customer{color:#f1f5f2}
     .e24-dark .e24-tx-edit-camera{background:#26392e;color:#f1f5f2;border-color:#718579}
 
-    @media(prefers-color-scheme:dark){.e24-tx-detail{background:#2b3830;border-color:#526258}.e24-tx-detail-grid{border-color:#526258}.e24-tx-detail-grid>div{border-color:#526258}.e24-tx-detail-head{background:#254332;color:#d9f5e2}.e24-tx-detail-value,.e24-tx-detail-note,.e24-tx-edit-form label{color:#e6eee8}.e24-tx-detail-note{background:#223129}.e24-tx-edit-form input,.e24-tx-edit-form textarea{background:#1c2921;border-color:#526258;color:#f1f5f2}}
+    @media(prefers-color-scheme:dark){.e24-tx-detail{background:#2b3830;border-color:#526258}.e24-tx-detail-grid{background:#2b3830;border-color:#526258}.e24-tx-detail-column{border-color:#526258}.e24-tx-detail-head{background:#254332;color:#d9f5e2}.e24-tx-detail-date,.e24-tx-detail-text,.e24-tx-detail-amount,.e24-tx-edit-form label{color:#e6eee8}.e24-tx-detail-time{color:#b8c7bd}.e24-tx-detail-picture{border-color:#526258}.e24-tx-edit-form input,.e24-tx-edit-form textarea{background:#1c2921;border-color:#526258;color:#f1f5f2}}
 
   </style>
 </head>
@@ -3680,8 +3686,18 @@ body.e24-long-page .purchase-page-shell{
         const headerTitle=document.querySelector('#dynamic-app-bar #bar-title');if(headerTitle)headerTitle.textContent='লেনদেন';
         const page=document.getElementById('page-13'),t=(db.transactions||[]).find(x=>String(x.id)===String(e24ReportSelectedTransactionId));if(!page)return;
         if(!t){page.innerHTML='<div class="e24-tx-detail"><p class="report-empty">লেনদেনটি পাওয়া যায়নি।</p><button class="btn btn-blue" type="button" onclick="switchPage(\'\${e24TransactionReturnPage}\')">রিপোর্টে ফিরে যান</button></div>';return;}
-        const customer=(db.customers||[]).find(x=>String(x.id)===String(t.customerId)),gave=t.type==='বাকি'?Number(t.amount)||0:0,got=t.type==='বাকি'?(Number(t.paid)||0):(Number(t.amount)||0),date=esc(t.date||''),time=esc(t.time||'সময় উল্লেখ নেই');
-        page.innerHTML=`<section class="e24-tx-detail"><div class="e24-tx-detail-date">${date}<br><small>${time}</small></div><div class="e24-tx-detail-grid"><div class="e24-tx-detail-head">বিবরণ</div><div class="e24-tx-detail-head">দিলাম</div><div class="e24-tx-detail-head">পেলাম</div><div class="e24-tx-detail-value">${esc(t.note||customer?.name||'লেনদেন')}</div><div class="e24-tx-detail-value red-text">${gave?money(gave):'—'}</div><div class="e24-tx-detail-value green-text">${got?money(got):'—'}</div></div><div class="e24-tx-detail-note"><strong>গ্রাহক:</strong> ${esc(customer?.name||'গ্রাহক')} ${customer?.phone?' · '+esc(customer.phone):''}</div><div class="e24-tx-detail-actions"><button type="button" class="btn btn-red" id="e24-tx-delete"><i class="fa-solid fa-trash"></i> ডিলেট</button><button type="button" class="btn btn-blue" id="e24-tx-edit"><i class="fa-solid fa-pen"></i> এডিট</button></div><div id="e24-tx-edit-area"></div></section>`;
+        const customer=(db.customers||[]).find(x=>String(x.id)===String(t.customerId)),gave=t.type==='বাকি'?Number(t.amount)||0:0,got=t.type==='বাকি'?(Number(t.paid)||0):(Number(t.amount)||0);
+        const parsedDate=reportDate(t.date),date=esc(parsedDate?parsedDate.toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'}):(t.date||'')),time=esc(t.time||'সময় উল্লেখ নেই');
+        const description=esc(t.note||'ছোট লেনদেন');
+        const transactionImage=typeof t.image==='string'&&/^data:image\\/(?:jpeg|png|webp);base64,/.test(t.image)?'<img class="e24-tx-detail-picture" src="'+t.image+'" alt="লেনদেনের ছবি">':'';
+        page.innerHTML=`<section class="e24-tx-detail"><div class="e24-tx-detail-grid">
+          <div class="e24-tx-detail-column"><div class="e24-tx-detail-head">বিবরণ</div><div class="e24-tx-detail-description">
+            <strong class="e24-tx-detail-date">${date}</strong><small class="e24-tx-detail-time">ছোট লেনদেন ইনপুট সময়: ${time}</small>
+            <div class="e24-tx-detail-text">${description}</div><span class="e24-tx-detail-type ${t.type==='বাকি'?'is-due':'is-paid'}">${t.type==='বাকি'?'বাকি':'জমা'}</span>${transactionImage}
+          </div></div>
+          <div class="e24-tx-detail-column"><div class="e24-tx-detail-head">বিক্রি করলাম</div><div class="e24-tx-detail-amount red-text">${gave?money(gave):'—'}</div></div>
+          <div class="e24-tx-detail-column"><div class="e24-tx-detail-head">জমা নিলাম</div><div class="e24-tx-detail-amount green-text">${got?money(got):'—'}</div></div>
+        </div><div class="e24-tx-detail-actions"><button type="button" class="btn btn-red" id="e24-tx-delete"><i class="fa-solid fa-trash"></i> ডিলেট</button><button type="button" class="btn btn-blue" id="e24-tx-edit"><i class="fa-solid fa-pen-to-square"></i> এডিট</button></div><div id="e24-tx-edit-area"></div></section>`;
         document.getElementById('e24-tx-delete').onclick=async()=>{if(!(await showAppConfirm('এই লেনদেনটি স্থায়ীভাবে ডিলেট করবেন?','লেনদেন ডিলেট করবেন?')))return;const index=db.transactions.findIndex(x=>String(x.id)===String(t.id));if(index<0)return;const removed=db.transactions.splice(index,1)[0];if(!await save()){db.transactions.splice(index,0,removed);return;}refreshReport();switchPage(e24TransactionReturnPage);showToast('লেনদেন ডিলেট করা হয়েছে','success');};
         document.getElementById('e24-tx-edit').onclick=()=>{
           const d=reportDate(t.date)||new Date(),iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');

@@ -3747,7 +3747,7 @@ body.e24-long-page .purchase-page-shell{
           };
         };
       }
-      window.e24OpenReportTransaction=(id,returnPage='3')=>{e24ReportSelectedTransactionId=String(id);e24TransactionReturnPage=String(returnPage);e24RenderReportTransactionDetail();switchPage('13');};
+      window.e24OpenReportTransaction=(id,returnPage='3')=>{const activePage=document.querySelector('.app-page.active-page');const activePageId=activePage&&activePage.id.match(/^page-(\d+)$/);e24ReportSelectedTransactionId=String(id);e24TransactionReturnPage=activePageId&&activePageId[1]!=='13'?activePageId[1]:String(returnPage||'3');e24RenderReportTransactionDetail();switchPage('13');};
       document.addEventListener('click',event=>{const customerReportRow=event.target.closest('#customer-report-rows .customer-report-row[data-txid]');if(customerReportRow){window.e24OpenReportTransaction(customerReportRow.dataset.txid,'12');return;}const row=event.target.closest('#page-legacy-ledger .transaction-history .history-item[data-txid]');if(row)window.e24OpenReportTransaction(row.dataset.txid,'3');});
       document.addEventListener('keydown',event=>{const customerReportRow=event.target.closest&&event.target.closest('#customer-report-rows .customer-report-row[data-txid]');if(customerReportRow&&(event.key==='Enter'||event.key===' ')){event.preventDefault();window.e24OpenReportTransaction(customerReportRow.dataset.txid,'12');return;}const row=event.target.closest&&event.target.closest('#page-legacy-ledger .transaction-history .history-item[data-txid]');if(row&&(event.key==='Enter'||event.key===' ')){event.preventDefault();window.e24OpenReportTransaction(row.dataset.txid,'3');return;}});
 

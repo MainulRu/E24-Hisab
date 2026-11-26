@@ -2826,7 +2826,7 @@ body.e24-long-page .purchase-page-shell{
         const safePhoto = safeCustomerPhoto(photo);
         return safePhoto ? `<img src="${safePhoto}" alt="গ্রাহকের ছবি">` : '<i class="fa-solid fa-user"></i>';
       }; 
-      function save(successMessage){if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন','error');return Promise.resolve(false);}const snapshot=JSON.parse(JSON.stringify(db));return e24Store.collection('users').doc(activeDataUid).collection('data').doc('main').set({...snapshot,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{if(successMessage)showToast(successMessage,'success');return true;}).catch(err=>{console.error('E24 Firestore save:',err);showToast('Cloud-এ হিসাব সংরক্ষণ হয়নি। আবার চেষ্টা করুন।','error');return false;});}
+      function save(successMessage){if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন','error');return Promise.resolve(false);}const snapshot={...db,transactions:[...db.transactions]};return e24Store.collection('users').doc(activeDataUid).collection('data').doc('main').set({...snapshot,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{if(successMessage)showToast(successMessage,'success');return true;}).catch(err=>{console.error('E24 Firestore save:',err);showToast('Cloud-এ হিসাব সংরক্ষণ হয়নি। আবার চেষ্টা করুন।','error');return false;});}
       function validTransactions() {
         const customerIds=new Set(db.customers.map(c=>String(c.id)));
         return db.transactions.filter(t=>customerIds.has(String(t.customerId)));
@@ -2946,23 +2946,23 @@ body.e24-long-page .purchase-page-shell{
             // Resize during decoding where supported, avoiding a full-resolution
             // camera bitmap in the WebView on lower-memory phones.
             if(typeof createImageBitmap==='function'){
-              bitmap=await createImageBitmap(file,{resizeWidth:960,resizeQuality:'high'});
+              bitmap=await createImageBitmap(file,{resizeWidth:640,resizeHeight:640,resizeQuality:'low'});
             }else{
               objectUrl=URL.createObjectURL(file);
               bitmap=new Image();
               await new Promise((resolve,reject)=>{bitmap.onload=resolve;bitmap.onerror=()=>reject(new Error('ছবি খোলা যায়নি'));bitmap.src=objectUrl;});
             }
             const width=bitmap.naturalWidth||bitmap.width,height=bitmap.naturalHeight||bitmap.height;
-            const canvas=document.createElement('canvas');let scale=Math.min(1,960/Math.max(width,height)),data='';
+            const canvas=document.createElement('canvas');let scale=Math.min(1,640/Math.max(width,height)),data='';
             for(let pass=0;pass<4;pass++){
               canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
               const ctx=canvas.getContext('2d',{alpha:false});if(!ctx)throw new Error('ছবি প্রস্তুত করা যায়নি');
               ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
-              for(const quality of [0.76,0.64,0.52,0.42]){data=canvas.toDataURL('image/jpeg',quality);if(data.length<=120000)break;}
-              if(data.length<=120000)break;scale*=0.72;
+              for(const quality of [0.76,0.64,0.52,0.42]){data=canvas.toDataURL('image/jpeg',quality);if(data.length<=60000)break;}
+              if(data.length<=60000)break;scale*=0.72;
             }
             canvas.width=canvas.height=1;
-            if(data.length>120000)throw new Error('ছবির আকার কমানো যায়নি');
+            if(data.length>60000)throw new Error('ছবির আকার কমানো যায়নি');
             transactionImage=data;if(imageLabel)imageLabel.textContent='ছবি যোগ হয়েছে';imagePreview.innerHTML='<img alt="লেনদেনের ছবি" src="'+data+'" style="max-width:150px;max-height:130px;border-radius:8px;border:1px solid #dce5df;object-fit:contain">';
             showToast('ছবি যোগ হয়েছে');
           }catch(err){imageInput.value='';transactionImage='';if(imageLabel)imageLabel.textContent='ছবি যোগ করুন';showToast(err.message||'ছবি যোগ করা যায়নি');}
@@ -3027,10 +3027,10 @@ body.e24-long-page .purchase-page-shell{
               for(let pass=0;pass<5;pass++){
                 canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
                 const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
-                for(const quality of [0.76,0.64,0.52,0.42]){data=canvas.toDataURL('image/jpeg',quality);if(data.length<=120000)break;}
-                if(data.length<=120000)break;scale*=0.72;
+                for(const quality of [0.76,0.64,0.52,0.42]){data=canvas.toDataURL('image/jpeg',quality);if(data.length<=60000)break;}
+                if(data.length<=60000)break;scale*=0.72;
               }
-              if(data.length>120000)throw new Error('ছবির আকার কমানো যায়নি');
+              if(data.length>60000)throw new Error('ছবির আকার কমানো যায়নি');
               transactionImage=data;if(imageLabel)imageLabel.textContent='ছবি যোগ হয়েছে';imagePreview.innerHTML='<img alt="লেনদেনের ছবি" src="'+data+'" style="max-width:150px;max-height:130px;border-radius:8px;border:1px solid #dce5df;object-fit:contain">';
               showToast('ছবি যোগ হয়েছে');
             }finally{URL.revokeObjectURL(objectUrl);}

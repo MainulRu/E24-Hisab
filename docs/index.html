@@ -2177,7 +2177,7 @@ body.e24-long-page .purchase-page-shell{
     .e24-tx-edit-form input,.e24-tx-edit-form textarea{width:100%;min-height:44px;box-sizing:border-box;border:1px solid var(--border-color);border-radius:9px;padding:10px;background:var(--input-bg,#fff);color:var(--text-dark);font-size:14px}
     .e24-tx-edit-form textarea{min-height:76px;resize:vertical}
     .e24-tx-edit-amounts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .e24-tx-edit-camera{width:48px;height:46px;border:1.5px dashed #87968c;border-radius:10px;background:#f5f8f6;color:#273b30;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer}
+    .e24-tx-edit-camera{position:relative;width:48px;height:46px;border:1.5px dashed #87968c;border-radius:10px;background:#f5f8f6;color:#273b30;display:flex;align-items:center;justify-content:center;font-size:21px;cursor:pointer}.e24-tx-edit-camera-plus{position:absolute;right:7px;top:6px;font-size:12px;background:#f5f8f6;border-radius:50%}
     .e24-tx-edit-camera:active{transform:scale(.96)}
     .e24-tx-edit-preview-wrap{position:relative;display:inline-block;max-width:100%;margin-top:5px;padding:5px;border:4px solid #d93025;border-radius:12px;box-sizing:border-box}
     .e24-tx-edit-preview-wrap img{display:block;max-width:100%;width:auto;max-height:220px;object-fit:contain;border-radius:6px}
@@ -3258,7 +3258,6 @@ body.e24-long-page .purchase-page-shell{
           refreshReport();switchPage(e24TransactionReturnPage);showToast('লেনদেন ডিলেট করা হয়েছে','success');
         };
         document.getElementById('e24-tx-edit').onclick=()=>{
-          const d=reportDate(t.date)||new Date(),iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
           const area=document.getElementById('e24-tx-edit-area');
           let editImage=typeof t.image==='string'?t.image:'',imageLoadToken=0;
           const avatar=customer?.photo?'<img src="'+esc(safeCustomerPhoto(customer.photo))+'" alt="গ্রাহকের ছবি">':'<span class="e24-tx-edit-avatar"><i class="fa-solid fa-user"></i></span>';
@@ -3269,8 +3268,7 @@ body.e24-long-page .purchase-page-shell{
               <div><label for="e24-edit-got">পেলাম (৳)</label><input id="e24-edit-got" type="number" min="0" step="1" inputmode="numeric" value="${got}"></div>
             </div>
             <div><label for="e24-edit-note">বিবরণ</label><textarea id="e24-edit-note" rows="3">${esc(t.note||'')}</textarea></div>
-            <div><label>লেনদেনের ছবি</label><input id="e24-edit-image-input" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden><button type="button" class="e24-tx-edit-camera" id="e24-edit-camera" aria-label="ক্যামেরা দিয়ে ছবি যোগ করুন"><i class="fa-solid fa-plus"></i><i class="fa-solid fa-camera" style="font-size:15px;margin-left:3px"></i></button><div id="e24-edit-image-preview"></div></div>
-            <div><label for="e24-edit-date">তারিখ</label><input id="e24-edit-date" type="date" value="${iso}"></div>
+            <div><label>লেনদেনের ছবি</label><input id="e24-edit-image-input" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden><button type="button" class="e24-tx-edit-camera" id="e24-edit-camera" aria-label="ক্যামেরা দিয়ে ছবি যোগ করুন"><i class="fa-solid fa-camera"></i><i class="fa-solid fa-circle-plus e24-tx-edit-camera-plus"></i></button><div id="e24-edit-image-preview"></div></div>
             <div class="e24-tx-edit-save-row"><button type="button" class="btn btn-gray" id="e24-tx-edit-cancel">বাতিল</button><button type="button" class="btn btn-green" id="e24-tx-edit-save"><i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ</button></div>
           </div>`;
           const preview=document.getElementById('e24-edit-image-preview');
@@ -3312,10 +3310,10 @@ body.e24-long-page .purchase-page-shell{
           document.querySelector('#page-13 .e24-tx-detail')?.classList.add('e24-tx-detail-editing');
           document.getElementById('e24-tx-edit-cancel').onclick=()=>e24RenderReportTransactionDetail();
           document.getElementById('e24-tx-edit-save').onclick=async()=>{
-            const nextGave=Number(document.getElementById('e24-edit-gave').value),nextGot=Number(document.getElementById('e24-edit-got').value),nextDate=document.getElementById('e24-edit-date').value,nextNote=document.getElementById('e24-edit-note').value.trim();
-            if(!nextDate||!Number.isSafeInteger(nextGave)||!Number.isSafeInteger(nextGot)||nextGave<0||nextGot<0||nextGave+nextGot<=0){showToast('তারিখ ও সঠিক টাকার পরিমাণ দিন');return;}
+            const nextGave=Number(document.getElementById('e24-edit-gave').value),nextGot=Number(document.getElementById('e24-edit-got').value),nextNote=document.getElementById('e24-edit-note').value.trim();
+            if(!Number.isSafeInteger(nextGave)||!Number.isSafeInteger(nextGot)||nextGave<0||nextGot<0||nextGave+nextGot<=0){showToast('সঠিক টাকার পরিমাণ দিন');return;}
             const old={...t};if(nextGave>0){t.type='বাকি';t.amount=nextGave;t.paid=nextGot;}else{t.type='জমা';t.amount=nextGot;delete t.paid;}
-            t.note=nextNote;t.date=new Date(nextDate+'T12:00:00').toLocaleDateString('bn-BD');
+            t.note=nextNote;
             if(editImage)t.image=editImage;else delete t.image;
             if(e24SavedTransactionImageIds)e24SavedTransactionImageIds.delete(String(t.id));
             if(!await save()){Object.keys(t).forEach(key=>delete t[key]);Object.assign(t,old);return;}

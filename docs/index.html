@@ -2162,6 +2162,27 @@ body.e24-long-page .purchase-page-shell{
     .e24-tx-edit-form label{display:block;font-size:12px;font-weight:700;margin-bottom:5px;color:var(--text-dark)}
     .e24-tx-edit-form input,.e24-tx-edit-form textarea{width:100%;border:1px solid var(--border-color);border-radius:8px;padding:10px;background:#fff;color:#202124;font-size:13px}
     .e24-tx-edit-amounts{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    /* Page 13 transaction edit form */
+    .e24-tx-edit-form{display:grid;gap:13px;margin-top:0;padding:14px;background:var(--card-bg,#fff);border:1px solid var(--border-color);border-radius:12px}
+    .e24-tx-edit-customer{display:flex;align-items:center;gap:11px;padding:4px 2px 12px;border-bottom:1px solid var(--border-color);font-weight:700;color:var(--text-dark)}
+    .e24-tx-edit-customer img,.e24-tx-edit-customer .e24-tx-edit-avatar{width:48px;height:48px;flex:0 0 48px;border-radius:50%;object-fit:cover;background:#e8f0fe;display:flex;align-items:center;justify-content:center;color:#3975bd;font-size:21px;overflow:hidden}
+    .e24-tx-edit-form label{display:block;font-size:12px;font-weight:700;margin:0 0 6px;color:var(--text-dark)}
+    .e24-tx-edit-form input,.e24-tx-edit-form textarea{width:100%;min-height:44px;box-sizing:border-box;border:1px solid var(--border-color);border-radius:9px;padding:10px;background:var(--input-bg,#fff);color:var(--text-dark);font-size:14px}
+    .e24-tx-edit-form textarea{min-height:76px;resize:vertical}
+    .e24-tx-edit-amounts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .e24-tx-edit-camera{width:48px;height:46px;border:1.5px dashed #87968c;border-radius:10px;background:#f5f8f6;color:#273b30;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer}
+    .e24-tx-edit-camera:active{transform:scale(.96)}
+    .e24-tx-edit-preview-wrap{position:relative;display:inline-block;max-width:100%;margin-top:5px;padding:5px;border:4px solid #d93025;border-radius:12px;box-sizing:border-box}
+    .e24-tx-edit-preview-wrap img{display:block;max-width:100%;width:auto;max-height:220px;object-fit:contain;border-radius:6px}
+    .e24-tx-edit-photo-remove{position:absolute;right:-12px;top:-12px;width:30px;height:30px;border:2px solid #fff;border-radius:50%;background:#d93025;color:#fff;font-size:21px;line-height:24px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px #0005;z-index:2;cursor:pointer}
+    .e24-tx-edit-save-row{display:flex;gap:10px;margin-top:4px}
+    .e24-tx-edit-save-row button{flex:1;min-height:44px}
+    .e24-tx-detail-editing{display:none!important}
+    .e24-dark .e24-tx-edit-form{background:#26362d;border-color:#526258}
+    .e24-dark .e24-tx-edit-form input,.e24-dark .e24-tx-edit-form textarea{background:#1c2921;color:#f1f5f2;border-color:#526258}
+    .e24-dark .e24-tx-edit-customer{color:#f1f5f2}
+    .e24-dark .e24-tx-edit-camera{background:#26392e;color:#f1f5f2;border-color:#718579}
+
     @media(prefers-color-scheme:dark){.e24-tx-detail{background:#2b3830;border-color:#526258}.e24-tx-detail-grid{border-color:#526258}.e24-tx-detail-grid>div{border-color:#526258}.e24-tx-detail-head{background:#254332;color:#d9f5e2}.e24-tx-detail-value,.e24-tx-detail-note,.e24-tx-edit-form label{color:#e6eee8}.e24-tx-detail-note{background:#223129}.e24-tx-edit-form input,.e24-tx-edit-form textarea{background:#1c2921;border-color:#526258;color:#f1f5f2}}
 
   </style>
@@ -3205,19 +3226,55 @@ body.e24-long-page .purchase-page-shell{
         document.getElementById('e24-tx-edit').onclick=()=>{
           const d=reportDate(t.date)||new Date(),iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
           const area=document.getElementById('e24-tx-edit-area');
+          let editImage=typeof t.image==='string'?t.image:'',imageLoadToken=0;
+          const avatar=customer?.photo?'<img src="'+esc(safeCustomerPhoto(customer.photo))+'" alt="গ্রাহকের ছবি">':'<span class="e24-tx-edit-avatar"><i class="fa-solid fa-user"></i></span>';
           area.innerHTML=`<div class="e24-tx-edit-form">
-            <div><label for="e24-edit-note">বিবরণ</label><textarea id="e24-edit-note" rows="2">${esc(t.note||'')}</textarea></div>
-            <div class="e24-tx-edit-amounts"><div><label for="e24-edit-gave">দিলাম (৳)</label><input id="e24-edit-gave" type="number" min="0" step="1" inputmode="numeric" value="${gave}"></div><div><label for="e24-edit-got">পেলাম (৳)</label><input id="e24-edit-got" type="number" min="0" step="1" inputmode="numeric" value="${got}"></div></div>
+            <div class="e24-tx-edit-customer">${avatar}<span>${esc(customer?.name||'গ্রাহক')}</span></div>
+            <div class="e24-tx-edit-amounts">
+              <div><label for="e24-edit-gave">দিলাম (৳)</label><input id="e24-edit-gave" type="number" min="0" step="1" inputmode="numeric" value="${gave}"></div>
+              <div><label for="e24-edit-got">পেলাম (৳)</label><input id="e24-edit-got" type="number" min="0" step="1" inputmode="numeric" value="${got}"></div>
+            </div>
+            <div><label for="e24-edit-note">বিবরণ</label><textarea id="e24-edit-note" rows="3">${esc(t.note||'')}</textarea></div>
+            <div><label>লেনদেনের ছবি</label><input id="e24-edit-image-input" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden><button type="button" class="e24-tx-edit-camera" id="e24-edit-camera" aria-label="ক্যামেরা দিয়ে ছবি যোগ করুন"><i class="fa-solid fa-plus"></i><i class="fa-solid fa-camera" style="font-size:15px;margin-left:3px"></i></button><div id="e24-edit-image-preview"></div></div>
             <div><label for="e24-edit-date">তারিখ</label><input id="e24-edit-date" type="date" value="${iso}"></div>
-            <div class="e24-tx-detail-actions"><button type="button" class="btn btn-gray" id="e24-tx-edit-cancel">বাতিল</button><button type="button" class="btn btn-green" id="e24-tx-edit-save"><i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ</button></div>
+            <div class="e24-tx-edit-save-row"><button type="button" class="btn btn-gray" id="e24-tx-edit-cancel">বাতিল</button><button type="button" class="btn btn-green" id="e24-tx-edit-save"><i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ</button></div>
           </div>`;
+          const preview=document.getElementById('e24-edit-image-preview');
+          const renderPreview=()=>{preview.innerHTML=editImage?'<div class="e24-tx-edit-preview-wrap"><img src="'+editImage+'" alt="লেনদেনের ছবির প্রিভিউ"><button type="button" class="e24-tx-edit-photo-remove" id="e24-edit-photo-remove" aria-label="ছবি সরান">×</button></div>':'';const remove=document.getElementById('e24-edit-photo-remove');if(remove)remove.onclick=()=>{editImage='';renderPreview();};};
+          renderPreview();
+          if(!editImage){
+            const token=++imageLoadToken;
+            e24Store.collection('users').doc(activeDataUid).collection('data').doc('tximg_'+String(t.id).replace(/[^A-Za-z0-9_-]/g,'_')).get().then(snap=>{
+              const value=snap.exists?snap.data().image:'';
+              if(token===imageLoadToken&&!editImage&&typeof value==='string'&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(value)){editImage=value;renderPreview();}
+            }).catch(err=>console.warn('E24 edit image load failed:',err));
+          }
+          document.getElementById('e24-edit-camera').onclick=()=>document.getElementById('e24-edit-image-input').click();
+          document.getElementById('e24-edit-image-input').onchange=async event=>{
+            const file=event.target.files&&event.target.files[0];if(!file)return;
+            if(!/^image\/(?:jpeg|png|webp)$/.test(file.type)||file.size>8*1024*1024){showToast('JPG, PNG বা WebP ছবি দিন (সর্বোচ্চ ৮ MB)');event.target.value='';return;}
+            try{
+              const bitmap=await createImageBitmap(file),canvas=document.createElement('canvas'),scale=Math.min(1,1000/Math.max(bitmap.width,bitmap.height));
+              canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+              canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
+              let quality=.78;editImage=canvas.toDataURL('image/jpeg',quality);
+              while(editImage.length>60000&&quality>.4){quality-=.08;editImage=canvas.toDataURL('image/jpeg',quality);}
+              if(editImage.length>60000)throw new Error('ছবির আকার বেশি হয়েছে');
+              renderPreview();showToast('ছবি যোগ হয়েছে');
+            }catch(err){showToast(err.message||'ছবি যোগ করা যায়নি');}
+            finally{event.target.value='';}
+          };
+          const title=document.querySelector('#dynamic-app-bar #bar-title');if(title)title.textContent='লেনদেন এডিট';
+          document.querySelector('#page-13 .e24-tx-detail')?.classList.add('e24-tx-detail-editing');
           document.getElementById('e24-tx-edit-cancel').onclick=()=>e24RenderReportTransactionDetail();
           document.getElementById('e24-tx-edit-save').onclick=async()=>{
             const nextGave=Number(document.getElementById('e24-edit-gave').value),nextGot=Number(document.getElementById('e24-edit-got').value),nextDate=document.getElementById('e24-edit-date').value,nextNote=document.getElementById('e24-edit-note').value.trim();
             if(!nextDate||!Number.isSafeInteger(nextGave)||!Number.isSafeInteger(nextGot)||nextGave<0||nextGot<0||nextGave+nextGot<=0){showToast('তারিখ ও সঠিক টাকার পরিমাণ দিন');return;}
             const old={...t};if(nextGave>0){t.type='বাকি';t.amount=nextGave;t.paid=nextGot;}else{t.type='জমা';t.amount=nextGot;delete t.paid;}
             t.note=nextNote;t.date=new Date(nextDate+'T12:00:00').toLocaleDateString('bn-BD');
+            if(editImage)t.image=editImage;else delete t.image;
             if(!await save()){Object.keys(t).forEach(key=>delete t[key]);Object.assign(t,old);return;}
+            if(!editImage){try{await e24Store.collection('users').doc(activeDataUid).collection('data').doc('tximg_'+String(t.id).replace(/[^A-Za-z0-9_-]/g,'_')).delete();}catch(err){console.warn('E24 old transaction image cleanup failed:',err);}}
             refreshReport();switchPage(e24TransactionReturnPage);showToast('লেনদেন আপডেট হয়েছে','success');
           };
         };

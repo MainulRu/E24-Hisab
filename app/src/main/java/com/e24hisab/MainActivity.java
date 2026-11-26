@@ -90,7 +90,9 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(true);
         settings.setAllowFileAccessFromFileURLs(false);
         settings.setAllowUniversalAccessFromFileURLs(false);
-        settings.setAllowContentAccess(false);
+        // WebView needs access to the single content:// URI explicitly returned by the
+        // native photo picker. This does not grant broad filesystem access.
+        settings.setAllowContentAccess(true);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setSupportMultipleWindows(false);
@@ -328,6 +330,7 @@ public class MainActivity extends Activity {
             Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             if (transactionCameraUri != null) {
                 camera.putExtra(MediaStore.EXTRA_OUTPUT, transactionCameraUri);
+                camera.setClipData(android.content.ClipData.newRawUri("", transactionCameraUri));
                 camera.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             }
 

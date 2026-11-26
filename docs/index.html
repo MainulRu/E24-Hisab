@@ -2965,7 +2965,7 @@ body.e24-long-page .purchase-page-shell{
             transactionImage=data;if(imageLabel)imageLabel.textContent='ছবি যোগ হয়েছে';imagePreview.innerHTML='<img alt="লেনদেনের ছবি" src="'+data+'" style="max-width:150px;max-height:130px;border-radius:8px;border:1px solid #dce5df;object-fit:contain">';
             showToast('ছবি যোগ হয়েছে');
           }catch(err){imageInput.value='';transactionImage='';if(imageLabel)imageLabel.textContent='ছবি যোগ করুন';showToast(err.message||'ছবি যোগ করা যায়নি');}
-          finally{if(bitmap&&typeof bitmap.close==='function')bitmap.close();if(objectUrl)URL.revokeObjectURL(objectUrl);imageProcessing=false;}
+          finally{if(bitmap&&typeof bitmap.close==='function')bitmap.close();if(objectUrl)URL.revokeObjectURL(objectUrl);imageInput.value='';imageProcessing=false;}
         };
         document.getElementById('tx-save').onclick=async()=>{
           if(imageProcessing){showToast('ছবি প্রস্তুত হওয়া পর্যন্ত অপেক্ষা করুন');return;}

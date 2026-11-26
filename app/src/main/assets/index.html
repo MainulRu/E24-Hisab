@@ -2383,8 +2383,12 @@ body.e24-long-page .screen-body{
   overflow:visible!important;
   touch-action:pan-y;
 }
-body.e24-long-page #page-9,
-body.e24-long-page #page-10{
+body.e24-long-page #page-9:not(.active-page),
+body.e24-long-page #page-10:not(.active-page){
+  display:none!important;
+}
+body.e24-long-page #page-9.active-page,
+body.e24-long-page #page-10.active-page{
   display:flex!important;
   height:auto!important;
   min-height:0!important;

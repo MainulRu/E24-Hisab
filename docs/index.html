@@ -177,6 +177,8 @@
     .current-due-heading { display:flex; align-items:center; gap:7px; font-size:12px; font-weight:700; }
     .current-due-amount { font-size:21px; font-weight:700; line-height:1.5; color:#b3261e; }
     .current-due-note { font-size:9px; color:#8c1d18; }
+    /* Supplier and purchase screens use their own page headers. */
+    body:has(#page-9.active-page) #dynamic-app-bar,body:has(#page-10.active-page) #dynamic-app-bar{display:none!important}
     .supplier-page-shell{background:#f1f7fc;border:1px solid #c8dced;border-radius:13px;padding:0 12px 14px;color:#174d7a;min-height:100%;overflow:auto}
     .supplier-page-top{margin:0 -12px 12px;padding:14px 15px;background:#245d91;color:#fff;display:flex;align-items:center;gap:12px;border-radius:12px 12px 0 0}
     .supplier-page-back{width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer}

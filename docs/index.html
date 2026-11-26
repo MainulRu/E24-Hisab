@@ -217,10 +217,13 @@
     .supplier-row-info{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}.supplier-row-info strong{font-size:12px;color:#174d7a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.supplier-row-info small,.supplier-row-balance small{font-size:9px;color:#7890a3}
     .supplier-row-balance{display:flex;flex-direction:column;align-items:flex-end;gap:2px;white-space:nowrap}.supplier-row-balance strong{font-size:12px;color:#174d7a}.supplier-row-arrow{font-size:10px;color:#8ba2b5}
     .supplier-empty{padding:20px;text-align:center;color:#7890a3;font-size:12px;background:#fff;border-radius:9px}
-    .supplier-form-view{min-height:100%;background:#f5f7f6;display:flex;flex-direction:column;overflow:auto}.supplier-form-view[hidden]{display:none!important}
-    .supplier-form-header{position:sticky;top:0;z-index:3;flex:0 0 58px;height:58px;display:flex;align-items:center;gap:12px;padding:0 16px;background:#087a35;color:#fff;box-sizing:border-box}
-    .supplier-form-header button{flex:0 0 36px;width:36px;height:40px;border:0;border-radius:8px;background:transparent;color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center}
-    .supplier-form-header h2{flex:1;margin:0;font-size:18px;font-weight:600;color:#fff}
+    .supplier-form-view{min-height:100%;background:#f1f7fc;color:#174d7a;display:flex;flex-direction:column;overflow:auto}.supplier-form-view[hidden]{display:none!important}
+    .supplier-form-header{position:sticky;top:0;z-index:3;flex:0 0 58px;height:58px;margin:0 -12px 12px;padding:14px 15px;background:#245d91;color:#fff;display:flex;align-items:center;gap:12px;border-radius:0;box-sizing:border-box}
+    .supplier-form-header button{flex:0 0 28px;width:28px;height:32px;border:0;border-radius:0;background:transparent;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+    .supplier-form-header-title{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
+    .supplier-form-header-title strong{font-size:15px;font-weight:700;color:#fff;line-height:1.25}
+    .supplier-form-header-title small{font-size:10px;color:#dceafa;line-height:1.25}
+    .supplier-form-header-icon{width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:#dceafa;font-size:20px}
     .supplier-form-content{padding:24px 20px 20px;display:flex;flex-direction:column;gap:18px;flex:1}
     .supplier-form-entry-top{display:flex;align-items:center;gap:12px;width:100%}
     .supplier-form-entry-type{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
@@ -2676,7 +2679,7 @@ body.e24-long-page .purchase-page-shell{
         </div>
 
 <div class="app-page" id="page-9"><div class="supplier-page-shell"><div class="supplier-page-top"><span class="supplier-page-back" onclick="switchPage('1')"><i class="fa-solid fa-arrow-left"></i></span><div><strong>সাপ্লায়ার ব্যবস্থাপনা</strong><small>সাপ্লায়ারদের আলাদা হিসাব ও লেনদেন</small></div><span class="supplier-page-top-icon"><i class="fa-solid fa-truck"></i></span></div><div id="supplier-list-view"><div class="supplier-summary-card"><div class="supplier-summary-label">সাপ্লায়ারকে মোট পরিশোধযোগ্য</div><div class="supplier-summary-total" id="supplier-page-total-due">৳ 0</div><div class="supplier-summary-stats"><div><span>মোট ক্রয়</span><strong id="supplier-page-total-purchase">৳ 0</strong></div><div><span>মোট পরিশোধ</span><strong id="supplier-page-total-paid">৳ 0</strong></div></div></div><div class="supplier-list-heading"><strong>সাপ্লায়ার তালিকা</strong><span id="supplier-count-label">সব সাপ্লায়ার</span></div><div class="supplier-search-wrap"><i class="fa-solid fa-magnifying-glass"></i><input class="form-input" id="supplier-search" type="search" placeholder="নাম / মোবাইল দিয়ে খুঁজুন"></div><ul class="supplier-page-list" id="supplier-list"></ul><div class="supplier-list-actions"><button class="supplier-add-button" type="button" onclick="e24OpenSupplierForm()"><i class="fa-solid fa-plus"></i> নতুন সাপ্লায়ার যুক্ত</button><button class="supplier-purchase-button" type="button" onclick="e24OpenPurchasePage()"><i class="fa-solid fa-cart-shopping"></i> ক্রয় পেজ</button></div></div><div id="supplier-form-view" class="supplier-form-view" hidden>
- <div class="supplier-form-header"><button type="button" aria-label="ফিরে যান" onclick="e24CancelSupplierForm()"><i class="fa-solid fa-arrow-left"></i></button><h2>নতুন সাপ্লায়ার</h2></div>
+ <div class="supplier-form-header"><button type="button" aria-label="ফিরে যান" onclick="e24CancelSupplierForm()"><i class="fa-solid fa-arrow-left"></i></button><div class="supplier-form-header-title"><strong>নতুন সাপ্লায়ার</strong><small>সাপ্লায়ারের তথ্য যুক্ত করুন</small></div><span class="supplier-form-header-icon"><i class="fa-solid fa-truck"></i></span></div>
  <div class="supplier-form-content">
   <div class="supplier-form-entry-top">
    <div class="supplier-form-avatar-wrap">

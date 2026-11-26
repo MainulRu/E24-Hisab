@@ -2859,6 +2859,15 @@
         title.textContent=(window.e24OrgName||'').trim()||'E24 Hisab';
       }
     }
+    function e24SaveActivePage(uid){
+      const owner=uid||window.e24ActivePageUid;
+      if(!owner)return;
+      const active=document.querySelector('.app-page.active-page');
+      const match=active&&/^page-([1-9])$/.exec(active.id);
+      if(match){try{localStorage.setItem('e24-last-page-'+String(owner),match[1]);}catch(_){}}
+    }
+    window.addEventListener('pagehide',()=>e24SaveActivePage());
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')e24SaveActivePage();});
     function e24PageStorageKey(uid){return 'e24-last-page-'+String(uid||'');}
     function e24RestoreLastPage(uid){
       let pageKey='1';

@@ -270,7 +270,7 @@ public class MainActivity extends Activity {
             if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return false;
 
             int sample = 1;
-            while (Math.max(bounds.outWidth / sample, bounds.outHeight / sample) > 1280) sample *= 2;
+            while (Math.max(bounds.outWidth / sample, bounds.outHeight / sample) > 640) sample *= 2;
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = sample;
             options.inPreferredConfig = Bitmap.Config.RGB_565;
@@ -302,7 +302,7 @@ public class MainActivity extends Activity {
             }
 
             try (OutputStream output = getContentResolver().openOutputStream(imageUri, "wt")) {
-                if (output == null || !oriented.compress(Bitmap.CompressFormat.JPEG, 78, output)) return false;
+                if (output == null || !oriented.compress(Bitmap.CompressFormat.JPEG, 65, output)) return false;
                 output.flush();
             }
             return true;

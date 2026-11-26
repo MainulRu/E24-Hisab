@@ -3210,7 +3210,7 @@ window.e24SaveSupplierPayment=()=>{const input=document.getElementById('supplier
             const snap=await e24Store.collection('users').doc(activeDataUid).collection('data').doc(imageId).get();
             const value=snap.exists?snap.data().image:'';
             if(typeof value==='string'&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(value)){
-              img.src=value;img.hidden=false;
+              img.src=value;img.style.width='';img.style.height='';img.style.opacity='1';
             }
             img.dataset.loaded='1';
           }catch(err){console.warn('E24 report image load failed:',err);}

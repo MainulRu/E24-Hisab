@@ -2819,7 +2819,7 @@ body.e24-long-page .purchase-page-shell{
         if (homeTitle) homeTitle.textContent = window.e24OrgName || 'E24 Hisab';
 
       } else if (pageKey === '13') {
-        dynamicBar.innerHTML = `<button type="button" class="interactive-icon" onclick="switchPage(e24TransactionReturnPage)" aria-label="আগের পেজে ফিরে যান" style="border:0;background:none;color:#fff;padding:0 8px 0 0;flex:0 0 auto"><i class="fa-solid fa-arrow-left"></i></button><span class="app-title">লেনদেন</span>`;
+        dynamicBar.innerHTML = `<button type="button" class="interactive-icon" onclick="window.e24BackFromTransaction()" aria-label="আগের পেজে ফিরে যান" style="border:0;background:none;color:#fff;padding:0 8px 0 0;flex:0 0 auto"><i class="fa-solid fa-arrow-left"></i></button><span class="app-title">লেনদেন</span>`;
       } else if (pageKey === '3' || pageKey === '12') {
         const headerCustomer = window.db && Array.isArray(window.db.customers)
           ? window.db.customers.find(c => String(c.id) === String(window.db.selectedCustomerId))
@@ -2834,7 +2834,7 @@ body.e24-long-page .purchase-page-shell{
         const headerAvatarImage = dynamicBar.querySelector('span span img');
         if (headerAvatarImage) { headerAvatarImage.style.width='100%'; headerAvatarImage.style.height='100%'; headerAvatarImage.style.objectFit='cover'; }
       } else {
-        dynamicBar.innerHTML = `<i class="fa-solid fa-arrow-left interactive-icon" onclick="switchPage(pageKey==='13'?e24TransactionReturnPage:'1')"></i><span class="app-title">${titles[pageKey]}</span>`;
+        dynamicBar.innerHTML = `<i class="fa-solid fa-arrow-left interactive-icon" onclick="pageKey==='13'?window.e24BackFromTransaction():switchPage('1')"></i><span class="app-title">${titles[pageKey]}</span>`;
       }
       const homeFab=document.getElementById('home-transaction-fab');if(homeFab)homeFab.style.display=pageKey==='1'?'flex':'none';
       if(pageKey==='1') e24ApplyHomeHeaderName();
@@ -3291,6 +3291,7 @@ body.e24-long-page .purchase-page-shell{
           };
         };
       }
+      window.e24BackFromTransaction=()=>switchPage(e24TransactionReturnPage);
       window.e24OpenReportTransaction=(id,returnPage='3')=>{const activePage=document.querySelector('.app-page.active-page');const activePageId=activePage&&activePage.id.match(/^page-(\d+)$/);e24ReportSelectedTransactionId=String(id);e24TransactionReturnPage=activePageId&&activePageId[1]!=='13'?activePageId[1]:String(returnPage||'3');e24RenderReportTransactionDetail();switchPage('13');};
       document.addEventListener('click',event=>{const reportRow=event.target.closest('#report-transaction-list [data-txid]');if(reportRow){window.e24OpenReportTransaction(reportRow.dataset.txid,'7');return;}const customerReportRow=event.target.closest('#customer-report-rows .customer-report-row[data-txid]');if(customerReportRow){window.e24OpenReportTransaction(customerReportRow.dataset.txid,'12');return;}const row=event.target.closest('#page-legacy-ledger .transaction-history .history-item[data-txid]');if(row)window.e24OpenReportTransaction(row.dataset.txid,'3');});
       document.addEventListener('keydown',event=>{if(event.key!=='Enter'&&event.key!==' ')return;const reportRow=event.target.closest&&event.target.closest('#report-transaction-list [data-txid]');if(reportRow){event.preventDefault();window.e24OpenReportTransaction(reportRow.dataset.txid,'7');return;}const customerReportRow=event.target.closest&&event.target.closest('#customer-report-rows .customer-report-row[data-txid]');if(customerReportRow){event.preventDefault();window.e24OpenReportTransaction(customerReportRow.dataset.txid,'12');return;}const row=event.target.closest&&event.target.closest('#page-legacy-ledger .transaction-history .history-item[data-txid]');if(row){event.preventDefault();window.e24OpenReportTransaction(row.dataset.txid,'3');}});

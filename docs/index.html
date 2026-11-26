@@ -2832,16 +2832,19 @@ body.e24-long-page .purchase-page-shell{
         try{
           const imageTransactions=(db.transactions||[]).filter(t=>t&&t.id&&typeof t.image==='string'&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(t.image));
           const pendingImages=imageTransactions.filter(t=>!e24SavedTransactionImageIds.has(String(t.id)));
-          for(let start=0;start<pendingImages.length;start+=5){
+          // Save newest photos first; migrate at most five legacy photos per save to cap mobile memory/network use.
+          const imagesToSave=pendingImages.slice(-5);
+          if(imagesToSave.length){
             const batch=e24Store.batch();
-            pendingImages.slice(start,start+5).forEach(t=>{
+            imagesToSave.forEach(t=>{
               const imageId='tximg_'+String(t.id).replace(/[^A-Za-z0-9_-]/g,'_');
               batch.set(dataRef.doc(imageId),{kind:'transaction-image',transactionId:String(t.id),image:t.image,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
             });
             await batch.commit();
-            pendingImages.slice(start,start+5).forEach(t=>e24SavedTransactionImageIds.add(String(t.id)));
+            imagesToSave.forEach(t=>e24SavedTransactionImageIds.add(String(t.id)));
           }
-          const snapshot={...db,transactions:(db.transactions||[]).map(t=>{const copy={...t};delete copy.image;return copy;})};
+          // Keep unmigrated legacy images in the main document; remove only after their image document is confirmed saved.
+          const snapshot={...db,transactions:(db.transactions||[]).map(t=>{const copy={...t};if(e24SavedTransactionImageIds.has(String(t.id)))delete copy.image;return copy;})};
           await dataRef.doc('main').set({...snapshot,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
           if(successMessage)showToast(successMessage,'success');
           return true;
@@ -3186,13 +3189,41 @@ window.e24SaveSupplierPayment=()=>{const input=document.getElementById('supplier
         list.innerHTML=rows.length?rows.map(t=>{
           const parsed=reportDate(t.date),dateLabel=parsed?parsed.toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'}):esc(t.date||'তারিখ নেই');
           const timeLabel=t.time?esc(t.time):'সময় সংরক্ষিত নেই';
-          const image=typeof t.image==='string'&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(t.image)?'<img class="customer-report-image" src="'+t.image+'" alt="লেনদেনের ছবি">':'';
+          const validImage=typeof t.image==='string'&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(t.image);
+          const image='<img class="customer-report-image" '+(validImage?'src="'+t.image+'"':'hidden data-e24-image-id="'+esc(t.id)+'"')+' alt="লেনদেনের ছবি">';
           const note=t.note?'<div class="customer-report-note">'+esc(t.note)+'</div>':'';
           const dueLabel=t._balance>0?'বাকি '+money(t._balance):t._balance<0?'অগ্রিম '+money(Math.abs(t._balance)):'পরিশোধিত';
           const balanceClass=t._balance<0?'customer-report-balance advance':'customer-report-balance';
           const sale=t.type==='বাকি'?money(t.amount):'—',deposit=t.type==='বাকি'?(Number(t.paid)>0?money(t.paid):'—'):t.type==='জমা'?money(t.amount):'—';
           return '<div class="customer-report-row"><div class="customer-report-cell customer-report-detail"><div class="customer-report-date">'+dateLabel+'</div><div class="customer-report-time">'+timeLabel+'</div>'+note+image+'<div class="'+balanceClass+'">'+dueLabel+'</div></div><div class="customer-report-cell customer-report-amount customer-report-sale">'+sale+'</div><div class="customer-report-cell customer-report-amount customer-report-paid">'+deposit+'</div></div>';
         }).join(''):'<div class="customer-report-empty">এই গ্রাহকের কোনো লেনদেন নেই</div>';
+        e24LoadVisibleReportImages(list);
+      }
+      function e24LoadVisibleReportImages(container){
+        const images=container.querySelectorAll('img[data-e24-image-id]');
+        if(!images.length)return;
+        const loadOne=async img=>{
+          if(img.dataset.loading==='1'||img.dataset.loaded==='1')return;
+          img.dataset.loading='1';
+          try{
+            const imageId='tximg_'+String(img.dataset.e24ImageId).replace(/[^A-Za-z0-9_-]/g,'_');
+            const snap=await e24Store.collection('users').doc(activeDataUid).collection('data').doc(imageId).get();
+            const value=snap.exists?snap.data().image:'';
+            if(typeof value==='string'&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(value)){
+              img.src=value;img.hidden=false;
+            }
+            img.dataset.loaded='1';
+          }catch(err){console.warn('E24 report image load failed:',err);}
+          finally{delete img.dataset.loading;}
+        };
+        if('IntersectionObserver'in window){
+          const observer=new IntersectionObserver(entries=>{
+            entries.forEach(entry=>{if(entry.isIntersecting){observer.unobserve(entry.target);loadOne(entry.target);}});
+          },{root:container,rootMargin:'180px 0px'});
+          images.forEach(img=>observer.observe(img));
+        }else{
+          Array.from(images).slice(0,8).forEach(loadOne);
+        }
       }
       window.printCustomerReport=()=>{if(!document.getElementById('page-12')?.classList.contains('active-page'))return;document.body.classList.add('customer-report-printing');window.print();setTimeout(()=>document.body.classList.remove('customer-report-printing'),700);};
 function refreshAll(){renderCustomers();renderLedger();renderTransactionForm(db.txType);refreshHome();renderSupplierPage();}
@@ -3281,12 +3312,7 @@ async function e24LoadReferralPanel(){
 function e24AuthMessage(err){const m={'auth/email-already-in-use':'এই Email দিয়ে আগে থেকেই অ্যাকাউন্ট আছে।','auth/invalid-email':'সঠিক Email address লিখুন।','auth/weak-password':'Password কমপক্ষে ৬ অক্ষরের হতে হবে।','auth/user-not-found':'এই Email দিয়ে কোনো অ্যাকাউন্ট পাওয়া যায়নি।','auth/wrong-password':'Password সঠিক নয়।','auth/invalid-credential':'Email অথবা Password সঠিক নয়।','auth/too-many-requests':'অনেকবার চেষ্টা হয়েছে। পরে চেষ্টা করুন।','auth/network-request-failed':'ইন্টারনেট সংযোগ পরীক্ষা করুন।'};return m[err&&err.code]||'কাজটি সম্পন্ন হয়নি। আবার চেষ্টা করুন।';}
 function e24SetAuthMode(mode){authMode=mode;document.getElementById("e24-launch-splash").hidden=true;document.querySelector(".e24-auth-card").classList.remove("launching");document.getElementById("e24-auth-subtitle").hidden=false;document.getElementById('e24-login-form').hidden=mode!=='login';document.getElementById('e24-register-form').hidden=mode!=='register';document.getElementById('e24-verify-panel').hidden=true;document.getElementById('e24-forgot-panel').hidden=true;document.getElementById('e24-forgot-password-link').hidden=mode!=='login';document.getElementById('e24-auth-switch').hidden=false;document.getElementById('e24-auth-subtitle').textContent=mode==='login'?'আপনার হিসাব নিরাপদে সংরক্ষণ করতে লগইন করুন':'নতুন E24 Hisab অ্যাকাউন্ট তৈরি করুন';document.getElementById('e24-auth-switch').textContent=mode==='login'?'নতুন অ্যাকাউন্ট তৈরি করবেন?':'আগে অ্যাকাউন্ট আছে? লগইন করুন';document.getElementById('e24-auth-error').textContent='';}
 function e24Diagnostic(stage,details={}){try{const safe={time:new Date().toISOString(),stage,...details};console.info('[E24-DIAG]',safe);}catch(logErr){console.info('[E24-DIAG]',stage);}}
-async function e24LoadData(uid){const started=performance.now();activeDataUid=uid;const ref=e24Store.collection('users').doc(uid).collection('data').doc('main');e24Diagnostic('main-data-read-start',{uidSuffix:String(uid||'').slice(-6),path:'users/{uid}/data/main'});let snap;try{snap=await ref.get();}catch(err){e24Diagnostic('main-data-read-failed',{code:err&&err.code||'unknown',message:err&&err.message||String(err),path:'users/{uid}/data/main'});throw err;}const elapsed=(performance.now()-started)/1000;e24Diagnostic('main-data-read-success',{exists:snap.exists,elapsedSeconds:Number(elapsed.toFixed(2))});if(snap.exists)db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি',suppliers:[],supplierTransactions:[],selectedSupplierId:null,...snap.data()};else{let legacy=null;try{const old=JSON.parse(localStorage.getItem(KEY));if(old&&Array.isArray(old.customers)&&Array.isArray(old.transactions))legacy=old;}catch(_){}db=legacy||{customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি',suppliers:[],supplierTransactions:[],selectedSupplierId:null};}try{
- const imageSnap=await ref.parent.where('kind','==','transaction-image').get();
- const imageById=new Map();
- imageSnap.forEach(doc=>{const item=doc.data()||{};if(item.transactionId&&typeof item.image==='string'){imageById.set(String(item.transactionId),item.image);window.e24SavedTransactionImageIds.add(String(item.transactionId));}});
- (db.transactions||[]).forEach(t=>{if(t&&!t.image&&imageById.has(String(t.id)))t.image=imageById.get(String(t.id));});
-}catch(imageLoadError){console.error('E24 transaction image read:',imageLoadError);}
+async function e24LoadData(uid){const started=performance.now();activeDataUid=uid;const ref=e24Store.collection('users').doc(uid).collection('data').doc('main');e24Diagnostic('main-data-read-start',{uidSuffix:String(uid||'').slice(-6),path:'users/{uid}/data/main'});let snap;try{snap=await ref.get();}catch(err){e24Diagnostic('main-data-read-failed',{code:err&&err.code||'unknown',message:err&&err.message||String(err),path:'users/{uid}/data/main'});throw err;}const elapsed=(performance.now()-started)/1000;e24Diagnostic('main-data-read-success',{exists:snap.exists,elapsedSeconds:Number(elapsed.toFixed(2))});if(snap.exists)db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি',suppliers:[],supplierTransactions:[],selectedSupplierId:null,...snap.data()};else{let legacy=null;try{const old=JSON.parse(localStorage.getItem(KEY));if(old&&Array.isArray(old.customers)&&Array.isArray(old.transactions))legacy=old;}catch(_){}db=legacy||{customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি',suppliers:[],supplierTransactions:[],selectedSupplierId:null};}// Transaction images are intentionally not bulk-loaded at startup; the report fetches only visible images.
 if(!Array.isArray(db.suppliers))db.suppliers=[];if(!Array.isArray(db.supplierTransactions))db.supplierTransactions=[];const patch={};if(!Object.prototype.hasOwnProperty.call(db,'smsWalletBalance')||!Number.isFinite(Number(db.smsWalletBalance))){db.smsWalletBalance=0;patch.smsWalletBalance=0;}if(!Array.isArray(db.smsHistory)){db.smsHistory=[];patch.smsHistory=[];}if(!Array.isArray(db.smsRechargeRequests)){db.smsRechargeRequests=[];patch.smsRechargeRequests=[];}if(!Array.isArray(db.smsWalletTransactions)){db.smsWalletTransactions=[];patch.smsWalletTransactions=[];}if(Number(db.smsWalletBalance)===500&&db.smsWalletTransactions.length===0&&db.smsHistory.length===0&&!db.smsRechargeRequests.some(x=>String(x.status||'').toUpperCase()==='APPROVED')){db.smsWalletBalance=0;patch.smsWalletBalance=0;}if(!snap.exists||Object.keys(patch).length){e24Diagnostic('main-data-write-start',{reason:!snap.exists?'document-missing':'schema-patch',patchFields:Object.keys(patch)});try{await ref.set({...db,...patch,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});e24Diagnostic('main-data-write-success',{reason:!snap.exists?'document-missing':'schema-patch'});}catch(err){e24Diagnostic('main-data-write-failed',{code:err&&err.code||'unknown',message:err&&err.message||String(err),path:'users/{uid}/data/main',patchFields:Object.keys(patch)});throw err;}if(legacy)localStorage.removeItem(KEY);}e24ProcessLoadedNotifications(uid);refreshAll();renderSmsWallet();if(isAdmin&&typeof e24AdminUpdateSummary==='function')e24AdminUpdateSummary();const timing=document.getElementById('e24-load-timing');if(timing){timing.textContent='ডেটা: '+elapsed.toFixed(2)+' সেকেন্ড · অ্যাপ চালু: '+((performance.now()-e24BootStartedAt)/1000).toFixed(2)+' সেকেন্ড';timing.hidden=false;}}
 
 let e24NotificationPollTimer=null;

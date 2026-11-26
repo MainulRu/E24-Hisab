@@ -2351,24 +2351,26 @@
     @media(prefers-color-scheme:dark){.customer-receivable-card{background:linear-gradient(120deg,#193b2a,#203b2d)!important;border-color:#356b4b!important;color:#e1f5e8!important}.customer-receivable-heading,.customer-receivable-amount{color:#8ee0ad!important}.customer-receivable-note{color:#b1d4bd!important}.customer-receivable-icon,.customer-receivable-tag{background:#28563a!important;color:#a9e8bd!important}}
 
 
-/* WebView scroll fix: let the document scroll on supplier and purchase pages. */
-body:has(#page-9.active-page),
-body:has(#page-10.active-page){
+/* Supplier and purchase pages: enable document scrolling without :has() support. */
+body.e24-long-page{
   height:auto!important;
   min-height:100vh!important;
   overflow-y:auto!important;
   overflow-x:hidden!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  padding:0!important;
 }
-body:has(#page-9.active-page) .card-wrapper,
-body:has(#page-10.active-page) .card-wrapper,
-body:has(#page-9.active-page) .phone-screen,
-body:has(#page-10.active-page) .phone-screen{
+body.e24-long-page .card-wrapper{
+  height:auto!important;
+  min-height:100vh!important;
+}
+body.e24-long-page .phone-screen{
   height:auto!important;
   min-height:100vh!important;
   overflow:visible!important;
 }
-body:has(#page-9.active-page) .screen-body,
-body:has(#page-10.active-page) .screen-body{
+body.e24-long-page .screen-body{
   display:block!important;
   height:auto!important;
   min-height:0!important;
@@ -2376,8 +2378,8 @@ body:has(#page-10.active-page) .screen-body{
   overflow:visible!important;
   touch-action:pan-y;
 }
-body:has(#page-9.active-page) #page-9,
-body:has(#page-10.active-page) #page-10{
+body.e24-long-page #page-9,
+body.e24-long-page #page-10{
   display:flex!important;
   height:auto!important;
   min-height:0!important;
@@ -2988,6 +2990,7 @@ body:has(#page-10.active-page) #page-10{
       switchPage(pageKey);
     }
     function switchPage(pageKey) {
+      document.body.classList.toggle('e24-long-page', ['9','10'].includes(String(pageKey)));
       if(window.e24ActivePageUid){try{sessionStorage.setItem('e24-session-page-'+String(window.e24ActivePageUid),String(pageKey));}catch(_){}}
       // Hide all pages & remove active navs
       for (let i = 1; i <= 10; i++) {

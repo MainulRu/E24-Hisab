@@ -1903,14 +1903,21 @@ body.e24-long-page #dynamic-app-bar{
   display:none!important;
 }
 body.e24-long-page .screen-body{
+  position:absolute!important;
+  top:0!important;
+  right:0!important;
+  bottom:56px!important;
+  left:0!important;
   display:block!important;
-  flex:1 1 auto!important;
-  height:0!important;
+  width:100%!important;
+  height:auto!important;
   min-height:0!important;
-  padding:0!important;
-  overflow-y:auto!important;
+  flex:none!important;
+  padding:0 0 12px!important;
+  overflow-y:scroll!important;
   overflow-x:hidden!important;
   -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
   touch-action:pan-y;
 }
 body.e24-long-page #page-9:not(.active-page),

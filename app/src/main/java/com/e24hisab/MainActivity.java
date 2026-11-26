@@ -9,6 +9,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.webkit.WebChromeClient;
+import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -26,6 +27,8 @@ import android.net.Uri;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
+import android.content.ContentValues;
 import org.json.JSONObject;
 
 public class MainActivity extends Activity {
@@ -34,6 +37,9 @@ public class MainActivity extends Activity {
     private View navigationBarBackground;
     private static final int REQUEST_PICK_PHONE = 2401;
     private static final int REQUEST_SAVE_BACKUP = 2402;
+    private static final int REQUEST_TRANSACTION_IMAGE = 2403;
+    private ValueCallback<Uri[]> transactionImageCallback;
+    private Uri transactionCameraUri;
     private String pendingBackupJson;
 
     @Override
@@ -87,7 +93,16 @@ public class MainActivity extends Activity {
             settings.setSafeBrowsingEnabled(true);
         }
 
-        webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> filePathCallback,
+                    FileChooserParams fileChooserParams) {
+                if (transactionImageCallback != null) transactionImageCallback.onReceiveValue(null);
+                transactionImageCallback = filePathCallback;
+                openTransactionImagePicker();
+                return true;
+            }
+        });
         installAppJavascriptInterfaces();
         webView.setWebViewClient(new E24SecureWebViewClient());
 
@@ -234,6 +249,45 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void openTransactionImagePicker() {
+        try {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DISPLAY_NAME, "e24-transaction-" + System.currentTimeMillis() + ".jpg");
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/E24 Hisab");
+            }
+            transactionCameraUri = getContentResolver().insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values
+            );
+
+            Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (transactionCameraUri != null) {
+                camera.putExtra(MediaStore.EXTRA_OUTPUT, transactionCameraUri);
+                camera.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            }
+
+            Intent gallery = new Intent(Intent.ACTION_GET_CONTENT);
+            gallery.setType("image/*");
+            gallery.addCategory(Intent.CATEGORY_OPENABLE);
+            Intent chooser = Intent.createChooser(gallery, "ছবি নির্বাচন করুন");
+            if (camera.resolveActivity(getPackageManager()) != null) {
+                chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { camera });
+            }
+            startActivityForResult(chooser, REQUEST_TRANSACTION_IMAGE);
+        } catch (Exception e) {
+            if (transactionCameraUri != null) {
+                getContentResolver().delete(transactionCameraUri, null, null);
+                transactionCameraUri = null;
+            }
+            if (transactionImageCallback != null) {
+                transactionImageCallback.onReceiveValue(null);
+                transactionImageCallback = null;
+            }
+            if (webView != null) webView.evaluateJavascript("showToast('ক্যামেরা বা গ্যালারি খোলা যায়নি')", null);
+        }
+    }
+
     private void openPhoneBook() {
         try {
             Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
@@ -260,6 +314,21 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_TRANSACTION_IMAGE) {
+            Uri selected = resultCode == RESULT_OK && data != null ? data.getData() : null;
+            if (selected == null && resultCode == RESULT_OK) selected = transactionCameraUri;
+            if (transactionImageCallback != null) {
+                transactionImageCallback.onReceiveValue(
+                    selected == null ? null : new Uri[] { selected }
+                );
+                transactionImageCallback = null;
+            }
+            if (transactionCameraUri != null && !transactionCameraUri.equals(selected)) {
+                getContentResolver().delete(transactionCameraUri, null, null);
+            }
+            transactionCameraUri = null;
+            return;
+        }
         if (requestCode == REQUEST_SAVE_BACKUP) {
             String json = pendingBackupJson;
             pendingBackupJson = null;

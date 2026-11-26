@@ -556,7 +556,9 @@ public class MainActivity extends Activity {
                 return;
             }
             webView.evaluateJavascript(
-                "(function(){var active=document.querySelector('.app-page.active-page');" +
+                "(function(){var customerModal=document.getElementById('customer-modal-backdrop');" +
+                "if(customerModal && customerModal.classList.contains('show')){history.back();return 'handled';}" +
+                "var active=document.querySelector('.app-page.active-page');" +
                 "if(active && active.id !== 'page-1'){switchPage('1');return 'handled';}" +
                 "return 'home';})()",
                 value -> { if ("\"home\"".equals(value)) finish(); }

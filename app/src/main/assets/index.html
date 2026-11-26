@@ -3689,7 +3689,7 @@ body.e24-long-page .purchase-page-shell{
         const customer=(db.customers||[]).find(x=>String(x.id)===String(t.customerId)),gave=t.type==='বাকি'?Number(t.amount)||0:0,got=t.type==='বাকি'?(Number(t.paid)||0):(Number(t.amount)||0);
         const parsedDate=reportDate(t.date),date=esc(parsedDate?parsedDate.toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'}):(t.date||'')),time=esc(t.time||'সময় উল্লেখ নেই');
         const description=esc(t.note||'ছোট লেনদেন');
-        const transactionImage=typeof t.image==='string'&&/^data:image\\/(?:jpeg|png|webp);base64,/.test(t.image)?'<img class="e24-tx-detail-picture" src="'+t.image+'" alt="লেনদেনের ছবি">':'';
+        const transactionImage=typeof t.image==='string'&&/^data:image\/(?:jpeg|png|webp);base64,/.test(t.image)?'<img class="e24-tx-detail-picture" src="'+t.image+'" alt="লেনদেনের ছবি">':'';
         page.innerHTML=`<section class="e24-tx-detail"><div class="e24-tx-detail-grid">
           <div class="e24-tx-detail-column"><div class="e24-tx-detail-head">বিবরণ</div><div class="e24-tx-detail-description">
             <strong class="e24-tx-detail-date">${date}</strong><small class="e24-tx-detail-time">ছোট লেনদেন ইনপুট সময়: ${time}</small>

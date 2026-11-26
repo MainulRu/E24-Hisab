@@ -2141,7 +2141,27 @@ body.e24-long-page .purchase-page-shell{
 .e24-ref-avatar{width:42px;height:42px;min-width:42px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center}.e24-ref-avatar img{width:100%;height:100%;object-fit:cover}.e24-ref-customer small{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#667085;margin-top:2px}.phone-screen.e24-dark .e24-ref-customer small{color:#d0d8d2!important}
 /* Selected customer report: compact three-column ledger */
 #page-12 .customer-report-table{width:100%;border:1px solid var(--border-color,#e4e9e5);border-radius:10px;overflow:hidden;background:var(--card-bg,#fff)}#page-12 .customer-report-head,#page-12 .customer-report-row{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(68px,.8fr) minmax(68px,.8fr);align-items:stretch}#page-12 .customer-report-head{background:#edf4ef;color:#294c38;font-size:10px;font-weight:800;text-align:center}#page-12 .customer-report-head>div{padding:10px 4px;border-right:1px solid #dce6df}#page-12 .customer-report-head>div:first-child{text-align:left;padding-left:9px}#page-12 .customer-report-head>div:last-child{border-right:0}#page-12 .customer-report-row{border-top:1px solid var(--border-color,#e4e9e5);font-size:11px;min-height:76px}#page-12 .customer-report-cell{padding:9px 5px;border-right:1px solid var(--border-color,#e4e9e5);min-width:0}#page-12 .customer-report-cell:last-child{border-right:0}#page-12 .customer-report-detail{padding:8px;display:flex;flex-direction:column;gap:4px;min-width:0}#page-12 .customer-report-date{font-weight:800;font-size:11px;line-height:1.35;color:var(--text-main,#25332b)}#page-12 .customer-report-time{font-size:9px;color:var(--text-muted,#77847b)}#page-12 .customer-report-note{font-size:10px;line-height:1.35;overflow-wrap:anywhere;color:var(--text-main,#25332b)}#page-12 .customer-report-image{width:48px;height:42px;object-fit:cover;border-radius:5px;border:1px solid #dce5df}#page-12 .customer-report-balance{font-size:9px;font-weight:800;color:#b45309;margin-top:2px;overflow-wrap:anywhere}#page-12 .customer-report-balance.advance{color:#16834b}#page-12 .customer-report-amount{display:flex;align-items:flex-start;justify-content:center;text-align:center;font-size:11px;font-weight:800;overflow-wrap:anywhere;padding-top:12px}#page-12 .customer-report-sale{color:#c2413a}#page-12 .customer-report-paid{color:#16834b}#page-12 .customer-report-empty{padding:22px 8px;text-align:center;color:var(--text-muted,#77847b);font-size:11px}@media print{body.customer-report-printing *{visibility:hidden!important}body.customer-report-printing .status-bar,body.customer-report-printing .app-bar,body.customer-report-printing .bottom-nav,body.customer-report-printing .label-badge{display:none!important}body.customer-report-printing .app-page:not(#page-12){display:none!important}body.customer-report-printing .card-wrapper,body.customer-report-printing .phone-screen,body.customer-report-printing .screen-body{display:block!important;position:static!important;width:auto!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important}body.customer-report-printing #page-12,body.customer-report-printing #page-12 *{visibility:visible!important}body.customer-report-printing #page-12{display:block!important;position:static!important;width:100%!important;height:auto!important;margin:0!important;padding:0!important;background:#fff!important}body.customer-report-printing #page-12 .customer-report-table{border-color:#bbb!important}body.customer-report-printing #page-12 .customer-report-row,body.customer-report-printing #page-12 .customer-report-head{break-inside:avoid}}
-</style>
+
+    /* Report transaction detail / edit page */
+    .report-history .report-transaction-row{cursor:pointer;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) auto;gap:8px;align-items:center}
+    .report-history .report-transaction-row:focus{outline:2px solid var(--accent-blue);outline-offset:2px}
+    .e24-tx-detail{background:#fff;border:1px solid var(--border-color);border-radius:10px;padding:14px;min-height:100%}
+    .e24-tx-detail-date{text-align:center;color:var(--text-muted);font-size:12px;margin-bottom:12px}
+    .e24-tx-detail-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;border:1px solid var(--border-color);border-radius:8px;overflow:hidden}
+    .e24-tx-detail-grid>div{padding:11px 7px;text-align:center;min-width:0;border-right:1px solid var(--border-color);overflow-wrap:anywhere}
+    .e24-tx-detail-grid>div:last-child{border-right:0}
+    .e24-tx-detail-head{background:#e8f3ec;color:var(--dark-green);font-weight:700;font-size:12px}
+    .e24-tx-detail-value{font-size:13px;font-weight:700;color:var(--text-dark);min-height:46px;display:flex;align-items:center;justify-content:center}
+    .e24-tx-detail-note{margin-top:12px;padding:11px;background:#f5f7f8;border-radius:8px;font-size:12px;color:var(--text-dark);white-space:pre-wrap}
+    .e24-tx-detail-actions{display:flex;gap:10px;margin-top:18px}
+    .e24-tx-detail-actions button{flex:1;min-height:43px}
+    .e24-tx-edit-form{display:grid;gap:12px;margin-top:16px}
+    .e24-tx-edit-form label{display:block;font-size:12px;font-weight:700;margin-bottom:5px;color:var(--text-dark)}
+    .e24-tx-edit-form input,.e24-tx-edit-form textarea{width:100%;border:1px solid var(--border-color);border-radius:8px;padding:10px;background:#fff;color:#202124;font-size:13px}
+    .e24-tx-edit-amounts{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    @media(prefers-color-scheme:dark){.e24-tx-detail{background:#2b3830;border-color:#526258}.e24-tx-detail-grid{border-color:#526258}.e24-tx-detail-grid>div{border-color:#526258}.e24-tx-detail-head{background:#254332;color:#d9f5e2}.e24-tx-detail-value,.e24-tx-detail-note,.e24-tx-edit-form label{color:#e6eee8}.e24-tx-detail-note{background:#223129}.e24-tx-edit-form input,.e24-tx-edit-form textarea{background:#1c2921;border-color:#526258;color:#f1f5f2}}
+
+  </style>
 </head>
 <body>
 
@@ -2296,6 +2316,7 @@ body.e24-long-page .purchase-page-shell{
           <button class="btn btn-green shadow-btn" style="margin-top:8px" id="legacy-add-customer-button" type="button"><i class="fa-solid fa-user-plus"></i> নতুন গ্রাহক যোগ করুন</button></div>
         <!-- 12. SELECTED CUSTOMER REPORT PAGE; existing all-business report on Page-7 remains unchanged -->
         <div class="app-page" id="page-12"><div class="customer-report-table" aria-label="নির্বাচিত গ্রাহকের লেনদেন রিপোর্ট"><div class="customer-report-head"><div>লেনদেন বিবরণ</div><div>বিক্রি করলাম</div><div>জমা নিলাম</div></div><div id="customer-report-rows"><div class="customer-report-empty">কোনো লেনদেন নেই</div></div></div></div>
+        <div class="app-page" id="page-13"></div>
         <!-- Page-2: রেফারেন্স-স্টাইল গ্রাহক তালিকা -->
         <div class="app-page e24-customer-directory" id="page-2">
           <div class="customer-directory-search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" id="search-input" placeholder="গ্রাহকের নাম / মোবাইল খুঁজুন"></div>
@@ -2740,7 +2761,7 @@ body.e24-long-page .purchase-page-shell{
       document.body.classList.toggle('e24-long-page', ['9','10'].includes(String(pageKey)));
       if(window.e24ActivePageUid){try{sessionStorage.setItem('e24-session-page-'+String(window.e24ActivePageUid),String(pageKey));}catch(_){}}
       // Hide all pages & remove active navs
-      for (let i = 1; i <= 12; i++) {
+      for (let i = 1; i <= 13; i++) {
         const p = document.getElementById('page-' + i);
         const n = document.getElementById('nav-' + i);
         if (p) p.classList.remove('active-page');
@@ -2765,7 +2786,7 @@ body.e24-long-page .purchase-page-shell{
         '5': 'পেমেন্ট করুন',
         '6': 'মেসেজ সেন্টার',
         '7': 'হিসাব রিপোর্ট',
-        '8': 'সেটিংস', '9': 'সাপ্লায়ার ব্যবস্থাপনা', '10': 'নতুন ক্রয়', '12': 'গ্রাহকের রিপোর্ট'
+        '8': 'সেটিংস', '9': 'সাপ্লায়ার ব্যবস্থাপনা', '10': 'নতুন ক্রয়', '12': 'গ্রাহকের রিপোর্ট', '13': 'লেনদেন'
       };
 
       if (pageKey === '1') {
@@ -2773,6 +2794,8 @@ body.e24-long-page .purchase-page-shell{
         const homeTitle = document.getElementById('bar-title');
         if (homeTitle) homeTitle.textContent = window.e24OrgName || 'E24 Hisab';
 
+      } else if (pageKey === '13') {
+        dynamicBar.innerHTML = `<button type="button" class="interactive-icon" onclick="switchPage('7')" aria-label="রিপোর্টে ফিরে যান" style="border:0;background:none;color:#fff;padding:0 8px 0 0;flex:0 0 auto"><i class="fa-solid fa-arrow-left"></i></button><span class="app-title">লেনদেন</span>`;
       } else if (pageKey === '3' || pageKey === '12') {
         const headerCustomer = window.db && Array.isArray(window.db.customers)
           ? window.db.customers.find(c => String(c.id) === String(window.db.selectedCustomerId))
@@ -3145,9 +3168,61 @@ body.e24-long-page .purchase-page-shell{
         const pie=document.getElementById('report-pie-chart');if(pie){if(total<=0){pie.innerHTML='';pie.style.background='transparent';}else if(paidPct<=0||paidPct>=100){pie.innerHTML='';pie.style.background=paidPct<=0?'var(--accent-red)':'var(--primary-green)';}else{const size=55,center=size/2,radius=center,splitDeg=paidPct*3.6,endX=center+radius*Math.sin(splitDeg*Math.PI/180),endY=center-radius*Math.cos(splitDeg*Math.PI/180),largeArc=splitDeg>180?1:0;pie.style.background='transparent';pie.innerHTML=`<svg viewBox="0 0 55 55" width="55" height="55" aria-hidden="true"><defs><clipPath id="reportPieClip"><circle cx="27.5" cy="27.5" r="27.5"/></clipPath></defs><g clip-path="url(#reportPieClip)"><circle cx="27.5" cy="27.5" r="27.5" fill="var(--primary-green)"/><path d="M 27.5 27.5 L 27.5 0 A 27.5 27.5 0 ${largeArc} 1 ${endX} ${endY} Z" fill="var(--accent-red)"/><path d="M 27.5 27.5 L 27.5 0 M 27.5 27.5 L ${endX} ${endY}" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="butt"/></g></svg>`;}}
         set('report-paid-label',`জমা (${paidPct}%)`);set('report-due-label',`বাকি (${duePct}%)`);set('report-tx-count','লেনদেন: '+rows.length.toLocaleString('bn-BD')+'টি');
         const list=document.getElementById('report-transaction-list');
-        if(list)list.innerHTML=rows.length?rows.map(t=>{const c=db.customers.find(x=>String(x.id)===String(t.customerId));const isDue=t.type==='বাকি';return `<li class="history-item"><span class="tx-icon ${isDue?'icon-down':'icon-up'}"><i class="fa-solid ${isDue?'fa-arrow-down':'fa-arrow-up'}"></i></span><div class="tx-info"><span class="tx-name">${esc(c?.name||'গ্রাহক')} — ${isDue?'বিক্রি':'জমা'}</span><span class="${isDue?'red-text':'green-text'}" style="font-weight:700">${money(t.amount)}${isDue&&Number(t.paid)>0?' · তাৎক্ষণিক জমা '+money(t.paid):''}${t.note?' · '+esc(t.note):''}</span></div><span class="tx-date">${esc(t.date)}</span></li>`;}).join(''):'<li class="report-empty">এই সময়ে কোনো লেনদেন নেই</li>';
+        if(list)list.innerHTML=rows.length?rows.map(t=>{const c=db.customers.find(x=>String(x.id)===String(t.customerId));const isDue=t.type==='বাকি';return `<li class="history-item report-transaction-row" data-txid="${esc(t.id)}" role="button" tabindex="0" aria-label="লেনদেনের বিস্তারিত দেখুন"><span class="tx-icon ${isDue?'icon-down':'icon-up'}"><i class="fa-solid ${isDue?'fa-arrow-down':'fa-arrow-up'}"></i></span><div class="tx-info"><span class="tx-name">${esc(c?.name||'গ্রাহক')} — ${isDue?'বিক্রি':'জমা'}</span><span class="${isDue?'red-text':'green-text'}" style="font-weight:700">${money(t.amount)}${isDue&&Number(t.paid)>0?' · তাৎক্ষণিক জমা '+money(t.paid):''}${t.note?' · '+esc(t.note):''}</span></div><span class="tx-date">${esc(t.date)}</span></li>`;}).join(''):'<li class="report-empty">এই সময়ে কোনো লেনদেন নেই</li>';
       }
       window.printReport=()=>{document.body.classList.add('report-printing');window.print();setTimeout(()=>document.body.classList.remove('report-printing'),500);};
+
+      let e24ReportSelectedTransactionId=null;
+      function e24RenderReportTransactionDetail(){
+        const page=document.getElementById('page-13'),t=(db.transactions||[]).find(x=>String(x.id)===String(e24ReportSelectedTransactionId));
+        if(!page)return;
+        if(!t){page.innerHTML='<div class="e24-tx-detail"><p class="report-empty">লেনদেনটি পাওয়া যায়নি।</p><button class="btn btn-blue" type="button" onclick="switchPage(\'7\')">রিপোর্টে ফিরে যান</button></div>';return;}
+        const customer=(db.customers||[]).find(x=>String(x.id)===String(t.customerId));
+        const gave=t.type==='বাকি'?Number(t.amount)||0:0,got=t.type==='বাকি'?(Number(t.paid)||0):(Number(t.amount)||0);
+        const date=esc(t.date||''),time=esc(t.time||'সময় উল্লেখ নেই');
+        page.innerHTML=`<section class="e24-tx-detail">
+          <div class="e24-tx-detail-date">${date}<br><small>${time}</small></div>
+          <div class="e24-tx-detail-grid">
+            <div class="e24-tx-detail-head">বিবরণ</div><div class="e24-tx-detail-head">দিলাম</div><div class="e24-tx-detail-head">পেলাম</div>
+            <div class="e24-tx-detail-value">${esc(t.note||customer?.name||'লেনদেন')}</div>
+            <div class="e24-tx-detail-value red-text">${gave?money(gave):'—'}</div>
+            <div class="e24-tx-detail-value green-text">${got?money(got):'—'}</div>
+          </div>
+          <div class="e24-tx-detail-note"><strong>গ্রাহক:</strong> ${esc(customer?.name||'গ্রাহক')} ${customer?.phone?' · '+esc(customer.phone):''}</div>
+          <div class="e24-tx-detail-actions"><button type="button" class="btn btn-red" id="e24-tx-delete"><i class="fa-solid fa-trash"></i> ডিলেট</button><button type="button" class="btn btn-blue" id="e24-tx-edit"><i class="fa-solid fa-pen"></i> এডিট</button></div>
+          <div id="e24-tx-edit-area"></div>
+        </section>`;
+        document.getElementById('e24-tx-delete').onclick=async()=>{
+          if(!(await showAppConfirm('এই লেনদেনটি স্থায়ীভাবে ডিলেট করবেন?','লেনদেন ডিলেট করবেন?')))return;
+          const index=db.transactions.findIndex(x=>String(x.id)===String(t.id));if(index<0)return;
+          const removed=db.transactions.splice(index,1)[0];
+          if(!await save()){db.transactions.splice(index,0,removed);return;}
+          refreshReport();switchPage('7');showToast('লেনদেন ডিলেট করা হয়েছে','success');
+        };
+        document.getElementById('e24-tx-edit').onclick=()=>{
+          const d=reportDate(t.date)||new Date(),iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+          const area=document.getElementById('e24-tx-edit-area');
+          area.innerHTML=`<div class="e24-tx-edit-form">
+            <div><label for="e24-edit-note">বিবরণ</label><textarea id="e24-edit-note" rows="2">${esc(t.note||'')}</textarea></div>
+            <div class="e24-tx-edit-amounts"><div><label for="e24-edit-gave">দিলাম (৳)</label><input id="e24-edit-gave" type="number" min="0" step="1" inputmode="numeric" value="${gave}"></div><div><label for="e24-edit-got">পেলাম (৳)</label><input id="e24-edit-got" type="number" min="0" step="1" inputmode="numeric" value="${got}"></div></div>
+            <div><label for="e24-edit-date">তারিখ</label><input id="e24-edit-date" type="date" value="${iso}"></div>
+            <div class="e24-tx-detail-actions"><button type="button" class="btn btn-gray" id="e24-tx-edit-cancel">বাতিল</button><button type="button" class="btn btn-green" id="e24-tx-edit-save"><i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ</button></div>
+          </div>`;
+          document.getElementById('e24-tx-edit-cancel').onclick=()=>e24RenderReportTransactionDetail();
+          document.getElementById('e24-tx-edit-save').onclick=async()=>{
+            const nextGave=Number(document.getElementById('e24-edit-gave').value),nextGot=Number(document.getElementById('e24-edit-got').value),nextDate=document.getElementById('e24-edit-date').value,nextNote=document.getElementById('e24-edit-note').value.trim();
+            if(!nextDate||!Number.isSafeInteger(nextGave)||!Number.isSafeInteger(nextGot)||nextGave<0||nextGot<0||nextGave+nextGot<=0){showToast('তারিখ ও সঠিক টাকার পরিমাণ দিন');return;}
+            const old={...t};if(nextGave>0){t.type='বাকি';t.amount=nextGave;t.paid=nextGot;}else{t.type='জমা';t.amount=nextGot;delete t.paid;}
+            t.note=nextNote;t.date=new Date(nextDate+'T12:00:00').toLocaleDateString('bn-BD');
+            if(!await save()){Object.assign(t,old);return;}
+            refreshReport();e24RenderReportTransactionDetail();showToast('লেনদেন আপডেট হয়েছে','success');
+          };
+        };
+      }
+      window.e24OpenReportTransaction=id=>{e24ReportSelectedTransactionId=String(id);e24RenderReportTransactionDetail();switchPage('13');};
+      document.addEventListener('click',event=>{const row=event.target.closest('#report-transaction-list [data-txid]');if(row)window.e24OpenReportTransaction(row.dataset.txid);});
+      document.addEventListener('keydown',event=>{const row=event.target.closest&&event.target.closest('#report-transaction-list [data-txid]');if(row&&(event.key==='Enter'||event.key===' ')){event.preventDefault();window.e24OpenReportTransaction(row.dataset.txid);}});
+
       function supplierBalance(sid){return (db.supplierTransactions||[]).filter(x=>String(x.supplierId)===String(sid)).reduce((v,x)=>v+((x.type===1||x.type==='purchase')?(+x.amount||0):-(+x.amount||0)),0);}
 function renderSupplierPage(){const ul=document.getElementById('supplier-list'),list=document.getElementById('supplier-list-view'),form=document.getElementById('supplier-form-view'),detail=document.getElementById('supplier-detail-view');if(!ul||!list||!form||!detail)return;const pageTop=document.querySelector('#page-9 .supplier-page-top');if(pageTop)pageTop.hidden=false;list.hidden=false;form.hidden=true;detail.hidden=true;const suppliers=db.suppliers||[],txs=db.supplierTransactions||[],purchases=txs.filter(x=>x.type===1||x.type==='purchase').reduce((n,x)=>n+(+x.amount||0),0),paid=txs.filter(x=>x.type===2||x.type==='payment').reduce((n,x)=>n+(+x.amount||0),0),due=suppliers.reduce((n,x)=>n+supplierBalance(x.id),0);const put=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=money(value);};put('supplier-page-total-due',due);put('supplier-page-total-purchase',purchases);put('supplier-page-total-paid',paid);const count=document.getElementById('supplier-count-label');if(count)count.textContent=suppliers.length+' জন সাপ্লায়ার';ul.innerHTML=suppliers.map(s=>'<li class="supplier-page-item" data-sid="'+esc(s.id)+'"><span class="supplier-row-icon"><i class="fa-solid fa-truck"></i></span><span class="supplier-row-info"><strong class="supplier-name-open" role="button" tabindex="0">'+esc(s.name)+'</strong><small>'+esc(s.phone||s.address||'')+'</small></span><span class="supplier-row-balance"><small>বকেয়া</small><strong>'+money(supplierBalance(s.id))+'</strong></span><i class="fa-solid fa-chevron-right supplier-row-arrow"></i></li>').join('')||'<li class="supplier-empty">এখনো কোনো সাপ্লায়ার যোগ করা হয়নি</li>';ul.querySelectorAll('[data-sid]').forEach(el=>{el.classList.remove('supplier-selected');el.removeAttribute('aria-selected');const nameEl=el.querySelector('.supplier-name-open');const openDetail=()=>{db.selectedSupplierId=el.dataset.sid;e24ShowSupplier(el.dataset.sid);};nameEl.onclick=openDetail;nameEl.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openDetail();}};});const search=document.getElementById('supplier-search');if(search&&!search.dataset.bound){search.dataset.bound='1';search.addEventListener('input',()=>ul.querySelectorAll('[data-sid]').forEach(el=>el.hidden=!el.textContent.toLowerCase().includes(search.value.toLowerCase())));}}
 window.e24OpenSupplierForm=()=>{const modal=document.getElementById('customer-modal-backdrop'),name=document.getElementById('new-customer-name'),phone=document.getElementById('new-customer-phone'),address=document.getElementById('new-customer-address'),title=document.getElementById('customer-modal-title'),submit=document.getElementById('customer-submit-label'),supplierOption=document.querySelector('#customer-entry-type [data-entry-type="supplier"]');if(!modal||!name||!phone||!address||!supplierOption)return;name.value='';phone.value='';address.value='';document.getElementById('customer-entry-photo').value='';document.getElementById('customer-entry-avatar').innerHTML='<i class="fa-solid fa-user"></i>';supplierOption.click();title.textContent='নতুন সাপ্লায়ার';submit.textContent='নিশ্চিত করুন';modal.classList.add('show');modal.setAttribute('aria-hidden','false');setTimeout(()=>name.focus(),80);};
@@ -3228,7 +3303,7 @@ window.e24SaveSupplierPayment=()=>{const input=document.getElementById('supplier
       window.printCustomerReport=()=>{if(!document.getElementById('page-12')?.classList.contains('active-page'))return;document.body.classList.add('customer-report-printing');window.print();setTimeout(()=>document.body.classList.remove('customer-report-printing'),700);};
 function refreshAll(){renderCustomers();renderLedger();renderTransactionForm(db.txType);refreshHome();renderSupplierPage();}
       window.beginTransaction=(type)=>{renderTransactionForm(type||'বাকি');switchPage('4');};
-      window.switchPage = ((old)=>function(pageKey){if(String(pageKey)==='3')renderCustomerTransactionPage('বাকি');if(String(pageKey)==='12')renderCustomerReport();if(String(pageKey)==='4'){db.txType='বাকি';renderTransactionForm('বাকি');}if(String(pageKey)==='9')renderSupplierPage();old(String(pageKey));if(String(pageKey)==='1')refreshHome();})(window.switchPage);
+      window.switchPage = ((old)=>function(pageKey){if(String(pageKey)==='13')e24RenderReportTransactionDetail();if(String(pageKey)==='3')renderCustomerTransactionPage('বাকি');if(String(pageKey)==='12')renderCustomerReport();if(String(pageKey)==='4'){db.txType='বাকি';renderTransactionForm('বাকি');}if(String(pageKey)==='9')renderSupplierPage();old(String(pageKey));if(String(pageKey)==='1')refreshHome();})(window.switchPage);
       document.addEventListener('DOMContentLoaded',()=>{const homeFab=document.getElementById('home-transaction-fab');const homePage=document.getElementById('page-1');if(homeFab)homeFab.style.display=homePage&&homePage.classList.contains('active-page')?'flex':'none';});
       document.addEventListener('DOMContentLoaded',()=>{
          // Firebase data loads after authentication.

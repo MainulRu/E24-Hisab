@@ -3244,7 +3244,7 @@ body.e24-long-page .purchase-page-shell{
           const imageDocId='tximg_'+String(t.id).replace(/[^A-Za-z0-9_-]/g,'_');
           e24Store.collection('users').doc(activeDataUid).collection('data').doc(imageDocId).get().then(snapshot=>{
             const storedImage=snapshot.exists?snapshot.data()?.image:'';
-            if(typeof storedImage==='string'&&/^data:image\\/(?:jpeg|png|webp);base64,/.test(storedImage)){
+            if(typeof storedImage==='string'&&/^data:image\/(?:jpeg|png|webp);base64,/.test(storedImage)){
               const slot=document.getElementById('e24-tx-detail-picture-slot');
               if(slot)slot.innerHTML='<img class="e24-tx-detail-picture" src="'+storedImage+'" alt="লেনদেনের ছবি">';
             }

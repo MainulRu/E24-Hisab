@@ -359,9 +359,9 @@
     .customer-modal-backdrop{position:fixed;inset:0;width:100%;height:100%;background:#f5f7f6;z-index:9998;display:none;align-items:stretch;justify-content:stretch;padding:0;box-sizing:border-box;overflow:hidden}
     .customer-modal-backdrop.show{display:flex}
     .customer-modal{box-sizing:border-box;width:100%;max-width:none;height:100%;max-height:100%;overflow-y:auto;background:#f5f7f6;border-radius:0;padding:0;box-shadow:none;color:#222;display:flex;flex-direction:column}
-    .customer-page-header{height:58px;min-height:58px;display:flex;align-items:center;gap:16px;padding:0 16px;background:#087a35;color:#fff;box-sizing:border-box}
-    .customer-page-header button{width:36px;height:40px;border:0;background:transparent;color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;padding:0}
-    .customer-page-header h2{font-size:18px;line-height:1.25;font-weight:600;margin:0;color:#fff}
+    .customer-page-header{position:sticky;top:0;z-index:3;flex:0 0 58px;width:100%;height:58px;min-height:58px;display:flex;align-items:center;gap:12px;padding:0 16px;background:#087a35;color:#fff;box-sizing:border-box}
+    .customer-page-header button{flex:0 0 36px;width:36px;height:40px;border:0;border-radius:8px;background:transparent;color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+    .customer-page-header h2{flex:1;min-width:0;font-size:18px;line-height:1.25;font-weight:600;margin:0;color:#fff;text-align:left}
     .customer-page-content{padding:24px 20px 20px;display:flex;flex-direction:column;gap:18px;flex:1}
     .customer-entry-top{display:flex;align-items:center;gap:12px;width:100%}
     .customer-entry-type{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
@@ -2633,8 +2633,8 @@ body.e24-long-page .purchase-page-shell{
           <input type="file" id="customer-entry-photo" accept="image/*" hidden>
           </div>
           <div class="customer-entry-type" id="customer-entry-type">
-            <button type="button" class="customer-entry-option" data-entry-type="supplier"><i class="fa-regular fa-circle"></i><span>সাপ্লায়ার</span></button>
             <button type="button" class="customer-entry-option active" data-entry-type="customer"><i class="fa-regular fa-circle-dot"></i><span>কাস্টমার</span></button>
+            <button type="button" class="customer-entry-option" data-entry-type="supplier"><i class="fa-regular fa-circle"></i><span>সাপ্লায়ার</span></button>
           </div>
         </div>
         <button type="button" class="customer-phonebook-button" id="customer-phonebook"><i class="fa-regular fa-address-card"></i><span>ফোনবুক থেকে যোগ করি</span></button>

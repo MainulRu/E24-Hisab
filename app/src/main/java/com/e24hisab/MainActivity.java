@@ -46,6 +46,8 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> transactionImageCallback;
     private Uri transactionCameraUri;
     private String pendingBackupJson;
+    private String pendingContactName;
+    private String pendingContactPhone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,6 +166,10 @@ public class MainActivity extends Activity {
         rootLayout.requestApplyInsets();
         // Restore the existing WebView page when Android recreates this Activity
         // after an external picker (such as Contacts) instead of restarting the app.
+        if (savedInstanceState != null) {
+            pendingContactName = savedInstanceState.getString("e24_pending_contact_name");
+            pendingContactPhone = savedInstanceState.getString("e24_pending_contact_phone");
+        }
         boolean restored = savedInstanceState != null && webView.restoreState(savedInstanceState) != null;
         if (!restored) {
             webView.loadUrl("file:///android_asset/index.html");
@@ -175,6 +181,8 @@ public class MainActivity extends Activity {
         if (webView != null) {
             webView.saveState(outState);
         }
+        if (pendingContactName != null) outState.putString("e24_pending_contact_name", pendingContactName);
+        if (pendingContactPhone != null) outState.putString("e24_pending_contact_phone", pendingContactPhone);
         super.onSaveInstanceState(outState);
     }
 
@@ -248,6 +256,7 @@ public class MainActivity extends Activity {
         public void onPageFinished(WebView view, String url) {
             if (isTrustedAppAsset(Uri.parse(url))) {
                 installAppJavascriptInterfaces();
+                dispatchPendingPhoneBookContact();
                 view.evaluateJavascript(
                     "(function(){" +
                     "function sync(){var n=document.querySelector('.bottom-nav');if(!n||!window.AndroidNavBar)return;" +
@@ -463,18 +472,26 @@ public class MainActivity extends Activity {
         } finally {
             if (cursor != null) cursor.close();
         }
-        if (webView != null) {
-            final String pickedName = name;
-            final String pickedPhone = phone;
-            webView.post(() -> webView.evaluateJavascript(
-                "(function(){var n=" + JSONObject.quote(pickedName) + ";var p=" + JSONObject.quote(pickedPhone) + ";" +
-                "if(typeof window.e24SetCustomerPhoneBookContact==='function'){window.e24SetCustomerPhoneBookContact(n,p);}" +
-                "else if(typeof window.e24SetPhoneBookContact==='function'){window.e24SetPhoneBookContact(n,p);}" +
-                "else{var nf=document.getElementById('new-customer-name'),pf=document.getElementById('new-customer-phone');if(nf)nf.value=n;if(pf)pf.value=p;}}" +
-                "})()",
-                null
-            ));
-        }
+        pendingContactName = name;
+        pendingContactPhone = phone;
+        dispatchPendingPhoneBookContact();
+    }
+
+    private void dispatchPendingPhoneBookContact() {
+        if (webView == null || pendingContactName == null || pendingContactPhone == null) return;
+        final String pickedName = pendingContactName;
+        final String pickedPhone = pendingContactPhone;
+        webView.post(() -> webView.evaluateJavascript(
+            "(function(){if(typeof window.e24SetCustomerPhoneBookContact!=='function')return false;" +
+            "window.e24SetCustomerPhoneBookContact(" + JSONObject.quote(pickedName) + "," +
+            JSONObject.quote(pickedPhone) + ");return true;})()",
+            value -> {
+                if ("true".equals(value)) {
+                    pendingContactName = null;
+                    pendingContactPhone = null;
+                }
+            }
+        ));
     }
 
     public static class AndroidNavBarBridge {

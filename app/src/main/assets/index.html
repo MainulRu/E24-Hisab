@@ -3345,13 +3345,17 @@ body.e24-long-page .screen-body{
           </div>
           <div class="payment-amount-box">৳ 2,500</div>
           <div class="form-label" style="font-weight:700; margin-bottom:5px;">পেমেন্ট মাধ্যম নির্বাচন করুন:</div>
-          <div class="payment-options">
-            <label class="pay-option"><input type="radio" name="pay" checked><i class="fa-solid fa-mobile-button" style="color:#e91e63;"></i> বিকাশ দিয়ে পেমেন্ট</label>
-            <label class="pay-option"><input type="radio" name="pay"><i class="fa-solid fa-wallet" style="color:#f57c00;"></i> নগদ দিয়ে পেমেন্ট</label>
-            <label class="pay-option"><input type="radio" name="pay"><i class="fa-solid fa-building-columns" style="color:#1565c0;"></i> ব্যাংক পেমেন্ট</label>
-            <label class="pay-option"><input type="radio" name="pay"><i class="fa-solid fa-money-bill-1" style="color:#2e7d32;"></i> নগদ টাকা (Cash)</label>
+          <div class="payment-options" id="e24-payment-method-options">
+            <label class="pay-option" id="e24-pay-option-bkash"><input type="radio" name="pay" value="bkash" onchange="e24RenderPaymentPage()"><i class="fa-solid fa-mobile-button" style="color:#e91e63;"></i> বিকাশ দিয়ে পেমেন্ট</label>
+            <label class="pay-option" id="e24-pay-option-nagad"><input type="radio" name="pay" value="nagad" onchange="e24RenderPaymentPage()"><i class="fa-solid fa-wallet" style="color:#f57c00;"></i> নগদ দিয়ে পেমেন্ট</label>
+            <label class="pay-option" id="e24-pay-option-bank"><input type="radio" name="pay" value="bank" onchange="e24RenderPaymentPage()"><i class="fa-solid fa-building-columns" style="color:#1565c0;"></i> ব্যাংক পেমেন্ট</label>
+            <label class="pay-option" id="e24-pay-option-cash"><input type="radio" name="pay" value="cash" checked onchange="e24RenderPaymentPage()"><i class="fa-solid fa-money-bill-1" style="color:#2e7d32;"></i> নগদ টাকা (Cash)</label>
           </div>
-          <button class="btn btn-pink shadow-btn" style="margin-top:8px;" onclick="showToast('পেমেন্ট সফল হয়েছে!')">
+          <div id="e24-payment-account-details" class="sms-wallet-panel" style="margin-top:9px" aria-live="polite">
+            <strong id="e24-payment-account-title">পেমেন্ট তথ্য</strong>
+            <div id="e24-payment-account-content" class="sms-wallet-note" style="margin-top:6px">Settings থেকে পেমেন্ট তথ্য যোগ করুন।</div>
+          </div>
+          <button class="btn btn-pink shadow-btn" style="margin-top:8px;" onclick="showToast('এখনো বাস্তব পেমেন্ট গেটওয়ে যুক্ত হয়নি।')">
             <i class="fa-solid fa-paper-plane"></i> পেমেন্ট করুন
           </button>
         </div>
@@ -3894,6 +3898,7 @@ body.e24-long-page .screen-body{
       }
       const homeFab=document.getElementById('home-transaction-fab');if(homeFab)homeFab.style.display=pageKey==='1'?'flex':'none';
       if(pageKey==='1') e24ApplyHomeHeaderName();
+      if(String(pageKey)==='5'&&typeof window.e24RenderPaymentPage==='function')window.e24RenderPaymentPage();
       else if(typeof e24CloseNotificationPanel==='function') e24CloseNotificationPanel();
       if(typeof window.e24RenderNotifications==='function'){window.e24RenderNotifications();if(pageKey==='1')requestAnimationFrame(()=>window.e24RenderNotifications());}
     }
@@ -4844,7 +4849,55 @@ function e24RenderPaymentSettings(){
       element.value=settings[key]||(key==='bkashAccountType'||key==='nagadAccountType'?'personal':'');
     }
   });
+  if(typeof window.e24RenderPaymentPage==='function')window.e24RenderPaymentPage();
 }
+function e24RenderPaymentPage(){
+  const settings=(db&&db.paymentSettings&&typeof db.paymentSettings==='object')?db.paymentSettings:{};
+  const values={
+    bkash:settings.bkashAccountType==='merchant'?settings.bkashMerchantId:settings.bkashPersonalNumber,
+    nagad:settings.nagadAccountType==='merchant'?settings.nagadMerchantId:settings.nagadPersonalNumber
+  };
+  const available={
+    bkash:!!String(values.bkash||'').trim(),
+    nagad:!!String(values.nagad||'').trim(),
+    bank:!!(String(settings.bankName||'').trim()&&String(settings.bankAccount||'').trim())
+  };
+  Object.keys(available).forEach(function(method){
+    const option=document.getElementById('e24-pay-option-'+method);
+    if(option)option.hidden=!available[method];
+  });
+  const radios=Array.from(document.querySelectorAll('#e24-payment-method-options input[name="pay"]'));
+  const selected=radios.find(r=>r.checked&&!r.closest('label')?.hidden);
+  if(!selected){
+    const fallback=radios.find(r=>r.value==='cash');
+    if(fallback)fallback.checked=true;
+  }
+  const method=(radios.find(r=>r.checked)||{}).value||'cash';
+  const title=document.getElementById('e24-payment-account-title');
+  const content=document.getElementById('e24-payment-account-content');
+  const details=document.getElementById('e24-payment-account-details');
+  if(!title||!content||!details)return;
+  const addLine=(label,value)=>{if(String(value||'').trim()){const line=document.createElement('div');line.style.marginTop='4px';line.textContent=label+': '+String(value).trim();content.appendChild(line);}};
+  content.textContent='';
+  if(method==='bkash'||method==='nagad'){
+    const provider=method==='bkash'?'বিকাশ':'নগদ';
+    const accountType=settings[method+'AccountType']==='merchant'?'Merchant':'Personal';
+    title.textContent=provider+' পেমেন্ট তথ্য';
+    addLine('অ্যাকাউন্টের ধরন',accountType);
+    addLine('নম্বর / Merchant ID',values[method]);
+  }else if(method==='bank'){
+    title.textContent='ব্যাংক পেমেন্ট তথ্য';
+    addLine('ব্যাংকের নাম',settings.bankName);
+    addLine('হিসাবের নাম',settings.bankHolder);
+    addLine('অ্যাকাউন্ট নম্বর',settings.bankAccount);
+    addLine('শাখা',settings.bankBranch);
+    addLine('রাউটিং নম্বর',settings.bankRouting);
+  }else{
+    title.textContent='নগদ টাকা (Cash)';
+    addLine('পেমেন্ট তথ্য','সরাসরি নগদ টাকা গ্রহণ করুন।');
+  }
+}
+window.e24RenderPaymentPage=e24RenderPaymentPage;
 async function e24SavePaymentSettings(){
   if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন');return;}
   const button=document.getElementById('e24-save-payment-settings');

@@ -3895,13 +3895,7 @@ body.e24-long-page .screen-body{
         return safePhoto ? `<img src="${safePhoto}" alt="গ্রাহকের ছবি">` : '<i class="fa-solid fa-user"></i>';
       }; 
       const e24SavedTransactionImageIds=window.e24SavedTransactionImageIds||(window.e24SavedTransactionImageIds=new Set());
-      let e24SaveQueue=Promise.resolve();
-      function save(successMessage){
-        const task=e24SaveQueue.then(()=>e24PerformSave(successMessage),()=>e24PerformSave(successMessage));
-        e24SaveQueue=task.then(()=>undefined,()=>undefined);
-        return task;
-      }
-      async function e24PerformSave(successMessage){
+      async function save(successMessage){
         if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন','error');return false;}
         const dataRef=e24Store.collection('users').doc(activeDataUid).collection('data');
         try{

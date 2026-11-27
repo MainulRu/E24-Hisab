@@ -2372,8 +2372,8 @@ body.e24-long-page .purchase-page-shell{
   box-sizing:border-box;
 }
 #supplier-form-view .supplier-form-header{
-  width:calc(100% + 26px);
-  margin:0 -13px;
+  width:auto;
+  margin:0 -12px 12px;
   padding:14px 15px;
   min-height:58px;
   gap:12px;
@@ -2914,7 +2914,7 @@ body.e24-long-page .purchase-page-shell{
         </div>
 
 <div class="app-page" id="page-9"><div class="supplier-page-shell"><div class="supplier-page-top"><span class="supplier-page-back" onclick="switchPage('1')"><i class="fa-solid fa-arrow-left"></i></span><div><strong>সাপ্লায়ার ব্যবস্থাপনা</strong><small>সাপ্লায়ারদের আলাদা হিসাব ও লেনদেন</small></div><span class="supplier-page-top-icon"><i class="fa-solid fa-truck"></i></span></div><div id="supplier-list-view"><div class="supplier-summary-card"><div class="supplier-summary-label">সাপ্লায়ারকে মোট পরিশোধযোগ্য</div><div class="supplier-summary-total" id="supplier-page-total-due">৳ 0</div><div class="supplier-summary-stats"><div><span>মোট ক্রয়</span><strong id="supplier-page-total-purchase">৳ 0</strong></div><div><span>মোট পরিশোধ</span><strong id="supplier-page-total-paid">৳ 0</strong></div></div></div><div class="supplier-list-heading"><strong>সাপ্লায়ার তালিকা</strong><span id="supplier-count-label">সব সাপ্লায়ার</span></div><div class="supplier-search-wrap"><i class="fa-solid fa-magnifying-glass"></i><input class="form-input" id="supplier-search" type="search" placeholder="নাম / মোবাইল দিয়ে খুঁজুন"></div><ul class="supplier-page-list" id="supplier-list"></ul><div class="supplier-list-actions"><button class="supplier-add-button" type="button" onclick="e24OpenSupplierForm()"><i class="fa-solid fa-plus"></i> নতুন সাপ্লায়ার যুক্ত</button><button class="supplier-purchase-button" type="button" onclick="e24OpenPurchasePage()"><i class="fa-solid fa-cart-shopping"></i> ক্রয় পেজ</button></div></div><div id="supplier-form-view" class="supplier-form-view" hidden>
- <div class="supplier-form-header"><button type="button" aria-label="ফিরে যান" onclick="e24CancelSupplierForm()"><i class="fa-solid fa-arrow-left"></i></button><div class="supplier-form-header-title"><strong>নতুন সাপ্লায়ার</strong><small>সাপ্লায়ারের তথ্য যুক্ত করুন</small></div><span class="supplier-form-header-icon"><i class="fa-solid fa-truck"></i></span></div>
+ <div class="supplier-form-header supplier-page-top"><button class="supplier-page-back" type="button" aria-label="ফিরে যান" onclick="e24CancelSupplierForm()"><i class="fa-solid fa-arrow-left"></i></button><div class="supplier-form-header-title"><strong>নতুন সাপ্লায়ার</strong><small>সাপ্লায়ারের তথ্য যুক্ত করুন</small></div><span class="supplier-form-header-icon supplier-page-top-icon"><i class="fa-solid fa-truck"></i></span></div>
  <div class="supplier-form-content">
   <div class="supplier-form-entry-top">
    <div class="supplier-form-avatar-wrap">

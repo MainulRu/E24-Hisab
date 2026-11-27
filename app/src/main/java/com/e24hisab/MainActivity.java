@@ -18,7 +18,6 @@ import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import androidx.webkit.WebViewAssetLoader;
 import android.webkit.WebResourceRequest;
 import android.webkit.SslErrorHandler;
 import android.net.http.SslError;
@@ -39,7 +38,6 @@ import org.json.JSONObject;
 
 public class MainActivity extends Activity {
     private WebView webView;
-    private WebViewAssetLoader assetLoader;
     private FrameLayout rootLayout;
     private View navigationBarBackground;
     private static final int REQUEST_PICK_PHONE = 2401;
@@ -78,11 +76,6 @@ public class MainActivity extends Activity {
         rootLayout.setBackgroundColor(Color.rgb(0, 92, 46));
 
         webView = new WebView(this);
-        // Serve bundled app files from a stable HTTPS origin. Firebase Auth LOCAL
-        // persistence is not reliable on file:// origins in Android WebView.
-        assetLoader = new WebViewAssetLoader.Builder()
-            .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
-            .build();
         // Disable Android system Autofill services (including Google Autofill)
         // for this WebView so saved names, phone numbers and addresses are not suggested.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -97,8 +90,9 @@ public class MainActivity extends Activity {
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
-        // Bundled files are served securely through WebViewAssetLoader, not file://.
-        settings.setAllowFileAccess(false);
+        // File access is needed only to load the bundled app asset. Prevent file-origin
+        // JavaScript from reading other file URLs or reaching arbitrary network origins.
+        settings.setAllowFileAccess(true);
         settings.setAllowFileAccessFromFileURLs(false);
         settings.setAllowUniversalAccessFromFileURLs(false);
         // WebView needs access to the single content:// URI explicitly returned by the
@@ -178,7 +172,7 @@ public class MainActivity extends Activity {
         }
         boolean restored = savedInstanceState != null && webView.restoreState(savedInstanceState) != null;
         if (!restored) {
-            webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+            webView.loadUrl("file:///android_asset/index.html");
         }
     }
 
@@ -194,9 +188,9 @@ public class MainActivity extends Activity {
 
     private boolean isTrustedAppAsset(Uri uri) {
         return uri != null
-            && "https".equalsIgnoreCase(uri.getScheme())
-            && "appassets.androidplatform.net".equalsIgnoreCase(uri.getHost())
-            && "/assets/index.html".equals(uri.getPath());
+            && "file".equalsIgnoreCase(uri.getScheme())
+            && uri.getHost() == null
+            && "/android_asset/index.html".equals(uri.getPath());
     }
 
     private void installAppJavascriptInterfaces() {
@@ -229,16 +223,6 @@ public class MainActivity extends Activity {
     }
 
     private final class E24SecureWebViewClient extends WebViewClient {
-        @Override
-        public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-            return assetLoader == null ? null : assetLoader.shouldInterceptRequest(request.getUrl());
-        }
-
-        @Override
-        public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-            return assetLoader == null ? null : assetLoader.shouldInterceptRequest(Uri.parse(url));
-        }
-
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
             Uri uri = request.getUrl();

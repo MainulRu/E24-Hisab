@@ -2534,7 +2534,23 @@ body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
   flex-shrink:0!important;
 }
 
-\n    /* Shared structure for the four supplier and purchase views. */\n    .supplier-unified-page{display:flex;flex-direction:column;min-width:0;box-sizing:border-box}\n    .supplier-unified-header{display:flex;align-items:center;gap:12px;flex:0 0 auto;box-sizing:border-box}\n    .supplier-unified-back{display:flex;align-items:center;justify-content:center;flex:0 0 34px;min-width:34px;min-height:34px;border:0;background:transparent;color:inherit;cursor:pointer}\n    .supplier-unified-title{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}\n    .supplier-unified-icon{display:flex;align-items:center;justify-content:center;flex:0 0 auto}\n</style>
+\n    /* Shared structure for the four supplier and purchase views. */\n    .supplier-unified-page{display:flex;flex-direction:column;min-width:0;box-sizing:border-box}\n    .supplier-unified-header{display:flex;align-items:center;gap:12px;flex:0 0 auto;box-sizing:border-box}\n    .supplier-unified-back{display:flex;align-items:center;justify-content:center;flex:0 0 34px;min-width:34px;min-height:34px;border:0;background:transparent;color:inherit;cursor:pointer}\n    .supplier-unified-title{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}\n    .supplier-unified-icon{display:flex;align-items:center;justify-content:center;flex:0 0 auto}\n
+    /* Supplier and purchase page back arrows: match the new supplier form. */
+    #page-9 .supplier-page-top .supplier-page-back,
+    #page-9 .supplier-detail-header .supplier-detail-back,
+    #page-10 .purchase-page-top .purchase-page-back{
+      background:transparent!important;
+      border:0!important;
+      box-shadow:none!important;
+      color:#1a1a1a!important;
+      outline-offset:2px;
+    }
+    #page-9 .supplier-page-top .supplier-page-back i,
+    #page-9 .supplier-detail-header .supplier-detail-back i,
+    #page-10 .purchase-page-top .purchase-page-back i{
+      color:#1a1a1a!important;
+    }
+</style>
 </head>
 <body>
 

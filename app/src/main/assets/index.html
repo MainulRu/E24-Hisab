@@ -406,8 +406,7 @@
     #page-9 .section-title{margin-top:0}
     /* Full-screen customer add/edit page */
     #page-14{min-height:0;overflow-y:auto;background:#f5f7f6;box-sizing:border-box}
-    body.e24-customer-entry-active #dynamic-app-bar{display:none!important}
-    .customer-modal{box-sizing:border-box;width:100%;max-width:none;height:100%;max-height:100%;overflow-y:auto;background:#f5f7f6;border-radius:0;padding:0;box-shadow:none;color:#222;display:flex;flex-direction:column}
+        .customer-modal{box-sizing:border-box;width:100%;max-width:none;height:100%;max-height:100%;overflow-y:auto;background:#f5f7f6;border-radius:0;padding:0;box-shadow:none;color:#222;display:flex;flex-direction:column}
     .customer-entry-no-header .customer-page-header{display:none}
     .customer-page-header{position:sticky;top:0;z-index:3;flex:0 0 58px;width:100%;height:58px;min-height:58px;display:flex;align-items:center;gap:12px;padding:0 16px;background:#087a35;color:#fff;box-sizing:border-box}
     .customer-page-header button{flex:0 0 36px;width:36px;height:40px;border:0;border-radius:8px;background:transparent;color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
@@ -3653,7 +3652,6 @@ body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
 
     function switchPage(pageKey) {
       document.body.classList.toggle('e24-long-page', ['9','10'].includes(String(pageKey)));
-      document.body.classList.toggle('e24-customer-entry-active', String(pageKey)==='14');
       if(window.e24ActivePageUid){try{sessionStorage.setItem('e24-session-page-'+String(window.e24ActivePageUid),String(pageKey));}catch(_){}}
       // Hide all pages & remove active navs
       for (let i = 1; i <= 14; i++) {
@@ -3673,6 +3671,7 @@ body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
       else if (moreNav) moreNav.classList.add('active');
       // Update Header Title
       const dynamicBar = document.getElementById('dynamic-app-bar');
+      dynamicBar.style.display = '';
       const titles = {
         '1': 'E24 Hisab',
         '2': 'গ্রাহকের তালিকা',
@@ -3681,10 +3680,13 @@ body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
         '5': 'পেমেন্ট করুন',
         '6': 'মেসেজ সেন্টার',
         '7': 'হিসাব রিপোর্ট',
-        '8': 'সেটিংস', '9': 'সাপ্লায়ার ব্যবস্থাপনা', '10': 'নতুন ক্রয়', '12': 'গ্রাহকের রিপোর্ট', '13': 'লেনদেন', '14': 'নতুন গ্রাহক'
+        '8': 'সেটিংস', '9': 'সাপ্লায়ার ব্যবস্থাপনা', '10': 'নতুন ক্রয়', '12': 'গ্রাহকের রিপোর্ট', '13': 'লেনদেন'
       };
 
-      if (pageKey === '1') {
+      if (pageKey === '14') {
+        dynamicBar.innerHTML = '';
+        dynamicBar.style.display = 'none';
+      } else if (pageKey === '1') {
         dynamicBar.innerHTML = `<span class="app-title e24-header-brand"><i class="fa-solid fa-store" aria-hidden="true"></i><span id="bar-title">E24 Hisab</span></span><button type="button" class="e24-notification-trigger" id="e24-notification-bell" aria-label="ইনবক্স"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 10.5 16 5l12 5.5v15H4v-15Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="m4.5 11 11.5 8 11.5-8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 25.5 12 17M27.5 25.5 20 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span class="e24-notification-label">ইনবক্স</span><span class="e24-notification-count" id="e24-notification-count" hidden>0</span></button><button type="button" class="e24-ai-trigger" id="e24-ai-trigger" aria-label="সাপোর্ট" title="সাপোর্ট"><svg viewBox="0 0 36 32" width="36" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 5.5C3 3.6 4.6 2 6.5 2h18C26.4 2 28 3.6 28 5.5v12c0 1.9-1.6 3.5-3.5 3.5H13l-7.5 7v-7.2C4 20.2 3 19 3 17.5v-12Z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 9h20c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-2v4l-5-4h-5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="e24-ai-label">সাপোর্ট</span></button><button type="button" class="e24-header-menu interactive-icon" aria-label="মেনু খুলুন" title="মেনু"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>`;
         const homeTitle = document.getElementById('bar-title');
         if (homeTitle) homeTitle.textContent = window.e24OrgName || 'E24 Hisab';

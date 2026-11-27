@@ -48,6 +48,7 @@ public class MainActivity extends Activity {
     private String pendingBackupJson;
     private String pendingContactName;
     private String pendingContactPhone;
+    private String pendingContactTarget;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -169,6 +170,7 @@ public class MainActivity extends Activity {
         if (savedInstanceState != null) {
             pendingContactName = savedInstanceState.getString("e24_pending_contact_name");
             pendingContactPhone = savedInstanceState.getString("e24_pending_contact_phone");
+            pendingContactTarget = savedInstanceState.getString("e24_pending_contact_target");
         }
         boolean restored = savedInstanceState != null && webView.restoreState(savedInstanceState) != null;
         if (!restored) {
@@ -183,6 +185,7 @@ public class MainActivity extends Activity {
         }
         if (pendingContactName != null) outState.putString("e24_pending_contact_name", pendingContactName);
         if (pendingContactPhone != null) outState.putString("e24_pending_contact_phone", pendingContactPhone);
+        if (pendingContactTarget != null) outState.putString("e24_pending_contact_target", pendingContactTarget);
         super.onSaveInstanceState(outState);
     }
 
@@ -382,11 +385,13 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void openPhoneBook() {
+    private void openPhoneBook(String target) {
         try {
+            pendingContactTarget = "supplier".equals(target) ? "supplier" : "sms".equals(target) ? "sms" : "customer";
             Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
             startActivityForResult(intent, REQUEST_PICK_PHONE);
         } catch (Exception e) {
+            pendingContactTarget = null;
             if (webView != null) webView.evaluateJavascript("showToast('ফোনবুক খোলা যায়নি')", null);
         }
     }
@@ -474,6 +479,7 @@ public class MainActivity extends Activity {
         }
         pendingContactName = name;
         pendingContactPhone = phone;
+        if (pendingContactTarget == null) pendingContactTarget = "customer";
         dispatchPendingPhoneBookContact();
     }
 
@@ -481,15 +487,16 @@ public class MainActivity extends Activity {
         if (webView == null || pendingContactName == null || pendingContactPhone == null) return;
         final String pickedName = pendingContactName;
         final String pickedPhone = pendingContactPhone;
+        final String pickedTarget = pendingContactTarget == null ? "customer" : pendingContactTarget;
         webView.post(() -> webView.evaluateJavascript(
-            "(function(){var n=" + JSONObject.quote(pickedName) + ",p=" + JSONObject.quote(pickedPhone) + ";" +
-            "if(typeof window.e24SetPhoneBookContact==='function'){window.e24SetPhoneBookContact(n,p);return true;}" +
-            "if(typeof window.e24SetCustomerPhoneBookContact==='function'){window.e24SetCustomerPhoneBookContact(n,p);return true;}" +
-            "return false;})()",
+            "(function(){var n=" + JSONObject.quote(pickedName) + ",p=" + JSONObject.quote(pickedPhone) + ",t=" + JSONObject.quote(pickedTarget) + ";" +
+            "var fn=t==='supplier'?window.e24SetSupplierPhoneBookContact:t==='sms'?window.e24SetPhoneBookContact:window.e24SetCustomerPhoneBookContact;" +
+            "if(typeof fn==='function'){fn(n,p);return true;}return false;})()",
             value -> {
                 if ("true".equals(value)) {
                     pendingContactName = null;
                     pendingContactPhone = null;
+                    pendingContactTarget = null;
                 }
             }
         ));
@@ -549,8 +556,8 @@ public class MainActivity extends Activity {
         private final MainActivity activity;
         AndroidContactsBridge(MainActivity activity) { this.activity = activity; }
         @JavascriptInterface
-        public void pickPhoneNumber() {
-            activity.runOnUiThread(activity::openPhoneBook);
+        public void pickPhoneNumber(String target) {
+            activity.runOnUiThread(() -> activity.openPhoneBook(target));
         }
     }
 

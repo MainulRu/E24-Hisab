@@ -491,7 +491,7 @@ public class MainActivity extends Activity {
         webView.post(() -> webView.evaluateJavascript(
             "(function(){var n=" + JSONObject.quote(pickedName) + ",p=" + JSONObject.quote(pickedPhone) + ",t=" + JSONObject.quote(pickedTarget) + ";" +
             "var fn=t==='supplier'?window.e24SetSupplierPhoneBookContact:t==='sms'?window.e24SetPhoneBookContact:window.e24SetCustomerPhoneBookContact;" +
-            "if(typeof fn==='function'){fn(n,p);return true;}return false;})()",
+            "if(typeof fn==='function'){var ok=fn(n,p);return ok!==false;}return false;})()",
             value -> {
                 if ("true".equals(value)) {
                     pendingContactName = null;

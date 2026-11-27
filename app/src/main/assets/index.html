@@ -3502,7 +3502,41 @@ body.e24-long-page .screen-body{
             <details class="e24-settings-card">
               <summary><span class="e24-settings-icon"><i class="fa-solid fa-credit-card"></i></span> পেমেন্ট সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
               <div class="e24-settings-content">
-                <!-- Developer note: bKash/Nagad/Bank gateway এখনো সংযুক্ত নয়; ভবিষ্যৎ integration point। -->
+
+                <div class="e24-settings-hint">গ্রাহকের কাছ থেকে পেমেন্ট নেওয়ার অ্যাকাউন্ট তথ্য এখানে সেট করুন।</div>
+                <section class="sms-wallet-panel" style="margin-top:8px">
+                  <strong><i class="fa-solid fa-mobile-screen-button"></i> Personal Account</strong>
+                  <label for="e24-pay-bkash-number">বিকাশ Personal Number</label>
+                  <input id="e24-pay-bkash-number" class="form-input" type="tel" inputmode="tel" maxlength="20" placeholder="01XXXXXXXXX">
+                  <label for="e24-pay-nagad-number">নগদ Personal Number</label>
+                  <input id="e24-pay-nagad-number" class="form-input" type="tel" inputmode="tel" maxlength="20" placeholder="01XXXXXXXXX">
+                </section>
+                <section class="sms-wallet-panel">
+                  <strong><i class="fa-solid fa-building-columns"></i> Bank Account</strong>
+                  <label for="e24-pay-bank-name">ব্যাংকের নাম</label>
+                  <input id="e24-pay-bank-name" class="form-input" type="text" maxlength="80" placeholder="ব্যাংকের নাম">
+                  <label for="e24-pay-bank-holder">Account Holder Name</label>
+                  <input id="e24-pay-bank-holder" class="form-input" type="text" maxlength="100" placeholder="হিসাবধারীর নাম">
+                  <label for="e24-pay-bank-account">Account Number</label>
+                  <input id="e24-pay-bank-account" class="form-input" type="text" inputmode="numeric" maxlength="40" placeholder="ব্যাংক অ্যাকাউন্ট নম্বর">
+                  <label for="e24-pay-bank-branch">Branch</label>
+                  <input id="e24-pay-bank-branch" class="form-input" type="text" maxlength="80" placeholder="শাখার নাম">
+                  <label for="e24-pay-bank-routing">Routing Number (ঐচ্ছিক)</label>
+                  <input id="e24-pay-bank-routing" class="form-input" type="text" inputmode="numeric" maxlength="20" placeholder="Routing Number">
+                </section>
+                <section class="sms-wallet-panel">
+                  <strong><i class="fa-solid fa-store"></i> Merchant Account (ভবিষ্যৎ)</strong>
+                  <label for="e24-pay-bkash-mode">bKash Account Type</label>
+                  <select id="e24-pay-bkash-mode" class="form-input"><option value="personal">Personal</option><option value="merchant">Merchant</option></select>
+                  <label for="e24-pay-bkash-merchant">bKash Merchant Account / ID</label>
+                  <input id="e24-pay-bkash-merchant" class="form-input" type="text" maxlength="100" placeholder="Merchant Account / ID">
+                  <label for="e24-pay-nagad-mode">Nagad Account Type</label>
+                  <select id="e24-pay-nagad-mode" class="form-input"><option value="personal">Personal</option><option value="merchant">Merchant</option></select>
+                  <label for="e24-pay-nagad-merchant">Nagad Merchant Account / ID</label>
+                  <input id="e24-pay-nagad-merchant" class="form-input" type="text" maxlength="100" placeholder="Merchant Account / ID">
+                  <div class="e24-settings-hint">Merchant API Key বা Secret এখানে রাখবেন না। ভবিষ্যতে এগুলো নিরাপদ সার্ভারে সংরক্ষণ করা হবে।</div>
+                </section>
+                <div class="e24-settings-actions"><button id="e24-save-payment-settings" type="button">পেমেন্ট তথ্য সংরক্ষণ</button></div>
                 <button class="secondary" type="button" onclick="switchPage('5')">পেমেন্ট পেজ দেখুন</button>
               </div>
             </details>
@@ -4776,6 +4810,9 @@ function e24PrepareProfilePhoto(file){
 function e24SetupSettings(){
   const profileSaveButton=document.getElementById('e24-save-profile');
   if(profileSaveButton)profileSaveButton.onclick=()=>e24SaveProfile();
+  const paymentSettingsSaveBtn=document.getElementById('e24-save-payment-settings');
+  if(paymentSettingsSaveBtn)paymentSettingsSaveBtn.onclick=e24SavePaymentSettings;
+  e24RenderPaymentSettings();
   const s=e24ReadSettings(),dark=document.getElementById('e24-settings-dark'),notice=document.getElementById('e24-settings-notifications'),language=document.getElementById('e24-settings-language'),restore=document.getElementById('e24-restore-file'),photoInput=document.getElementById('e24-profile-photo-file');
   if(dark){dark.checked=!!s.dark;dark.onchange=()=>{const v=e24ReadSettings();v.dark=dark.checked;localStorage.setItem('e24-app-settings',JSON.stringify(v));document.querySelector('.phone-screen')?.classList.toggle('e24-dark',dark.checked);};}
   if(notice){notice.checked=s.notifications!==false;notice.onchange=()=>{const v=e24ReadSettings();v.notifications=notice.checked;localStorage.setItem('e24-app-settings',JSON.stringify(v));showToast('নোটিফিকেশন পছন্দ সংরক্ষিত হয়েছে');};}
@@ -4784,6 +4821,73 @@ function e24SetupSettings(){
   document.querySelector('.phone-screen')?.classList.toggle('e24-dark',!!s.dark);
   if(restore)restore.addEventListener('change',e24RestoreBackup);
 }
+
+function e24RenderPaymentSettings(){
+  const settings=(db&&db.paymentSettings&&typeof db.paymentSettings==='object')?db.paymentSettings:{};
+  const fields={
+    'e24-pay-bkash-number':'bkashPersonalNumber',
+    'e24-pay-nagad-number':'nagadPersonalNumber',
+    'e24-pay-bank-name':'bankName',
+    'e24-pay-bank-holder':'bankHolder',
+    'e24-pay-bank-account':'bankAccount',
+    'e24-pay-bank-branch':'bankBranch',
+    'e24-pay-bank-routing':'bankRouting',
+    'e24-pay-bkash-mode':'bkashAccountType',
+    'e24-pay-bkash-merchant':'bkashMerchantId',
+    'e24-pay-nagad-mode':'nagadAccountType',
+    'e24-pay-nagad-merchant':'nagadMerchantId'
+  };
+  Object.keys(fields).forEach(function(id){
+    const element=document.getElementById(id);
+    if(element){
+      const key=fields[id];
+      element.value=settings[key]||(key==='bkashAccountType'||key==='nagadAccountType'?'personal':'');
+    }
+  });
+}
+async function e24SavePaymentSettings(){
+  if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন');return;}
+  const button=document.getElementById('e24-save-payment-settings');
+  const fields={
+    bkashPersonalNumber:'e24-pay-bkash-number',
+    nagadPersonalNumber:'e24-pay-nagad-number',
+    bankName:'e24-pay-bank-name',
+    bankHolder:'e24-pay-bank-holder',
+    bankAccount:'e24-pay-bank-account',
+    bankBranch:'e24-pay-bank-branch',
+    bankRouting:'e24-pay-bank-routing',
+    bkashAccountType:'e24-pay-bkash-mode',
+    bkashMerchantId:'e24-pay-bkash-merchant',
+    nagadAccountType:'e24-pay-nagad-mode',
+    nagadMerchantId:'e24-pay-nagad-merchant'
+  };
+  const paymentSettings={};
+  Object.keys(fields).forEach(function(key){
+    const element=document.getElementById(fields[key]);
+    paymentSettings[key]=element?String(element.value||'').trim():'';
+  });
+  if(paymentSettings.bkashAccountType!=='merchant')paymentSettings.bkashAccountType='personal';
+  if(paymentSettings.nagadAccountType!=='merchant')paymentSettings.nagadAccountType='personal';
+  if(button)button.disabled=true;
+  try{
+    const paymentRef=e24Store.collection('users').doc(activeDataUid).collection('data').doc('main');
+    await paymentRef.set({paymentSettings:paymentSettings,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    const savedSnapshot=await paymentRef.get({source:'server'});
+    const savedData=savedSnapshot.exists?(savedSnapshot.data()||{}):{};
+    const savedSettings=savedData.paymentSettings||{};
+    const mismatch=Object.keys(paymentSettings).some(function(key){return String(savedSettings[key]||'')!==paymentSettings[key];});
+    if(mismatch)throw new Error('PAYMENT_SETTINGS_NOT_VERIFIED');
+    db.paymentSettings=savedSettings;
+    e24RenderPaymentSettings();
+    showToast('পেমেন্ট তথ্য সংরক্ষিত হয়েছে');
+  }catch(error){
+    console.error('E24 payment settings save failed:',error);
+    showToast('পেমেন্ট তথ্য সংরক্ষণ হয়নি। আবার চেষ্টা করুন।');
+  }finally{
+    if(button)button.disabled=false;
+  }
+}
+
 async function e24SaveProfile(){
   if(!currentUser)return showToast('আগে লগইন করুন');
   const name=(document.getElementById('e24-settings-name').value||'').trim(),mobile=(document.getElementById('e24-settings-mobile').value||'').trim(),organizationName=(document.getElementById('e24-settings-organization').value||'').trim();
@@ -4861,7 +4965,7 @@ async function e24RestoreBackup(e){
 }
 
 function e24SetupAuthUI(){window.__e24AuthUiStarted=true;e24SetupSmsWalletUI();e24SetupSettings();const screen=document.getElementById('e24-auth-screen'),error=document.getElementById('e24-auth-error'),verifyPanel=document.getElementById('e24-verify-panel');document.getElementById('e24-auth-switch').addEventListener('click',()=>e24SetAuthMode(authMode==='login'?'register':'login'));document.getElementById('e24-forgot-password-link').addEventListener('click',e24ShowForgotPassword);document.getElementById('e24-forgot-back').addEventListener('click',()=>e24SetAuthMode('login'));document.getElementById('e24-forgot-send').addEventListener('click',e24ForgotSendOtp);document.getElementById('e24-forgot-verify').addEventListener('click',e24ForgotVerifyOtp);document.getElementById('e24-forgot-reset').addEventListener('click',e24ForgotResetPassword);document.querySelectorAll('[data-e24-toggle]').forEach(button=>button.addEventListener('click',()=>{const input=document.getElementById(button.dataset.e24Toggle);if(!input)return;input.type=input.type==='password'?'text':'password';button.textContent=input.type==='password'?'দেখুন':'লুকান';}));document.getElementById('e24-login-form').addEventListener('submit',async e=>{e.preventDefault();error.textContent='লগইন হচ্ছে...';try{const remember=document.getElementById('e24-remember-me').checked;await e24Auth.setPersistence(remember?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION);await e24Auth.signInWithEmailAndPassword(document.getElementById('e24-login-email').value.trim(),document.getElementById('e24-login-password').value);}catch(err){error.textContent=e24AuthMessage(err);}});document.getElementById('e24-register-form').addEventListener('submit',async e=>{e.preventDefault();const email=document.getElementById('e24-register-email').value.trim(),mobile=document.getElementById('e24-register-mobile').value.trim(),referralCode=(document.getElementById('e24-register-referral')?.value||'').trim().toUpperCase(),password=document.getElementById('e24-register-password').value,confirmPassword=document.getElementById('e24-register-confirm-password').value;if(password!==confirmPassword){error.textContent='দুইটি Password একই হতে হবে।';return;}if(mobile.length<7){error.textContent='সঠিক Mobile Number লিখুন।';return;}if(referralCode){try{const vr=await fetch(E24_PAYMENT_API+'/referral/validate?code='+encodeURIComponent(referralCode));if(vr.ok){const vd=await vr.json();if(vd.valid!==true){error.textContent='Referral Code সঠিক নয়। আবার পরীক্ষা করুন।';return;}}}catch(_){/* If the Worker update is not deployed yet, retain the code and retry after deployment. */}}error.textContent='অ্যাকাউন্ট তৈরি হচ্ছে...';try{const c=await e24Auth.createUserWithEmailAndPassword(email,password);await e24Store.collection('users').doc(c.user.uid).set({email:c.user.email||email,mobile:mobile,emailVerified:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});if(referralCode)localStorage.setItem('e24PendingReferralCode',referralCode);try{await e24ReferralRequest('/referral/setup',{method:'POST',body:{referralCode}});localStorage.removeItem('e24PendingReferralCode');}catch(refErr){console.warn('Referral setup will retry after backend deployment:',refErr.message);}e24ShowVerification(c.user);await e24SendEmailOtp();}catch(err){error.textContent=e24AuthMessage(err);}});document.getElementById('e24-resend-verification').addEventListener('click',e24SendEmailOtp);document.getElementById('e24-check-verification').addEventListener('click',e24VerifyEmailOtp);document.getElementById('e24-verify-logout').addEventListener('click',async()=>{await e24Auth.signOut();verifyPanel.hidden=true;e24SetAuthMode('login');error.textContent='লগআউট হয়েছে।';});e24Auth.onAuthStateChanged(async user=>{window.__e24AuthStateReceived=true;window.e24ActivePageUid=user&&user.uid?user.uid:null;currentUser=user||null;if(!user){if(e24NotificationPollTimer){clearInterval(e24NotificationPollTimer);e24NotificationPollTimer=null;}activeDataUid=null;isAdmin=false;isMainAdmin=false;e24AdminRole='user';document.getElementById('e24-admin-settings').hidden=true;document.getElementById('sms-admin-recharge-panel').hidden=true;document.getElementById('e24-admin-role-manager').hidden=true;db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি'};screen.hidden=false;verifyPanel.hidden=true;document.getElementById('e24-admin-panel').hidden=true;e24SetAuthMode('login');return;}isMainAdmin=user.uid===E24_ADMIN_UID||(String(user.email||'').trim().toLowerCase()==='mainul.ru.ac.bd@gmail.com'&&!!user.emailVerified);isAdmin=isMainAdmin;e24AdminRole=isMainAdmin?'main':'user';if(!user.emailVerified&&!isMainAdmin){activeDataUid=null;e24ShowVerification(user);return;}if(!isMainAdmin){try{const roleInfo=await e24AdminApi('/admin/me');e24AdminRole=roleInfo.role||'user';isAdmin=['limited','full','main'].includes(e24AdminRole);isMainAdmin=e24AdminRole==='main';}catch(_){isAdmin=false;e24AdminRole='user';}}const limitedRole=e24AdminRole==='limited';const smsHistoryPanel=document.getElementById('sms-history-panel'),walletHistoryPanel=document.getElementById('sms-wallet-transactions-panel');if(smsHistoryPanel)smsHistoryPanel.style.display=limitedRole?'none':'';if(walletHistoryPanel)walletHistoryPanel.style.display=limitedRole?'none':'';verifyPanel.hidden=true;screen.hidden=true;document.getElementById('e24-auth-switch').hidden=false;document.getElementById('e24-account-email').textContent=user.email||'';document.getElementById('e24-account-role').textContent=e24AdminRoleName(e24AdminRole);document.getElementById('e24-admin-settings').hidden=!isAdmin;document.getElementById('e24-admin-role-manager').hidden=!isMainAdmin;document.getElementById('e24-admin-panel').hidden=!(isMainAdmin||e24AdminRole==='full');try{const profile=e24Store.collection('users').doc(user.uid),p=await profile.get();if(p.exists){const pd=p.data()||{};document.getElementById('e24-settings-name').value=pd.name||'';document.getElementById('e24-settings-mobile').value=pd.mobile||'';document.getElementById('e24-settings-organization').value=pd.organizationName||'';window.e24OrgName=pd.organizationName||'';e24SetProfilePhotoPreview(pd.profilePhotoData||'');}else{window.e24OrgName='';e24SetProfilePhotoPreview('');}
-      e24ApplyHomeHeaderName();if(!p.exists)await profile.set({email:user.email||'',emailVerified:!!user.emailVerified,createdAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});else if(p.data().emailVerified!==!!user.emailVerified)await profile.update({emailVerified:!!user.emailVerified});await e24LoadData(user.uid);e24RestoreLastPage(user.uid);await e24LoadReferralPanel();e24StartNotificationPolling();if(isAdmin){try{if(isMainAdmin||e24AdminRole==='full')await e24RenderAdminUsers();await e24RenderAdminRechargeRequests();if(isMainAdmin)await e24RenderAdminRoleManager();}catch(adminErr){console.error('Admin initialization failed:',adminErr);showToast('Admin তথ্য লোড হয়নি। Worker API পরীক্ষা করুন।');}}else{document.getElementById('e24-admin-panel').hidden=true;document.getElementById('sms-admin-recharge-panel').hidden=true;}}catch(err){console.error('E24 startup / Firestore load failed:',err);screen.hidden=false;const code=String(err&&err.code||'unknown');const detail=String(err&&err.message||err||'অজানা সমস্যা');error.textContent='ডেটা লোড হয়নি। Firebase Error: '+code+' — '+detail;}});}
+      e24ApplyHomeHeaderName();if(!p.exists)await profile.set({email:user.email||'',emailVerified:!!user.emailVerified,createdAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});else if(p.data().emailVerified!==!!user.emailVerified)await profile.update({emailVerified:!!user.emailVerified});await e24LoadData(user.uid);e24RenderPaymentSettings();e24RestoreLastPage(user.uid);await e24LoadReferralPanel();e24StartNotificationPolling();if(isAdmin){try{if(isMainAdmin||e24AdminRole==='full')await e24RenderAdminUsers();await e24RenderAdminRechargeRequests();if(isMainAdmin)await e24RenderAdminRoleManager();}catch(adminErr){console.error('Admin initialization failed:',adminErr);showToast('Admin তথ্য লোড হয়নি। Worker API পরীক্ষা করুন।');}}else{document.getElementById('e24-admin-panel').hidden=true;document.getElementById('sms-admin-recharge-panel').hidden=true;}}catch(err){console.error('E24 startup / Firestore load failed:',err);screen.hidden=false;const code=String(err&&err.code||'unknown');const detail=String(err&&err.message||err||'অজানা সমস্যা');error.textContent='ডেটা লোড হয়নি। Firebase Error: '+code+' — '+detail;}});}
 
 function e24Money(amount){return '৳ '+Number(amount||0).toLocaleString('en-BD',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function renderSmsWallet(){

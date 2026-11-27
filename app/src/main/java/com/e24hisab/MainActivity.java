@@ -482,9 +482,10 @@ public class MainActivity extends Activity {
         final String pickedName = pendingContactName;
         final String pickedPhone = pendingContactPhone;
         webView.post(() -> webView.evaluateJavascript(
-            "(function(){if(typeof window.e24SetCustomerPhoneBookContact!=='function')return false;" +
-            "window.e24SetCustomerPhoneBookContact(" + JSONObject.quote(pickedName) + "," +
-            JSONObject.quote(pickedPhone) + ");return true;})()",
+            "(function(){var n=" + JSONObject.quote(pickedName) + ",p=" + JSONObject.quote(pickedPhone) + ";" +
+            "if(typeof window.e24SetPhoneBookContact==='function'){window.e24SetPhoneBookContact(n,p);return true;}" +
+            "if(typeof window.e24SetCustomerPhoneBookContact==='function'){window.e24SetCustomerPhoneBookContact(n,p);return true;}" +
+            "return false;})()",
             value -> {
                 if ("true".equals(value)) {
                     pendingContactName = null;

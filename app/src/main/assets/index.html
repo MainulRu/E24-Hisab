@@ -2992,8 +2992,10 @@ body.e24-long-page #page-10 .purchase-page-top{
   z-index:50!important;
   flex-shrink:0!important;
 }
-body.e24-long-page #page-9 #supplier-form-view{
-  display:block!important;
+body.e24-long-page #page-9 #supplier-form-view[hidden]{
+  display:none!important;
+}
+body.e24-long-page #page-9 #supplier-form-view:not([hidden]){
   width:calc(100% + 24px)!important;
   height:auto!important;
   min-height:calc(100vh - 88px)!important;

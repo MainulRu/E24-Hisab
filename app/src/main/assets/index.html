@@ -101,8 +101,8 @@
     }
     .status-icons { display: flex; gap: 5px; }
 
-    /* Android supplies the real device status bar. */
-    .status-bar, .label-badge { display: none !important; }
+    /* Keep the in-app status strip visible; only hide the simulator badge. */
+    .label-badge { display: none !important; }
 
     /* App Bar */
     .app-bar {

@@ -3406,10 +3406,20 @@ body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
             'মোট বাকি: '+money(removedDue)+'\n\n'+
             'Home Page, খাতা, রিপোর্ট ও প্রিন্ট থেকেও সব হিসাব বাদ যাবে।\nএই কাজটি ফিরিয়ে আনা যাবে না।';
           if(!(await showAppConfirm(message,'গ্রাহক স্থায়ীভাবে মুছবেন?')))return;
+          const previousCustomers=db.customers;
+          const previousTransactions=db.transactions;
+          const previousSelectedCustomerId=db.selectedCustomerId;
           db.transactions=db.transactions.filter(x=>String(x.customerId)!==deletedId);
           db.customers=db.customers.filter(x=>String(x.id)!==deletedId);
           db.selectedCustomerId=null;
-          save('গ্রাহক ও তাঁর সব হিসাব স্থায়ীভাবে মুছে ফেলা হয়েছে');
+          const saved=await save('গ্রাহক ও তাঁর সব হিসাব স্থায়ীভাবে মুছে ফেলা হয়েছে');
+          if(!saved){
+            db.customers=previousCustomers;
+            db.transactions=previousTransactions;
+            db.selectedCustomerId=previousSelectedCustomerId;
+            refreshAll();
+            return;
+          }
           refreshAll();
           switchPage('2');
         };

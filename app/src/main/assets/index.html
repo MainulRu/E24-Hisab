@@ -3770,7 +3770,7 @@ body.e24-long-page .screen-body{
         const owner=String(uid||'');
         const sessionSaved=sessionStorage.getItem('e24-session-page-'+owner);
         const androidSaved=localStorage.getItem('e24-android-return-page-'+owner);
-        const saved=/^(?:[1-9]|1[0-2]|14)$/.test(sessionSaved||'')?sessionSaved:androidSaved;
+        const saved=/^(?:[1-9]|1[0-2]|14)$/.test(androidSaved||'')?androidSaved:sessionSaved;
         if(/^(?:[1-9]|1[0-2]|14)$/.test(saved||''))pageKey=saved;
         // Consume the Android return marker after restoring it once.
         if(androidSaved) localStorage.removeItem('e24-android-return-page-'+owner);

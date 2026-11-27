@@ -455,8 +455,9 @@ public class MainActivity extends Activity {
             final String pickedPhone = phone;
             webView.post(() -> webView.evaluateJavascript(
                 "(function(){var n=" + JSONObject.quote(pickedName) + ";var p=" + JSONObject.quote(pickedPhone) + ";" +
-                "if(typeof window.e24SetPhoneBookContact==='function'){window.e24SetPhoneBookContact(n,p);}" +
-                "else{var f=document.getElementById('sms-test-phone');if(f){f.value=p;f.dispatchEvent(new Event('input',{bubbles:true}));f.dispatchEvent(new Event('change',{bubbles:true}));}}" +
+                "if(typeof window.e24SetCustomerPhoneBookContact==='function'){window.e24SetCustomerPhoneBookContact(n,p);}" +
+                "else if(typeof window.e24SetPhoneBookContact==='function'){window.e24SetPhoneBookContact(n,p);}" +
+                "else{var nf=document.getElementById('new-customer-name'),pf=document.getElementById('new-customer-phone');if(nf)nf.value=n;if(pf)pf.value=p;}}" +
                 "})()",
                 null
             ));

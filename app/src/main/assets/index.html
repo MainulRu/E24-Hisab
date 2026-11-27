@@ -405,9 +405,7 @@
     #page-9 .form-input{display:block;width:100%;max-width:100%;min-width:0;margin-left:0!important;margin-right:0!important;box-sizing:border-box}
     #page-9 .section-title{margin-top:0}
     /* Full-screen customer add/edit page */
-    .customer-modal-backdrop{position:fixed;inset:0;width:100%;height:100%;background:#f5f7f6;z-index:9998;display:none;align-items:stretch;justify-content:stretch;padding:0;box-sizing:border-box;overflow:hidden}
-    .customer-modal-backdrop.active-page{display:flex!important}
-    .customer-modal-backdrop.show{display:flex}
+    #page-14{min-height:0;overflow-y:auto;background:#f5f7f6;box-sizing:border-box}
     .customer-modal{box-sizing:border-box;width:100%;max-width:none;height:100%;max-height:100%;overflow-y:auto;background:#f5f7f6;border-radius:0;padding:0;box-shadow:none;color:#222;display:flex;flex-direction:column}
     .customer-entry-no-header .customer-page-header{display:none}
     .customer-page-header{position:sticky;top:0;z-index:3;flex:0 0 58px;width:100%;height:58px;min-height:58px;display:flex;align-items:center;gap:12px;padding:0 16px;background:#087a35;color:#fff;box-sizing:border-box}
@@ -450,7 +448,7 @@
     @media print {
       body { background:#fff !important; padding:0 !important; display:block !important; }
       .card-wrapper,.phone-screen { width:100% !important; height:auto !important; border:0 !important; box-shadow:none !important; border-radius:0 !important; overflow:visible !important; }
-      .status-bar,.app-bar,.bottom-nav,.label-badge,.toast-msg,.action-btn-group,.customer-manage-actions,#edit-customer,#remove-customer,#change-customer-photo,.customer-modal-backdrop,.app-confirm-backdrop { display:none !important; }
+      .status-bar,.app-bar,.bottom-nav,.label-badge,.toast-msg,.action-btn-group,.customer-manage-actions,#edit-customer,#remove-customer,#change-customer-photo,#page-14,.app-confirm-backdrop { display:none !important; }
       .screen-body { display:block !important; overflow:visible !important; padding:0 !important; background:#fff !important; }
       .app-page { display:none !important; }
       #page-3 { display:flex !important; height:auto !important; }
@@ -1473,7 +1471,7 @@
     @media print {
       body { background:#fff !important; padding:0 !important; display:block !important; }
       .card-wrapper,.phone-screen { width:100% !important; height:auto !important; border:0 !important; box-shadow:none !important; border-radius:0 !important; overflow:visible !important; }
-      .status-bar,.app-bar,.bottom-nav,.label-badge,.toast-msg,.action-btn-group,.customer-manage-actions,#edit-customer,#remove-customer,#change-customer-photo,.customer-modal-backdrop,.app-confirm-backdrop { display:none !important; }
+      .status-bar,.app-bar,.bottom-nav,.label-badge,.toast-msg,.action-btn-group,.customer-manage-actions,#edit-customer,#remove-customer,#change-customer-photo,#page-14,.app-confirm-backdrop { display:none !important; }
       .screen-body { display:block !important; overflow:visible !important; padding:0 !important; background:#fff !important; }
       .app-page { display:none !important; }
       #page-3 { display:flex !important; height:auto !important; }
@@ -3536,7 +3534,7 @@ body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
         </div>
       </nav>
 
-  <div class="app-page customer-modal-backdrop" id="page-14" aria-hidden="true">
+  <div class="app-page customer-entry-page" id="page-14">
     <form class="customer-modal" id="customer-modal" autocomplete="off" data-lpignore="true" data-1p-ignore="true">
       <div class="customer-page-header"><button type="button" id="customer-cancel" aria-label="ফিরে যান" onclick="event.preventDefault();if(typeof window.e24CloseCustomerModal==='function'){window.e24CloseCustomerModal();}return false;"><i class="fa-solid fa-arrow-left"></i></button><h2 id="customer-modal-title">নতুন গ্রাহক</h2></div>
       <div class="customer-page-content">
@@ -4265,12 +4263,12 @@ function refreshAll(){renderCustomers();renderLedger();renderTransactionForm(db.
         entryPhoto.onchange=()=>{const file=entryPhoto.files&&entryPhoto.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas'),scale=Math.min(1,500/Math.max(img.width,img.height));canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);customerEntryPhoto=canvas.toDataURL('image/jpeg',0.78);entryAvatar.innerHTML='<img alt="ছবি" src="'+customerEntryPhoto+'">';};img.src=reader.result;};reader.readAsDataURL(file);};
         document.getElementById('customer-phonebook').onclick=async()=>{try{if(!navigator.contacts||!navigator.contacts.select){showToast('এই ডিভাইসে ফোনবুক সুবিধা পাওয়া যাচ্ছে না');return;}const contacts=await navigator.contacts.select(['name','tel'],{multiple:false});if(contacts&&contacts[0]){nameField.value=(contacts[0].name||[])[0]||'';phoneField.value=(contacts[0].tel||[])[0]||'';}}catch(e){showToast('ফোনবুক থেকে তথ্য নেওয়া যায়নি');}};
         const resetCustomerEntry=()=>{setCustomerEntryType('customer');customerEntryPhoto='';entryPhoto.value='';entryAvatar.innerHTML='<i class="fa-solid fa-user"></i>';};
-        const openCustomerEntry=()=>{const activePage=document.querySelector('.app-page.active-page');customerModalReturnPage=activePage?activePage.id.replace('page-',''):'2';transactionAddCustomer=false;editingCustomerId=null;nameField.value='';phoneField.value='';addressField.value='';resetCustomerEntry();customerForm.classList.remove('customer-entry-no-header');document.getElementById('customer-modal-title').textContent='নতুন গ্রাহক';document.getElementById('customer-submit-label').textContent='নিশ্চিত করুন';modal.classList.add('show');modal.setAttribute('aria-hidden','false');customerModalHistoryOpen=false;switchPage('14');};
+        const openCustomerEntry=()=>{const activePage=document.querySelector('.app-page.active-page');customerModalReturnPage=activePage?activePage.id.replace('page-',''):'2';transactionAddCustomer=false;editingCustomerId=null;nameField.value='';phoneField.value='';addressField.value='';resetCustomerEntry();customerForm.classList.remove('customer-entry-no-header');document.getElementById('customer-modal-title').textContent='নতুন গ্রাহক';document.getElementById('customer-submit-label').textContent='নিশ্চিত করুন';customerModalHistoryOpen=false;switchPage('14');};
         const addCustomerButton=document.getElementById('add-customer-button');if(addCustomerButton)addCustomerButton.onclick=()=>{openCustomerEntry();setTimeout(()=>nameField.focus(),80);};
-        const closeCustomerModal=(fromPopState=false)=>{const wasTransactionAdd=transactionAddCustomer,entryType=customerEntryType;const returnPage=wasTransactionAdd?'4':entryType==='supplier'?'9':customerModalReturnPage;modal.classList.remove('show');modal.setAttribute('aria-hidden','true');customerModalHistoryOpen=false;transactionAddCustomer=false;editingCustomerId=null;resetCustomerEntry();document.getElementById('customer-submit-label').textContent='নিশ্চিত করুন';switchPage(returnPage);};window.e24CloseCustomerModal=()=>closeCustomerModal(false);
+        const closeCustomerModal=(fromPopState=false)=>{const wasTransactionAdd=transactionAddCustomer,entryType=customerEntryType;const returnPage=wasTransactionAdd?'4':entryType==='supplier'?'9':customerModalReturnPage;customerModalHistoryOpen=false;transactionAddCustomer=false;editingCustomerId=null;resetCustomerEntry();document.getElementById('customer-submit-label').textContent='নিশ্চিত করুন';switchPage(returnPage);};window.e24CloseCustomerModal=()=>closeCustomerModal(false);
         window.addEventListener('click',e=>{const back=e.target&&e.target.closest?e.target.closest('#customer-cancel'):null;if(!back)return;e.preventDefault();e.stopImmediatePropagation();window.e24CloseCustomerModal();},true);
         if(add)add.onclick=()=>{openCustomerEntry();setTimeout(()=>nameField.focus(),80);};
-        document.addEventListener('click',e=>{const back=e.target&&e.target.closest?e.target.closest('#customer-cancel'):null;if(!back)return;e.preventDefault();e.stopImmediatePropagation();closeCustomerModal(false);},true);window.addEventListener('popstate',()=>{if(customerModalHistoryOpen&&modal.classList.contains('show'))closeCustomerModal(true);});
+        document.addEventListener('click',e=>{const back=e.target&&e.target.closest?e.target.closest('#customer-cancel'):null;if(!back)return;e.preventDefault();e.stopImmediatePropagation();closeCustomerModal(false);},true);window.addEventListener('popstate',()=>{if(customerModalHistoryOpen&&modal.classList.contains('active-page'))closeCustomerModal(true);});
         customerForm.addEventListener('submit',e=>{e.preventDefault();const name=nameField.value.trim(),phone=phoneField.value.trim(),address=addressField.value.trim();if(!name){showToast('গ্রাহকের নাম লিখুন');nameField.focus();return;}if(editingCustomerId){const c=db.customers.find(x=>x.id===editingCustomerId);if(!c){showToast('গ্রাহক পাওয়া যায়নি');closeCustomerModal();return;}c.name=name;c.phone=phone;c.address=address;db.selectedCustomerId=c.id;save('গ্রাহকের তথ্য আপডেট হয়েছে');refreshAll();closeCustomerModal();}else if(customerEntryType==='supplier'){db.suppliers=db.suppliers||[];const s={id:id(),name,phone,address};db.suppliers.push(s);save('সাপ্লায়ার সংরক্ষিত হয়েছে');closeCustomerModal();if(window.e24ShowSupplier)window.e24ShowSupplier(s.id);}else{const fromTransaction=transactionAddCustomer;const c={id:id(),name,phone,address,photo:customerEntryPhoto||''};db.customers.push(c);db.selectedCustomerId=c.id;save('গ্রাহক সংরক্ষিত হয়েছে');refreshAll();closeCustomerModal();if(fromTransaction){renderTransactionForm(db.txType);}}});
         const search=document.getElementById('search-input');if(search)search.addEventListener('input',()=>renderCustomers());document.querySelectorAll('#page-2 [data-customer-filter]').forEach(btn=>btn.addEventListener('click',()=>{customerDirectoryFilter=btn.dataset.customerFilter;document.querySelectorAll('#page-2 [data-customer-filter]').forEach(x=>x.classList.toggle('active',x===btn));renderCustomers();}));
          // Initial render waits for the authenticated user's cloud data.

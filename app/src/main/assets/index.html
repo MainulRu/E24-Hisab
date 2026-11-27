@@ -3076,6 +3076,44 @@ body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
       box-sizing:border-box;
     }
 
+
+/* Android WebView: keep one continuous vertical page scroller.
+   Prevent active flex pages from shrinking to the viewport and clipping
+   their remaining content after a partial scroll. */
+html,body{
+  height:100%!important;
+  min-height:0!important;
+}
+.card-wrapper,
+.phone-screen{
+  height:100%!important;
+  min-height:0!important;
+}
+.phone-screen{
+  display:flex!important;
+  flex-direction:column!important;
+}
+.screen-body{
+  flex:1 1 0%!important;
+  height:0!important;
+  min-height:0!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;
+}
+.screen-body>.app-page.active-page{
+  flex:0 0 auto!important;
+  height:auto!important;
+  min-height:100%!important;
+  overflow:visible!important;
+}
+body.e24-long-page .screen-body{
+  flex:1 1 0%!important;
+  height:0!important;
+}
+
 </style>
 </head>
 <body>

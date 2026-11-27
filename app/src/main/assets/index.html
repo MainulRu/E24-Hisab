@@ -3010,7 +3010,56 @@ body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
   flex-shrink:0!important;
 }
 
-\n    /* Shared structure for the four supplier and purchase views. */\n    .supplier-unified-page{display:flex;flex-direction:column;min-width:0;box-sizing:border-box}\n    .supplier-unified-header{display:flex;align-items:center;gap:12px;flex:0 0 auto;box-sizing:border-box}\n    .supplier-unified-back{display:flex;align-items:center;justify-content:center;flex:0 0 34px;min-width:34px;min-height:34px;border:0;background:transparent;color:inherit;cursor:pointer}\n    .supplier-unified-title{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}\n    .supplier-unified-icon{display:flex;align-items:center;justify-content:center;flex:0 0 auto}\n</style>
+
+/* Shared layout and one scroll container for all four supplier/purchase views. */
+body.e24-long-page .screen-body{
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  -webkit-overflow-scrolling:touch;
+}
+body.e24-long-page #page-9,
+body.e24-long-page #page-10{
+  height:auto!important;
+  min-height:0!important;
+  flex:0 0 auto!important;
+  overflow:visible!important;
+}
+body.e24-long-page #page-9 .supplier-page-shell,
+body.e24-long-page #page-10 .purchase-page-shell{
+  height:auto!important;
+  min-height:0!important;
+  overflow:visible!important;
+}
+body.e24-long-page .supplier-unified-page{
+  display:flex!important;
+  flex-direction:column!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+body.e24-long-page #page-9 #supplier-form-view:not([hidden]),
+body.e24-long-page #page-9 #supplier-detail-view:not([hidden]){
+  display:flex!important;
+  flex-direction:column!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:visible!important;
+}
+body.e24-long-page .supplier-unified-header{
+  position:sticky!important;
+  top:0!important;
+  z-index:60!important;
+  flex:0 0 auto!important;
+  align-self:stretch!important;
+  box-sizing:border-box!important;
+}
+body.e24-long-page #page-9 #supplier-form-view[hidden],
+body.e24-long-page #page-9 #supplier-detail-view[hidden],
+body.e24-long-page #page-9 #supplier-list-view[hidden]{
+  display:none!important;
+}
+</style>
 </head>
 <body>
 

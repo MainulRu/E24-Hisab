@@ -52,20 +52,20 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         Window window = getWindow();
-        window.setStatusBarColor(Color.TRANSPARENT);
+        // Let Android reserve the system-bar areas instead of drawing the WebView
+        // edge-to-edge and then applying the same insets again.
+        window.setStatusBarColor(Color.rgb(0, 92, 46));
         window.setNavigationBarColor(Color.rgb(237, 243, 239));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.setNavigationBarContrastEnforced(false);
         }
-
-        // Draw edge-to-edge, then place the WebView inside the system-bar insets.
-        // This keeps the HTML app bar at its original position on Android 15 (targetSdk 35).
-        window.getDecorView().setSystemUiVisibility(
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-        );
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(true);
+        } else {
+            window.getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            );
+        }
 
         rootLayout = new FrameLayout(this);
         rootLayout.setBackgroundColor(Color.rgb(0, 92, 46));
@@ -143,7 +143,9 @@ public class MainActivity extends Activity {
 
             FrameLayout.LayoutParams contentParams =
                 (FrameLayout.LayoutParams) webView.getLayoutParams();
-            contentParams.topMargin = topInset;
+            // The decor now fits system windows, so the WebView already starts
+            // below the status bar. Do not apply the top inset a second time.
+            contentParams.topMargin = 0;
             contentParams.bottomMargin = bottomInset;
             webView.setLayoutParams(contentParams);
 

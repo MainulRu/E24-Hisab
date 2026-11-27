@@ -3754,14 +3754,27 @@ body.e24-long-page .screen-body{
       if(!owner)return;
       const active=document.querySelector('.app-page.active-page');
       const match=active&&/^page-([1-9]|1[0-2]|14)$/.exec(active.id);
-      if(match){try{sessionStorage.setItem('e24-session-page-'+String(owner),match[1]);}catch(_){}}
+      if(match){
+        try{sessionStorage.setItem('e24-session-page-'+String(owner),match[1]);}catch(_){}
+        // Keep the current page available if Android recreates the WebView while
+        // an external activity (such as the native contact picker) is open.
+        try{localStorage.setItem('e24-android-return-page-'+String(owner),match[1]);}catch(_){}
+      }
     }
     window.addEventListener('pagehide',()=>e24SaveActivePage());
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')e24SaveActivePage();});
     function e24PageStorageKey(uid){return 'e24-last-page-'+String(uid||'');}
     function e24RestoreLastPage(uid){
       let pageKey='1';
-      try{const saved=sessionStorage.getItem('e24-session-page-'+String(uid||''));if(/^(?:[1-9]|1[0-2]|14)$/.test(saved||''))pageKey=saved;}catch(_){pageKey='1';}
+      try{
+        const owner=String(uid||'');
+        const sessionSaved=sessionStorage.getItem('e24-session-page-'+owner);
+        const androidSaved=localStorage.getItem('e24-android-return-page-'+owner);
+        const saved=/^(?:[1-9]|1[0-2]|14)$/.test(sessionSaved||'')?sessionSaved:androidSaved;
+        if(/^(?:[1-9]|1[0-2]|14)$/.test(saved||''))pageKey=saved;
+        // Consume the Android return marker after restoring it once.
+        if(androidSaved) localStorage.removeItem('e24-android-return-page-'+owner);
+      }catch(_){pageKey='1';}
       if(pageKey==='3'&&!db.selectedCustomerId)pageKey='2';
       if(pageKey==='9'&&!Array.isArray(db.suppliers))db.suppliers=[];
       // Always restore the supplier management list after refresh, not the last opened supplier detail.

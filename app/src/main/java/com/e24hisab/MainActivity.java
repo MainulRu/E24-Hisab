@@ -162,7 +162,20 @@ public class MainActivity extends Activity {
 
         setContentView(rootLayout);
         rootLayout.requestApplyInsets();
-        webView.loadUrl("file:///android_asset/index.html");
+        // Restore the existing WebView page when Android recreates this Activity
+        // after an external picker (such as Contacts) instead of restarting the app.
+        boolean restored = savedInstanceState != null && webView.restoreState(savedInstanceState) != null;
+        if (!restored) {
+            webView.loadUrl("file:///android_asset/index.html");
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if (webView != null) {
+            webView.saveState(outState);
+        }
+        super.onSaveInstanceState(outState);
     }
 
     private boolean isTrustedAppAsset(Uri uri) {

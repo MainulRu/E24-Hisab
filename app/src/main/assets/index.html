@@ -3055,6 +3055,27 @@ body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
 /* Shared structure for the four supplier and purchase views. */\n    .supplier-unified-page{display:flex;flex-direction:column;min-width:0;box-sizing:border-box}\n    .supplier-unified-header{display:flex;align-items:center;gap:12px;flex:0 0 auto;box-sizing:border-box}\n    .supplier-unified-back{display:flex;align-items:center;justify-content:center;flex:0 0 34px;min-width:34px;min-height:34px;border:0;background:transparent;color:inherit;cursor:pointer}\n    .supplier-unified-title{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}\n    .supplier-unified-icon{display:flex;align-items:center;justify-content:center;flex:0 0 auto}\n
 
     
+
+    /* Android WebView viewport already excludes system-bar insets.
+       Keep the fixed app header at the WebView's top edge and reserve
+       only the header's real height in the scrolling content. */
+    body:not(.e24-long-page) #dynamic-app-bar{
+      top:0!important;
+    }
+    body:not(.e24-long-page) .screen-body{
+      padding-top:60px!important;
+    }
+    /* Page 14 has its own full-width entry layout and spacing. */
+    body:not(.e24-long-page) .screen-body.e24-customer-entry-active{
+      padding:24px 0 0!important;
+    }
+    .screen-body,
+    .app-page,
+    .app-page > *{
+      min-width:0;
+      box-sizing:border-box;
+    }
+
 </style>
 </head>
 <body>

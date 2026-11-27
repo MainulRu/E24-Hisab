@@ -52,18 +52,21 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         Window window = getWindow();
-        // Let Android reserve the system-bar areas instead of drawing the WebView
-        // edge-to-edge and then applying the same insets again.
+        // Draw the app background behind transparent system bars, but explicitly
+        // inset the WebView so page content starts below the status bar.
         window.setStatusBarColor(Color.rgb(0, 92, 46));
         window.setNavigationBarColor(Color.rgb(237, 243, 239));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.setNavigationBarContrastEnforced(false);
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.setDecorFitsSystemWindows(true);
+            window.setDecorFitsSystemWindows(false);
         } else {
             window.getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
             );
         }
 
@@ -143,9 +146,9 @@ public class MainActivity extends Activity {
 
             FrameLayout.LayoutParams contentParams =
                 (FrameLayout.LayoutParams) webView.getLayoutParams();
-            // The decor now fits system windows, so the WebView already starts
-            // below the status bar. Do not apply the top inset a second time.
-            contentParams.topMargin = 0;
+            // Edge-to-edge is enabled (required on Android 15 / target SDK 35).
+            // Keep the WebView content below the status bar explicitly.
+            contentParams.topMargin = topInset;
             contentParams.bottomMargin = bottomInset;
             webView.setLayoutParams(contentParams);
 

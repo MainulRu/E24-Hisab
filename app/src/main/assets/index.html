@@ -3060,7 +3060,15 @@ body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
        Keep the fixed app header at the WebView's top edge and reserve
        only the header's real height in the scrolling content. */
     body:not(.e24-long-page) #dynamic-app-bar{
+      position:fixed!important;
       top:0!important;
+      margin-top:0!important;
+      transform:none!important;
+    }
+    /* Keep the Android header flush against the WebView top edge. */
+    body:not(.e24-long-page) .phone-screen{
+      padding-top:0!important;
+      margin-top:0!important;
     }
     body:not(.e24-long-page) .screen-body{
       padding-top:60px!important;

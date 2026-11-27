@@ -389,7 +389,8 @@
     @media(prefers-color-scheme:dark){.purchase-page-shell{background:#172b3a;border-color:#31516b;color:#dcebf7}.purchase-page-top{background:#245d91}.purchase-page-shell .form-label{color:#b9d5ec}.purchase-page-shell .form-input{background:#1b3549;border-color:#426783;color:#e3eff8}.purchase-supplier-label,.purchase-total-box{background:#203e56;border-color:#365a76;color:#dcebf7}.purchase-supplier-label strong{color:#e3eff8}}
     /* Supplier page: align its outer edges and inner content with the other app pages on Web and Android. */
     #page-9{display:flex;flex-direction:column;gap:10px;flex:1 0 auto;width:100%;max-width:none;min-width:0;margin:0 auto!important;padding:0!important;align-self:stretch;box-sizing:border-box;overflow-x:hidden}
-    #page-9>div,#page-9 #supplier-list-view,#page-9 #supplier-form-view,#page-9 #supplier-detail-view{display:block;width:100%;max-width:100%;min-width:0;margin-left:0!important;margin-right:0!important;box-sizing:border-box}
+    #page-9>div,#page-9 #supplier-list-view,#page-9 #supplier-detail-view{display:block;width:100%;max-width:100%;min-width:0;margin-left:0!important;margin-right:0!important;box-sizing:border-box}
+    #page-9 #supplier-form-view{display:block;max-width:none;min-width:0;box-sizing:border-box}
     #page-9 #supplier-form-view[hidden],#page-9 #supplier-detail-view[hidden],#page-9 #supplier-list-view[hidden]{display:none!important}
     #page-9 .customer-list{display:block;margin:0!important;padding:0!important;width:100%;max-width:100%;box-sizing:border-box}
     #page-9 .form-input{display:block;width:100%;max-width:100%;min-width:0;margin-left:0!important;margin-right:0!important;box-sizing:border-box}
@@ -2954,11 +2955,14 @@ body.e24-long-page .purchase-page-shell{
     }
 
 
-/* Extend the supplier form header to the same full width as the supplier page header. */
-#supplier-form-view .supplier-form-header{
+/* Keep the form container and its header aligned with the supplier management header. */
+#supplier-form-view{
   width:calc(100% + 24px);
-  margin-left:-12px;
-  margin-right:-12px;
+  margin:0 -12px;
+}
+#supplier-form-view .supplier-form-header{
+  width:100%;
+  margin:0 0 12px;
 }
 
 </style>

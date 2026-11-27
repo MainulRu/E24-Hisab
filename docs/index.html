@@ -2535,30 +2535,67 @@ body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
 }
 
 
-/* Shared layout and one scroll container for all four supplier/purchase views. */
-body.e24-long-page .screen-body{
+/* One bounded viewport and one vertical scroller for supplier/purchase screens. */
+body.e24-long-page{
+  width:100%!important;
+  height:100vh!important;
   min-height:0!important;
+  overflow:hidden!important;
+}
+@supports(height:100dvh){
+  body.e24-long-page{height:100dvh!important}
+}
+body.e24-long-page .card-wrapper,
+body.e24-long-page .phone-screen{
+  width:100%!important;
+  height:100vh!important;
+  min-height:0!important;
+  max-height:100vh!important;
+  overflow:hidden!important;
+}
+@supports(height:100dvh){
+  body.e24-long-page .card-wrapper,
+  body.e24-long-page .phone-screen{
+    height:100dvh!important;
+    max-height:100dvh!important;
+  }
+}
+body.e24-long-page .phone-screen{
+  display:flex!important;
+  flex-direction:column!important;
+}
+body.e24-long-page .screen-body{
+  display:block!important;
+  flex:1 1 0!important;
+  width:100%!important;
+  height:0!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+  padding:0 0 88px!important;
   overflow-y:auto!important;
   overflow-x:hidden!important;
   -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+  touch-action:pan-y;
 }
 body.e24-long-page #page-9,
 body.e24-long-page #page-10{
+  display:flex!important;
+  flex-direction:column!important;
+  width:100%!important;
   height:auto!important;
   min-height:0!important;
   flex:0 0 auto!important;
   overflow:visible!important;
 }
-body.e24-long-page #page-9 .supplier-page-shell,
-body.e24-long-page #page-10 .purchase-page-shell{
-  height:auto!important;
-  min-height:0!important;
-  overflow:visible!important;
-}
+body.e24-long-page .supplier-page-shell,
+body.e24-long-page .purchase-page-shell,
 body.e24-long-page .supplier-unified-page{
   display:flex!important;
   flex-direction:column!important;
-  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:visible!important;
   box-sizing:border-box!important;
 }
 body.e24-long-page #page-9 #supplier-form-view:not([hidden]),
@@ -2576,7 +2613,17 @@ body.e24-long-page .supplier-unified-header{
   z-index:60!important;
   flex:0 0 auto!important;
   align-self:stretch!important;
-  box-sizing:border-box!important;
+}
+body.e24-long-page .supplier-unified-back,
+body.e24-long-page .supplier-unified-back:hover,
+body.e24-long-page .supplier-unified-back:focus,
+body.e24-long-page .supplier-unified-back:active{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  outline-offset:2px;
+  padding:0!important;
 }
 body.e24-long-page #page-9 #supplier-form-view[hidden],
 body.e24-long-page #page-9 #supplier-detail-view[hidden],

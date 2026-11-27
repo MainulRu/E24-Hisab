@@ -2797,11 +2797,11 @@ body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
           <div class="payment-header">
             <div class="profile-avatar-small"><i class="fa-solid fa-user"></i></div>
             <div class="payment-user-info">
-              <div class="name">রহিম মিঞা</div>
-              <div class="due-text">বকেয়া পরিমাণ: ৳ 2,500</div>
+              <div class="name" id="e24-payment-customer-name">গ্রাহক নির্বাচন করুন</div>
+              <div class="due-text" id="e24-payment-customer-phone">মোবাইল নম্বর নেই</div>
             </div>
           </div>
-          <div class="payment-amount-box">৳ 2,500</div>
+          <div class="payment-amount-box" id="e24-payment-customer-due">বকেয়া পরিমাণ: ৳ ০</div>
           <div class="form-label" style="font-weight:700; margin-bottom:5px;">পেমেন্ট মাধ্যম নির্বাচন করুন:</div>
           <div class="payment-options" id="e24-payment-method-options">
             <label class="pay-option" id="e24-pay-option-bkash"><input type="radio" name="pay" value="bkash" onchange="e24RenderPaymentPage()"><i class="fa-solid fa-mobile-button" style="color:#e91e63;"></i> বিকাশ দিয়ে পেমেন্ট</label>
@@ -4287,6 +4287,28 @@ function e24RenderPaymentSettings(){
 }
 function e24RenderPaymentPage(){
   const settings=(db&&db.paymentSettings&&typeof db.paymentSettings==='object')?db.paymentSettings:{};
+  const customers=Array.isArray(db&&db.customers)?db.customers:[];
+  const customer=customers.find(function(item){return String(item.id)===String(db.selectedCustomerId);})||customers[0]||null;
+  const nameElement=document.getElementById('e24-payment-customer-name');
+  const phoneElement=document.getElementById('e24-payment-customer-phone');
+  const dueElement=document.getElementById('e24-payment-customer-due');
+  if(customer){
+    const customerTransactions=(Array.isArray(db.transactions)?db.transactions:[]).filter(function(tx){return String(tx.customerId)===String(customer.id);});
+    let sales=0,paid=0;
+    customerTransactions.forEach(function(tx){
+      if(tx.type==='বাকি'){sales+=Number(tx.amount)||0;paid+=Number(tx.paid)||0;}
+      else if(tx.type==='জমা'){paid+=Number(tx.amount)||0;}
+    });
+    const due=Math.max(0,sales-paid);
+    const moneyText='৳ '+due.toLocaleString('en-IN');
+    if(nameElement)nameElement.textContent=String(customer.name||'নাম নেই');
+    if(phoneElement)phoneElement.textContent=String(customer.phone||'মোবাইল নম্বর নেই');
+    if(dueElement)dueElement.textContent='বকেয়া পরিমাণ: '+moneyText;
+  }else{
+    if(nameElement)nameElement.textContent='কোনো গ্রাহক নেই';
+    if(phoneElement)phoneElement.textContent='প্রথমে গ্রাহক যোগ করুন';
+    if(dueElement)dueElement.textContent='বকেয়া পরিমাণ: ৳ ০';
+  }
   const values={
     bkash:settings.bkashAccountType==='merchant'?settings.bkashMerchantId:settings.bkashPersonalNumber,
     nagad:settings.nagadAccountType==='merchant'?settings.nagadMerchantId:settings.nagadPersonalNumber

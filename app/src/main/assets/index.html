@@ -2964,54 +2964,42 @@ body.e24-long-page .purchase-page-shell{
     }
 
 
-/* Keep the form container and its header aligned with the supplier management header. */
-#supplier-form-view{
-  width:calc(100% + 24px);
-  height:calc(100vh - 88px);
-  height:calc(100dvh - 88px);
-  max-height:calc(100vh - 88px);
-  max-height:calc(100dvh - 88px);
-  min-height:0;
-  margin:0 -12px;
-  overflow-y:auto;
-  overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
-  overscroll-behavior-y:contain;
-}
-#supplier-form-view .supplier-form-header{
-  width:100%;
-  margin:0 0 12px;
-}
 
 
-/* Unified sticky headers for all four supplier/purchase views. */
+/* All four supplier/purchase views use the screen body as their only scroller. */
 body.e24-long-page .screen-body{
   overflow-y:auto!important;
   overflow-x:hidden!important;
 }
-body.e24-long-page #page-9.active-page,
-body.e24-long-page #page-10.active-page,
-body.e24-long-page #page-9 .supplier-page-shell,
-body.e24-long-page #page-10 .purchase-page-shell{
+body.e24-long-page #page-9,
+body.e24-long-page #page-10{
+  height:auto!important;
+  min-height:0!important;
+  flex:0 0 auto!important;
   overflow:visible!important;
 }
-body.e24-long-page #page-9>.supplier-page-shell>.supplier-page-top,
+body.e24-long-page #page-9 .supplier-page-shell,
+body.e24-long-page #page-10 .purchase-page-shell{
+  height:auto!important;
+  min-height:100%!important;
+  overflow:visible!important;
+}
+body.e24-long-page #page-9 .supplier-page-top,
 body.e24-long-page #page-9 .supplier-detail-header,
-body.e24-long-page #page-10>.purchase-page-shell>.purchase-page-top{
+body.e24-long-page #page-10 .purchase-page-top{
   position:sticky!important;
   top:0!important;
   z-index:50!important;
   flex-shrink:0!important;
 }
 body.e24-long-page #page-9 #supplier-form-view{
-  height:calc(100vh - 88px)!important;
-  height:calc(100dvh - 88px)!important;
-  max-height:calc(100vh - 88px)!important;
-  max-height:calc(100dvh - 88px)!important;
-  min-height:0!important;
-  overflow-y:auto!important;
-  overflow-x:hidden!important;
-  -webkit-overflow-scrolling:touch;
+  display:block!important;
+  width:calc(100% + 24px)!important;
+  height:auto!important;
+  min-height:calc(100vh - 88px)!important;
+  max-height:none!important;
+  margin:0 -12px!important;
+  overflow:visible!important;
 }
 body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
   position:sticky!important;

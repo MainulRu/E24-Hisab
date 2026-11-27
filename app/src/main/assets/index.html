@@ -3012,18 +3012,21 @@ body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
 
 
 
-    /* Match supplier and purchase back arrows to the new supplier form header. */
-    #page-9 .supplier-page-top .supplier-page-back,
-    #page-9 .supplier-detail-header .supplier-detail-back,
-    #page-10 .purchase-page-top .purchase-page-back{
-      background:transparent!important;
+    /* Supplier management back arrow: transparent button, white icon. */
+    #page-9 > .supplier-page-shell > .supplier-page-top .supplier-page-back,
+    #page-9 .supplier-page-shell > .supplier-page-top .supplier-page-back{
+      background:none!important;
+      background-color:transparent!important;
+      background-image:none!important;
       border:0!important;
       box-shadow:none!important;
       color:#fff!important;
+      -webkit-appearance:none;
+      appearance:none;
     }
-    #page-9 .supplier-page-top .supplier-page-back i,
-    #page-9 .supplier-detail-header .supplier-detail-back i,
-    #page-10 .purchase-page-top .purchase-page-back i{
+    #page-9 > .supplier-page-shell > .supplier-page-top .supplier-page-back i,
+    #page-9 .supplier-page-shell > .supplier-page-top .supplier-page-back i{
+      background:none!important;
       color:#fff!important;
     }
 </style>

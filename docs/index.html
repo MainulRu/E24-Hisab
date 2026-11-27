@@ -3175,6 +3175,10 @@ body.e24-long-page #page-9 #supplier-form-view .supplier-form-header{
 
     function switchPage(pageKey) {
       const screenBody = document.querySelector('.screen-body');
+      const customerEntryPage = document.getElementById('page-14');
+      if (screenBody && customerEntryPage && customerEntryPage.parentElement !== screenBody) {
+        screenBody.appendChild(customerEntryPage);
+      }
       if (screenBody) screenBody.classList.toggle('e24-customer-entry-active', String(pageKey) === '14');
       document.body.classList.toggle('e24-long-page', ['9','10'].includes(String(pageKey)));
       if(window.e24ActivePageUid){try{sessionStorage.setItem('e24-session-page-'+String(window.e24ActivePageUid),String(pageKey));}catch(_){}}

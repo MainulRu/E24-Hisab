@@ -13,9 +13,7 @@ android {
     }
 }
 
- 
-// Build the runtime index.html from real HTML page fragments. The source template
-// stays separate so Web and Android can share the same page markup.
+// Build the runtime index.html from real HTML page fragments.
 def generatedE24Assets = layout.buildDirectory.dir("generated/e24Assets")
 
 tasks.register("assembleE24Pages") {
@@ -41,7 +39,7 @@ tasks.register("assembleE24Pages") {
 
         // Copy every Android asset except the source index.html.
         fileTree("src/main/assets").visit { details ->
-            if (!details.isDirectory && details.relativePath.pathString != "index.html") {
+            if (!details.directory && details.relativePath.pathString != "index.html") {
                 def target = new File(outputDir, details.relativePath.pathString)
                 target.parentFile.mkdirs()
                 target.bytes = details.file.bytes
@@ -54,7 +52,7 @@ tasks.register("assembleE24Pages") {
     }
 }
 
-// Package the assembled asset directory, avoiding duplicate source/generated index.html files.
+// Package the assembled asset directory without duplicate index.html files.
 android.sourceSets.main.assets.setSrcDirs([generatedE24Assets])
 tasks.named("preBuild").configure {
     dependsOn("assembleE24Pages")

@@ -37,12 +37,11 @@ function e24RenderPaymentPage() {
       ? db.paymentSettings
       : {};
   const customers = Array.isArray(db && db.customers) ? db.customers : [];
-  const customer =
-    customers.find(function (item) {
-      return String(item.id) === String(db.selectedCustomerId);
-    }) ||
-    customers[0] ||
-    null;
+  const customer = db.selectedCustomerId
+    ? customers.find(function (item) {
+        return String(item.id) === String(db.selectedCustomerId);
+      }) || null
+    : null;
   const nameElement = document.getElementById("e24-payment-customer-name");
   const phoneElement = document.getElementById("e24-payment-customer-phone");
   const dueElement = document.getElementById("e24-payment-customer-due");
@@ -98,11 +97,14 @@ function e24RenderPaymentPage() {
       amountInput.dataset.customerId = "";
     }
     if (amountHint)
-      amountHint.textContent = "প্রথমে একজন গ্রাহক নির্বাচন করুন।";
-    if (nameElement) nameElement.textContent = "কোনো গ্রাহক নেই";
-    if (phoneElement) phoneElement.textContent = "প্রথমে গ্রাহক যোগ করুন";
+      amountHint.textContent =
+        "প্রথমে গ্রাহকের বিস্তারিত পেজ থেকে Payment পেজে আসুন।";
+    if (nameElement) nameElement.textContent = "গ্রাহক নির্বাচন করা হয়নি";
+    if (phoneElement) phoneElement.textContent = "গ্রাহকের বিস্তারিত পেজ খুলুন";
     if (dueElement) dueElement.textContent = "বকেয়া পরিমাণ: ৳ ০";
   }
+  const paymentAction = document.getElementById("e24-payment-submit");
+  if (paymentAction) paymentAction.disabled = !customer;
   const values = {
     bkash:
       settings.bkashAccountType === "merchant"

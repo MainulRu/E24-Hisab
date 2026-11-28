@@ -13,31 +13,53 @@ android {
     }
 }
 
-// Build the runtime index.html from real HTML page fragments.
+// Assemble all real HTML page fragments into one WebView-compatible DOM.
 def generatedE24Assets = layout.buildDirectory.dir("generated/e24Assets")
+def e24Pages = [
+    "1": "home.html",
+    "2": "customers.html",
+    "3": "ledger.html",
+    "4": "transaction.html",
+    "5": "payment.html",
+    "6": "messages.html",
+    "7": "reports.html",
+    "8": "settings.html",
+    "9": "suppliers.html",
+    "10": "purchases.html",
+    "11": "legacy-customers.html",
+    "12": "customer-report.html",
+    "13": "page-13.html",
+    "14": "customer-entry.html",
+]
 
 tasks.register("assembleE24Pages") {
     inputs.file("src/main/assets/index.html")
-    inputs.file("src/main/assets/pages/home.html")
+    e24Pages.each { pageId, filename ->
+        inputs.file("src/main/assets/pages/" + filename)
+    }
     outputs.dir(generatedE24Assets)
 
     doLast {
-        def templateFile = file("src/main/assets/index.html")
-        def pageFile = file("src/main/assets/pages/home.html")
-        def html = templateFile.getText("UTF-8")
-        def marker = "<!-- E24_PAGE:1 -->"
-        if (html.count(marker) != 1) {
-            throw new GradleException("Expected exactly one Home page marker in index.html")
+        def html = file("src/main/assets/index.html").getText("UTF-8")
+        e24Pages.each { pageId, filename ->
+            def marker = "<!-- E24_PAGE:" + pageId + " -->"
+            if (html.count(marker) != 1) {
+                throw new GradleException("Expected exactly one page marker: " + marker)
+            }
+            def pageFile = file("src/main/assets/pages/" + filename)
+            if (!pageFile.isFile()) {
+                throw new GradleException("Missing page fragment: " + pageFile)
+            }
+            def pageHtml = pageFile.getText("UTF-8")
+            if (!pageHtml.contains('id="page-' + pageId + '"')) {
+                throw new GradleException("Page fragment does not contain page-" + pageId)
+            }
+            html = html.replace(marker, pageHtml)
         }
-        def pageHtml = pageFile.getText("UTF-8")
-        if (!pageHtml.contains('id="page-1"')) {
-            throw new GradleException("Home page fragment does not contain page-1")
-        }
+
         def outputDir = generatedE24Assets.get().asFile
         project.delete(outputDir)
         outputDir.mkdirs()
-
-        // Copy every Android asset except the source index.html.
         fileTree("src/main/assets").visit { details ->
             if (!details.directory && details.relativePath.pathString != "index.html") {
                 def target = new File(outputDir, details.relativePath.pathString)
@@ -45,14 +67,10 @@ tasks.register("assembleE24Pages") {
                 target.bytes = details.file.bytes
             }
         }
-
-        // Package the assembled page as the only assets/index.html.
-        def outputFile = new File(outputDir, "index.html")
-        outputFile.setText(html.replace(marker, pageHtml), "UTF-8")
+        new File(outputDir, "index.html").setText(html, "UTF-8")
     }
 }
 
-// Package the assembled asset directory without duplicate index.html files.
 android.sourceSets.main.assets.setSrcDirs([generatedE24Assets])
 tasks.named("preBuild").configure {
     dependsOn("assembleE24Pages")

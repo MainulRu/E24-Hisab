@@ -856,6 +856,13 @@ window.E24NotificationContext={
  get isAdmin(){return isAdmin;},
  get store(){return e24Store;}
 };
+// Payment module dependencies are exposed explicitly across classic script scopes.
+window.E24PaymentContext={
+ get currentUser(){return currentUser;},
+ get activeDataUid(){return activeDataUid;},
+ get store(){return e24Store;},
+ showToast:showToast
+};
 
 window.e24Logout=()=>e24Auth.signOut().catch(()=>showToast('লগআউট করা যায়নি'));
 async function e24ReferralRequest(path,options={}) {

@@ -21,7 +21,7 @@ def generatedE24Assets = layout.buildDirectory.dir("generated/e24Assets")
 tasks.register("assembleE24Pages") {
     inputs.file("src/main/assets/index.html")
     inputs.file("src/main/assets/pages/home.html")
-    outputs.file(generatedE24Assets.map { it.file("index.html") })
+    outputs.dir(generatedE24Assets)
 
     doLast {
         def templateFile = file("src/main/assets/index.html")
@@ -35,15 +35,27 @@ tasks.register("assembleE24Pages") {
         if (!pageHtml.contains('id="page-1"')) {
             throw new GradleException("Home page fragment does not contain page-1")
         }
-        def outputFile = generatedE24Assets.get().file("index.html").asFile
-        outputFile.parentFile.mkdirs()
+        def outputDir = generatedE24Assets.get().asFile
+        project.delete(outputDir)
+        outputDir.mkdirs()
+
+        // Copy every Android asset except the source index.html.
+        fileTree("src/main/assets").visit { details ->
+            if (!details.isDirectory && details.relativePath.pathString != "index.html") {
+                def target = new File(outputDir, details.relativePath.pathString)
+                target.parentFile.mkdirs()
+                target.bytes = details.file.bytes
+            }
+        }
+
+        // Package the assembled page as the only assets/index.html.
+        def outputFile = new File(outputDir, "index.html")
         outputFile.setText(html.replace(marker, pageHtml), "UTF-8")
     }
 }
 
-// Use the generated index.html in the APK; the source index.html is the assembler input.
-android.sourceSets.main.assets.exclude("index.html")
-android.sourceSets.main.assets.srcDir(generatedE24Assets)
+// Package the assembled asset directory, avoiding duplicate source/generated index.html files.
+android.sourceSets.main.assets.setSrcDirs([generatedE24Assets])
 tasks.named("preBuild").configure {
     dependsOn("assembleE24Pages")
 }

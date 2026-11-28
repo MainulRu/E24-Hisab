@@ -82,6 +82,7 @@ service cloud.firestore {
               || request.resource.data.smsWalletBalance == 0)
           : ('smsWalletBalance' in request.resource.data
               && request.resource.data.smsWalletBalance is number
+              && request.resource.data.smsWalletBalance >= 0
               && request.resource.data.smsWalletBalance <= resource.data.smsWalletBalance);
       }
 

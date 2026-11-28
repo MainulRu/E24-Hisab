@@ -1,0 +1,17 @@
+/* 5. Payment Page (পেমেন্ট পেজ) */
+    .payment-header {
+      display: flex; align-items: center; gap: 8px; background: #fff; padding: 6px 8px; border-radius: 8px; margin-bottom: 8px;
+    }
+    .profile-avatar-small {
+      width: 28px; height: 28px; background: #e8f0fe; color: var(--accent-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    }
+    .payment-user-info .name { font-weight: 700; font-size: 12px; }
+    .payment-user-info .due-text { font-size: 9px; color: var(--accent-red); font-weight: 600; }
+    .payment-amount-box {
+      background: #e8f5e9; color: var(--primary-green); text-align: center; padding: 8px; border-radius: 8px; font-size: 18px; font-weight: 700; margin-bottom: 8px;
+    }
+    .payment-options { display: flex; flex-direction: column; gap: 5px; }
+    .pay-option {
+      background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 8px; display: flex; align-items: center; gap: 8px; font-size: 11px; cursor: pointer;
+    }
+    .pay-option input { accent-color: var(--primary-green); }

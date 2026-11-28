@@ -4100,8 +4100,7 @@ body.e24-long-page .screen-body{
           event.preventDefault();
           imageInput.click();
         });
-        const updateRemaining=()=>{const cid=document.getElementById('tx-customer').value,oldDue=customerTotals(cid).due,nextDue=Math.max(0,oldDue+(Number(amountField.value)||0)-(Number(paidField.value)||0));if(remaining)remaining.textContent=money(nextDue);paymentQrItems.forEach((item,index)=>{const qr=document.querySelector('[data-payment-qr-index="'+index+'"]');if(qr)qr.src=paymentQrUrl(item,nextDue);});const demoAmount=document.getElementById('e24-demo-payment-amount');if(demoAmount)demoAmount.textContent='পরীক্ষার পরিমাণ: '+money(nextDue);};
-        const demoResult=document.getElementById('e24-demo-payment-result'),demoSuccess=document.getElementById('e24-demo-payment-success'),demoFail=document.getElementById('e24-demo-payment-fail');if(demoSuccess)demoSuccess.onclick=()=>{if(demoResult)demoResult.textContent='DEMO SUCCESS: পরীক্ষামূলক পেমেন্ট সফল দেখানো হয়েছে। কোনো আসল টাকা নেওয়া হয়নি এবং বকেয়া অপরিবর্তিত আছে।';};if(demoFail)demoFail.onclick=()=>{if(demoResult)demoResult.textContent='DEMO FAILED: পরীক্ষামূলক পেমেন্ট ব্যর্থ দেখানো হয়েছে। কোনো টাকা নেওয়া হয়নি এবং বকেয়া অপরিবর্তিত আছে।';};
+        const updateRemaining=()=>{if(remaining){const cid=document.getElementById('tx-customer').value,oldDue=customerTotals(cid).due;remaining.textContent=money(Math.max(0,oldDue+(Number(amountField.value)||0)-(Number(paidField.value)||0)));}};
         if(paidField){amountField.addEventListener('input',updateRemaining);paidField.addEventListener('input',updateRemaining);document.getElementById('tx-customer').addEventListener('change',updateRemaining);updateRemaining();}
         let transactionImage='',imageProcessing=false;
         const imageInput=document.getElementById('tx-image'),imagePreview=document.getElementById('tx-image-preview');
@@ -4196,7 +4195,8 @@ body.e24-long-page .screen-body{
           event.preventDefault();
           imageInput.click();
         });
-        const updateRemaining=()=>{if(remaining){const cid=document.getElementById('tx-customer').value,oldDue=customerTotals(cid).due;remaining.textContent=money(Math.max(0,oldDue+(Number(amountField.value)||0)-(Number(paidField.value)||0)));}};
+        const updateRemaining=()=>{const cid=document.getElementById('tx-customer').value,oldDue=customerTotals(cid).due,nextDue=Math.max(0,oldDue+(Number(amountField.value)||0)-(Number(paidField.value)||0));if(remaining)remaining.textContent=money(nextDue);paymentQrItems.forEach((item,index)=>{const qr=document.querySelector('[data-payment-qr-index="'+index+'"]');if(qr)qr.src=paymentQrUrl(item,nextDue);});const demoAmount=document.getElementById('e24-demo-payment-amount');if(demoAmount)demoAmount.textContent='পরীক্ষার পরিমাণ: '+money(nextDue);};
+const demoResult=document.getElementById('e24-demo-payment-result'),demoSuccess=document.getElementById('e24-demo-payment-success'),demoFail=document.getElementById('e24-demo-payment-fail');if(demoSuccess)demoSuccess.onclick=()=>{if(demoResult)demoResult.textContent='DEMO SUCCESS: পরীক্ষামূলক পেমেন্ট সফল দেখানো হয়েছে। কোনো আসল টাকা নেওয়া হয়নি এবং বকেয়া অপরিবর্তিত আছে।';};if(demoFail)demoFail.onclick=()=>{if(demoResult)demoResult.textContent='DEMO FAILED: পরীক্ষামূলক পেমেন্ট ব্যর্থ দেখানো হয়েছে। কোনো টাকা নেওয়া হয়নি এবং বকেয়া অপরিবর্তিত আছে।';};
         if(paidField){amountField.addEventListener('input',updateRemaining);paidField.addEventListener('input',updateRemaining);document.getElementById('tx-customer').addEventListener('change',updateRemaining);updateRemaining();}
         let transactionImage='',imageProcessing=false;
         const imageInput=document.getElementById('tx-image'),imagePreview=document.getElementById('tx-image-preview');

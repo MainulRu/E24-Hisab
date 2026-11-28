@@ -1,0 +1,38 @@
+/* 1. Home */
+    .stats-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .stat-card {
+      padding: 10px; border-radius: 8px; color: #fff; text-align: center; cursor: pointer;
+    }
+    .bg-green { background: #008744; }
+    .bg-red { background: #d93025; }
+    .bg-blue { background: #1a73e8; }
+    .bg-purple { background: #7b1fa2; }
+    .stat-card i { font-size: 16px; margin-bottom: 2px; }
+    .stat-label { font-size: 11px; opacity: 0.9; }
+    .stat-amount { font-size: 14px; font-weight: 700; }
+    .current-due-card { margin-top:9px; padding:11px 13px; border-radius:10px; background:#fce8e6; color:#8c1d18; }
+    .current-due-heading { display:flex; align-items:center; gap:7px; font-size:12px; font-weight:700; }
+    .current-due-amount { font-size:21px; font-weight:700; line-height:1.5; color:#b3261e; }
+    .current-due-note { font-size:9px; color:#8c1d18; }
+
+    .transaction-list, .customer-list, .transaction-history, .settings-menu {
+      list-style: none; display: flex; flex-direction: column; gap: 6px;
+    }
+    .transaction-item, .customer-item, .history-item {
+      background: #fff; padding: 8px 10px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05); font-size: 12px; cursor: pointer;
+    }
+    .tx-icon {
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 10px; margin-right: 8px;
+    }
+    .icon-up { background: var(--primary-green); }
+    .icon-down { background: var(--accent-red); }
+    .tx-info { display: flex; flex-direction: column; flex-grow: 1; }
+    .tx-name { font-weight: 600; }
+    .tx-sub { font-size: 10px; color: var(--primary-green); font-weight: 600; }
+    .tx-date { font-size: 10px; color: var(--text-muted); }

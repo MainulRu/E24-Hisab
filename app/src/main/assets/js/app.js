@@ -270,15 +270,15 @@
         if(dueEl)dueEl.textContent=money(totals.due);if(paidEl)paidEl.textContent=money(totals.paid);if(advanceEl)advanceEl.textContent=money(totals.advance);
         if(countEl)countEl.textContent=db.customers.length.toLocaleString('bn-BD')+' জন';
         const query=(document.getElementById('search-input')?.value||'').trim().toLocaleLowerCase();
-        const filtered=db.customers.filter(c=>{const t=window.customerTotals(c.id);const mf=customerDirectoryFilter==='all'||(customerDirectoryFilter==='due'&&t.due>0)||(customerDirectoryFilter==='advance'&&t.advance>0)||(customerDirectoryFilter==='settled'&&t.due<=0&&t.advance<=0);const mq=(c.name||'').toLocaleLowerCase().includes(query)||(c.phone||'').toLocaleLowerCase().includes(query);return mf&&mq;});
+        const filtered=db.customers.filter(c=>{const t=customerTotals(c.id);const mf=customerDirectoryFilter==='all'||(customerDirectoryFilter==='due'&&t.due>0)||(customerDirectoryFilter==='advance'&&t.advance>0)||(customerDirectoryFilter==='settled'&&t.due<=0&&t.advance<=0);const mq=(c.name||'').toLocaleLowerCase().includes(query)||(c.phone||'').toLocaleLowerCase().includes(query);return mf&&mq;});
         const visible=document.getElementById('directory-visible-count');if(visible)visible.textContent=filtered.length.toLocaleString('bn-BD')+' জন';
-        ul.innerHTML=filtered.length?filtered.map(c=>{const t=window.customerTotals(c.id),due=t.due,advance=t.advance,label=due>0?'বাকি: '+money(due):advance>0?'অগ্রিম: '+money(advance):'পরিশোধিত';return '<li class="customer-item" data-cid="'+esc(c.id)+'"><div class="user-avatar">'+avatar(c.photo)+'</div><div class="customer-name">'+esc(c.name)+'<small>'+esc(c.phone||'মোবাইল নম্বর নেই')+'</small></div><span class="amount-tag '+(due>0?'tag-red':advance>0?'tag-green':'tag-blue')+'">'+label+'</span><i class="fa-solid fa-chevron-right"></i></li>';}).join(''):'<li style="padding:22px;text-align:center;color:#8995a3;background:#fff;border:1px solid #e8edf1;border-radius:12px">কোনো গ্রাহক পাওয়া যায়নি</li>';
+        ul.innerHTML=filtered.length?filtered.map(c=>{const t=customerTotals(c.id),due=t.due,advance=t.advance,label=due>0?'বাকি: '+money(due):advance>0?'অগ্রিম: '+money(advance):'পরিশোধিত';return '<li class="customer-item" data-cid="'+esc(c.id)+'"><div class="user-avatar">'+avatar(c.photo)+'</div><div class="customer-name">'+esc(c.name)+'<small>'+esc(c.phone||'মোবাইল নম্বর নেই')+'</small></div><span class="amount-tag '+(due>0?'tag-red':advance>0?'tag-green':'tag-blue')+'">'+label+'</span><i class="fa-solid fa-chevron-right"></i></li>';}).join(''):'<li style="padding:22px;text-align:center;color:#8995a3;background:#fff;border:1px solid #e8edf1;border-radius:12px">কোনো গ্রাহক পাওয়া যায়নি</li>';
         ul.querySelectorAll('[data-cid]').forEach(el=>el.addEventListener('click',()=>{db.selectedCustomerId=el.dataset.cid;switchPage('3');}));
       }
       function renderLedger() {
         const p=document.getElementById('page-legacy-ledger'), c=selected(); if(!p)return;
         if(!c){window.currentLedgerTitle='গ্রাহকের হিসাব';p.innerHTML='<div style="padding:30px;text-align:center">প্রথমে গ্রাহক তালিকা থেকে একজন গ্রাহক যোগ করুন বা নির্বাচন করুন।<br><button class="btn btn-green" style="margin-top:15px" onclick="switchPage(\'2\')">গ্রাহক তালিকা</button></div>';return;}
-        const t=window.customerTotals(c.id), rows=validTransactions().filter(x=>String(x.customerId)===String(c.id)).slice().reverse();
+        const t=customerTotals(c.id), rows=validTransactions().filter(x=>String(x.customerId)===String(c.id)).slice().reverse();
         window.currentLedgerTitle = c.name + '-এর হিসাব';
         const paymentSettings=(db&&db.paymentSettings&&typeof db.paymentSettings==='object')?db.paymentSettings:{};
         const paymentQrItems=[
@@ -361,7 +361,7 @@
           event.preventDefault();
           imageInput.click();
         });
-        const updateRemaining=()=>{if(remaining){const cid=document.getElementById('tx-customer').value,oldDue=window.customerTotals(cid).due;remaining.textContent=money(Math.max(0,oldDue+(Number(amountField.value)||0)-(Number(paidField.value)||0)));}};
+        const updateRemaining=()=>{if(remaining){const cid=document.getElementById('tx-customer').value,oldDue=customerTotals(cid).due;remaining.textContent=money(Math.max(0,oldDue+(Number(amountField.value)||0)-(Number(paidField.value)||0)));}};
         if(paidField){amountField.addEventListener('input',updateRemaining);paidField.addEventListener('input',updateRemaining);document.getElementById('tx-customer').addEventListener('change',updateRemaining);updateRemaining();}
         let transactionImage='',imageProcessing=false;
         const imageInput=document.getElementById('tx-image'),imagePreview=document.getElementById('tx-image-preview');
@@ -414,18 +414,18 @@
           if(!cid){showToast('আগে একজন গ্রাহক যোগ করুন');return;}
           if(!dateValue){showToast('লেনদেনের তারিখ নির্বাচন করুন');return;}
           if(!Number.isSafeInteger(amount)||amount<=0){showToast('পূর্ণ সংখ্যায় সঠিক টাকার পরিমাণ লিখুন');return;}
-          if(isSale&&(!Number.isSafeInteger(initialPaid)||initialPaid<0||initialPaid>window.customerTotals(cid).due+amount)){showToast('জমার পরিমাণ আগের বাকি ও নতুন বিক্রির মোট টাকার বেশি হতে পারবে না');return;}
+          if(isSale&&(!Number.isSafeInteger(initialPaid)||initialPaid<0||initialPaid>customerTotals(cid).due+amount)){showToast('জমার পরিমাণ আগের বাকি ও নতুন বিক্রির মোট টাকার বেশি হতে পারবে না');return;}
           const selectedDate=new Date(dateValue+'T12:00:00');
-          const previousDue=window.customerTotals(cid).due,transactionId=id();
+          const previousDue=customerTotals(cid).due,transactionId=id();
           db.transactions.push({id:transactionId,customerId:cid,type:db.txType,amount,paid:initialPaid,note,...(transactionImage?{image:transactionImage}:{}),date:selectedDate.toLocaleDateString('bn-BD'),time:new Date().toLocaleTimeString('bn-BD',{hour:'numeric',minute:'2-digit'})});
-          const updatedDue=window.customerTotals(cid).due;
+          const updatedDue=customerTotals(cid).due;
           if(previousDue>0&&updatedDue<=0){e24EnsureNotificationData();const now=new Date(),dayKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0'),reminder=[...db.notifications,...(db.notificationArchive||[])].find(x=>String(x.id)==='due-reminder-'+String(cid)+'-'+dayKey);if(reminder)reminder.read=true;const customer=db.customers.find(x=>String(x.id)===String(cid));e24QueueNotification('customer-paid-'+transactionId,'customer-paid','বকেয়া সম্পূর্ণ পরিশোধ',String(customer?.name||'গ্রাহক')+'-এর বকেয়া সম্পূর্ণ পরিশোধ হয়েছে।','3',cid);}
           db.selectedCustomerId=cid;const saved=await save('লেনদেন সংরক্ষিত হয়েছে');if(saved){refreshAll();e24RenderNotifications();}
         };
       }
       function renderCustomerTransactionPage(type) {
         db.txType='বাকি'; const p=document.getElementById('page-3'); if(!p)return;
-        const isSale=true; const customer=selected(); const customerBalance=customer?window.customerTotals(customer.id):{due:0,advance:0};
+        const isSale=true; const customer=selected(); const customerBalance=customer?customerTotals(customer.id):{due:0,advance:0};
         const paymentSettings=(db&&db.paymentSettings&&typeof db.paymentSettings==='object')?db.paymentSettings:{};
         const paymentQrItems=[
           {name:'bKash',type:paymentSettings.bkashAccountType==='merchant'?'Merchant':'Personal',value:String((paymentSettings.bkashAccountType==='merchant'?paymentSettings.bkashMerchantId:paymentSettings.bkashPersonalNumber)||'').trim(),payload:'bKash payment information\nAccount type: '+(paymentSettings.bkashAccountType==='merchant'?'Merchant':'Personal')+'\n'+(paymentSettings.bkashAccountType==='merchant'?'Merchant ID: ':'Account number: ')+String((paymentSettings.bkashAccountType==='merchant'?paymentSettings.bkashMerchantId:paymentSettings.bkashPersonalNumber)||'').trim()},
@@ -456,7 +456,7 @@
           event.preventDefault();
           imageInput.click();
         });
-        const updateRemaining=()=>{const cid=document.getElementById('tx-customer').value,oldDue=window.customerTotals(cid).due,nextDue=Math.max(0,oldDue+(Number(amountField.value)||0)-(Number(paidField.value)||0));if(remaining)remaining.textContent=money(nextDue);paymentQrItems.forEach((item,index)=>{const qr=document.querySelector('[data-payment-qr-index="'+index+'"]');if(qr)qr.src=paymentQrUrl(item,nextDue);});const demoAmount=document.getElementById('e24-demo-payment-amount');if(demoAmount)demoAmount.textContent='পরীক্ষার পরিমাণ: '+money(nextDue);};
+        const updateRemaining=()=>{const cid=document.getElementById('tx-customer').value,oldDue=customerTotals(cid).due,nextDue=Math.max(0,oldDue+(Number(amountField.value)||0)-(Number(paidField.value)||0));if(remaining)remaining.textContent=money(nextDue);paymentQrItems.forEach((item,index)=>{const qr=document.querySelector('[data-payment-qr-index="'+index+'"]');if(qr)qr.src=paymentQrUrl(item,nextDue);});const demoAmount=document.getElementById('e24-demo-payment-amount');if(demoAmount)demoAmount.textContent='পরীক্ষার পরিমাণ: '+money(nextDue);};
 const demoResult=document.getElementById('e24-demo-payment-result'),demoSuccess=document.getElementById('e24-demo-payment-success'),demoFail=document.getElementById('e24-demo-payment-fail');if(demoSuccess)demoSuccess.onclick=()=>{if(demoResult)demoResult.textContent='DEMO SUCCESS: পরীক্ষামূলক পেমেন্ট সফল দেখানো হয়েছে। কোনো আসল টাকা নেওয়া হয়নি এবং বকেয়া অপরিবর্তিত আছে।';};if(demoFail)demoFail.onclick=()=>{if(demoResult)demoResult.textContent='DEMO FAILED: পরীক্ষামূলক পেমেন্ট ব্যর্থ দেখানো হয়েছে। কোনো টাকা নেওয়া হয়নি এবং বকেয়া অপরিবর্তিত আছে।';};
         if(paidField){amountField.addEventListener('input',updateRemaining);paidField.addEventListener('input',updateRemaining);document.getElementById('tx-customer').addEventListener('change',updateRemaining);updateRemaining();}
         let transactionImage='',imageProcessing=false;
@@ -492,11 +492,11 @@ const demoResult=document.getElementById('e24-demo-payment-result'),demoSuccess=
           if(!cid){showToast('আগে একজন গ্রাহক যোগ করুন');return;}
           if(!dateValue){showToast('লেনদেনের তারিখ নির্বাচন করুন');return;}
           if(!Number.isSafeInteger(amount)||amount<=0){showToast('পূর্ণ সংখ্যায় সঠিক টাকার পরিমাণ লিখুন');return;}
-          if(isSale&&(!Number.isSafeInteger(initialPaid)||initialPaid<0||initialPaid>window.customerTotals(cid).due+amount)){showToast('জমার পরিমাণ আগের বাকি ও নতুন বিক্রির মোট টাকার বেশি হতে পারবে না');return;}
+          if(isSale&&(!Number.isSafeInteger(initialPaid)||initialPaid<0||initialPaid>customerTotals(cid).due+amount)){showToast('জমার পরিমাণ আগের বাকি ও নতুন বিক্রির মোট টাকার বেশি হতে পারবে না');return;}
           const selectedDate=new Date(dateValue+'T12:00:00');
-          const previousDue=window.customerTotals(cid).due,transactionId=id();
+          const previousDue=customerTotals(cid).due,transactionId=id();
           db.transactions.push({id:transactionId,customerId:cid,type:db.txType,amount,paid:initialPaid,note,...(transactionImage?{image:transactionImage}:{}),date:selectedDate.toLocaleDateString('bn-BD'),time:new Date().toLocaleTimeString('bn-BD',{hour:'numeric',minute:'2-digit'})});
-          const updatedDue=window.customerTotals(cid).due;
+          const updatedDue=customerTotals(cid).due;
           if(previousDue>0&&updatedDue<=0){e24EnsureNotificationData();const now=new Date(),dayKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0'),reminder=[...db.notifications,...(db.notificationArchive||[])].find(x=>String(x.id)==='due-reminder-'+String(cid)+'-'+dayKey);if(reminder)reminder.read=true;const customer=db.customers.find(x=>String(x.id)===String(cid));e24QueueNotification('customer-paid-'+transactionId,'customer-paid','বকেয়া সম্পূর্ণ পরিশোধ',String(customer?.name||'গ্রাহক')+'-এর বকেয়া সম্পূর্ণ পরিশোধ হয়েছে।','3',cid);}
           db.selectedCustomerId=cid;save('লেনদেন সংরক্ষিত হয়েছে');refreshAll();e24RenderNotifications();renderCustomerTransactionPage('বাকি');
         };
@@ -918,7 +918,7 @@ function e24ProcessLoadedNotifications(uid){
  let changed=false;
  const now=new Date(),dayKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
  (db.customers||[]).forEach(customer=>{
-  const due=Number(window.customerTotals(customer.id).due)||0,reminderId='due-reminder-'+String(customer.id)+'-'+dayKey;
+  const due=Number(customerTotals(customer.id).due)||0,reminderId='due-reminder-'+String(customer.id)+'-'+dayKey;
   const reminder=[...db.notifications,...(db.notificationArchive||[])].find(x=>String(x.id)===reminderId);
   if(due>0){
    const amount=due.toLocaleString('bn-BD',{maximumFractionDigits:0}),message=String(customer.name||'গ্রাহক')+' সাহেবের ৳'+amount+' বকেয়া রয়েছে।';
@@ -1056,7 +1056,7 @@ async function e24RenderAdminUsers(){
  }catch(err){console.error('Admin users load failed:',err);const box=document.getElementById('e24-admin-user-summary');if(box)box.textContent='ব্যবহারকারীর তালিকা পাওয়া যায়নি। Admin API / অনুমতি পরীক্ষা করুন।';throw err;}
 }function e24AdminUpdateSummary(){
  const box=document.getElementById('e24-admin-user-summary');if(!box||!isAdmin)return;
- const user=e24AdminUsersCache.find(u=>u.uid===activeDataUid),d=user?.data||{},saleTransactions=(db.transactions||[]).filter(t=>t.type==='বাকি'),sales=saleTransactions.reduce((n,t)=>n+(Number(t.amount)||0),0),creditSales=saleTransactions.reduce((n,t)=>n+Math.max(0,(Number(t.amount)||0)-(Number(t.paid)||0)),0),paid=(db.customers||[]).reduce((n,c)=>n+window.customerTotals(c.id).paid,0),due=(db.customers||[]).reduce((n,c)=>n+window.customerTotals(c.id).due,0);
+ const user=e24AdminUsersCache.find(u=>u.uid===activeDataUid),d=user?.data||{},saleTransactions=(db.transactions||[]).filter(t=>t.type==='বাকি'),sales=saleTransactions.reduce((n,t)=>n+(Number(t.amount)||0),0),creditSales=saleTransactions.reduce((n,t)=>n+Math.max(0,(Number(t.amount)||0)-(Number(t.paid)||0)),0),paid=(db.customers||[]).reduce((n,c)=>n+customerTotals(c.id).paid,0),due=(db.customers||[]).reduce((n,c)=>n+customerTotals(c.id).due,0);
  box.innerHTML='<div class="e24-admin-summary-name">'+esc(d.name||d.email||'ব্যবহারকারী')+'</div><div class="e24-admin-summary-email">'+esc(d.email||'')+'</div><div class="e24-admin-summary-grid"><span>গ্রাহক<strong>'+db.customers.length+'</strong></span><span>লেনদেন<strong>'+db.transactions.length+'</strong></span><span>মোট বিক্রি<strong>'+money(sales)+'</strong></span><span>বাকিতে বিক্রি<strong>'+money(creditSales)+'</strong></span><span>জমা<strong>'+money(paid)+'</strong></span><span>বর্তমান বকেয়া<strong>'+money(due)+'</strong></span></div>';
 }
 async function e24AdminOpenUser(uid){
@@ -1417,7 +1417,7 @@ function e24SmsEscape(value){return String(value??'').replace(/[&<>"']/g,c=>({'&
 function e24SmsDefaultMessage(customer){
   const c=customer||null;
   const name=c&&c.name?c.name:'গ্রাহক';
-  const due=c?window.customerTotals(c.id).due:0;
+  const due=c?customerTotals(c.id).due:0;
   return 'সম্মানিত '+name+', আপনার বকেয়া টাকা: '+e24Money(due)+'। দয়া করে দ্রুত পরিশোধ করুন।\n– E24 Hisab';
 }
 function e24SmsSelectedCustomer(){
@@ -1427,7 +1427,7 @@ function e24SmsSelectedCustomer(){
 function e24RenderSmsCustomers(){
   const select=document.getElementById('sms-customer-select');if(!select)return;
   const old=select.value;
-  const customers=(db.customers||[]).filter(c=>(Number(window.customerTotals(c.id).due)||0)>0);
+  const customers=(db.customers||[]).filter(c=>(Number(customerTotals(c.id).due)||0)>0);
   select.innerHTML='<option value="">বকেয়া আছে এমন গ্রাহক নির্বাচন করুন</option>'+customers.map(c=>'<option value="'+e24SmsEscape(c.id)+'">'+e24SmsEscape(c.name)+'</option>').join('');
   if(customers.some(c=>String(c.id)===old))select.value=old;
 }

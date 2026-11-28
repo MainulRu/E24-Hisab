@@ -174,7 +174,16 @@ async function e24SavePaymentSettings() {
   const e24Store = paymentContext && paymentContext.store;
   const showToast = paymentContext && paymentContext.showToast;
   if (!currentUser || !activeDataUid || !e24Store) {
-    if (showToast) showToast("আগে লগইন করুন");
+    const message = "লগইন তথ্য পাওয়া যায়নি। আবার লগইন করুন।";
+    if (typeof showToast === "function") {
+      showToast(message, "error");
+    } else {
+      const toast = document.getElementById("toast");
+      if (toast) {
+        toast.textContent = message;
+        toast.classList.add("show", "toast-error");
+      }
+    }
     return;
   }
   const button = document.getElementById("e24-save-payment-settings");
@@ -226,7 +235,18 @@ async function e24SavePaymentSettings() {
     showToast("পেমেন্ট তথ্য সংরক্ষিত হয়েছে");
   } catch (error) {
     console.error("E24 payment settings save failed:", error);
-    showToast("পেমেন্ট তথ্য সংরক্ষণ হয়নি। আবার চেষ্টা করুন।");
+    const message =
+      "সংরক্ষণ হয়নি: " +
+      (error && error.message ? error.message : "অজানা সমস্যা");
+    if (typeof showToast === "function") {
+      showToast(message, "error");
+    } else {
+      const toast = document.getElementById("toast");
+      if (toast) {
+        toast.textContent = message;
+        toast.classList.add("show", "toast-error");
+      }
+    }
   } finally {
     if (button) button.disabled = false;
   }

@@ -524,16 +524,7 @@ const demoResult=document.getElementById('e24-demo-payment-result'),demoSuccess=
         if(ul)ul.innerHTML=recent.length?recent.slice(-5).reverse().map(t=>{const c=db.customers.find(x=>x.id===t.customerId);return `<li class="transaction-item"><span class="tx-icon ${t.type==='জমা'?'icon-up':'icon-down'}"><i class="fa-solid ${t.type==='জমা'?'fa-arrow-up':'fa-arrow-down'}"></i></span><div class="tx-info"><span class="tx-name">${esc(c?.name||'গ্রাহক')}</span><span class="tx-sub ${t.type==='বাকি'?'text-red':''}">${t.type==='বাকি'?'বিক্রি':'জমা'}: ${money(t.amount)}${t.type==='বাকি'&&Number(t.paid)>0?' · জমা: '+money(t.paid):''}</span></div><span class="tx-date">${esc(t.date)}</span></li>`}).join(''):'<li style="padding:18px;text-align:center;color:#888">কোনো লেনদেন নেই</li>';
       }
       let reportMode='daily', reportCursor=new Date();
-      const bnDigits=s=>String(s).replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d));
-      function reportDate(value) {
-        const parts=bnDigits(value||'').split(/[\/.-]/).map(Number);
-        if(parts.length!==3||parts.some(n=>!Number.isFinite(n)))return null;
-        let [d,m,y]=parts;
-        if(y<100)y+=2000;
-        const date=new Date(y,m-1,d);
-        return date.getFullYear()===y&&date.getMonth()===m-1&&date.getDate()===d?date:null;
-      }
-      const reportMonthNames=['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+      const {bnDigits,reportDate,reportMonthNames}=window.E24TransactionUtils;
       function reportSetMode(mode){reportMode=mode;reportCursor=new Date();document.querySelectorAll('.rep-tab').forEach(el=>el.classList.toggle('active',el.dataset.mode===mode));refreshReport();}
       function reportShift(step){if(reportMode==='daily')reportCursor.setDate(reportCursor.getDate()+step);else if(reportMode==='monthly')reportCursor.setMonth(reportCursor.getMonth()+step);else reportCursor.setFullYear(reportCursor.getFullYear()+step);refreshReport();}
       window.reportSetMode=reportSetMode;window.reportShift=reportShift;

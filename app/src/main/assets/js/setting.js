@@ -29,8 +29,6 @@ function e24PrepareProfilePhoto(file){
 function e24SetupSettings(){
   const profileSaveButton=document.getElementById('e24-save-profile');
   if(profileSaveButton)profileSaveButton.onclick=()=>e24SaveProfile();
-  const paymentSettingsSaveBtn=document.getElementById('e24-save-payment-settings');
-  if(paymentSettingsSaveBtn)paymentSettingsSaveBtn.onclick=e24SavePaymentSettings;
   e24RenderPaymentSettings();
   const s=e24ReadSettings(),dark=document.getElementById('e24-settings-dark'),notice=document.getElementById('e24-settings-notifications'),language=document.getElementById('e24-settings-language'),restore=document.getElementById('e24-restore-file'),photoInput=document.getElementById('e24-profile-photo-file');
   if(dark){dark.checked=!!s.dark;dark.onchange=()=>{const v=e24ReadSettings();v.dark=dark.checked;localStorage.setItem('e24-app-settings',JSON.stringify(v));document.querySelector('.phone-screen')?.classList.toggle('e24-dark',dark.checked);};}

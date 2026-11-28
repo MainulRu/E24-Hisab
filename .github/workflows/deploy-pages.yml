@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "docs/**"
+      - "scripts/assemble_pages.py"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 

@@ -151,20 +151,13 @@ async function e24SavePaymentSettings(){
     showToast('পেমেন্ট তথ্য সংরক্ষিত হয়েছে');
   }catch(error){
     console.error('E24 payment settings save failed:',error);
-    showToast('পেমেন্ট তথ্য সংরক্ষণ হয়নি। আবার চেষ্টা করুন।');
+    if(typeof showToast==='function')showToast('সংরক্ষণ হয়নি: '+(error&&error.message?error.message:'অজানা সমস্যা'),'error');
+    else {const toast=document.getElementById('toast');if(toast){toast.textContent='সংরক্ষণ হয়নি: '+(error&&error.message?error.message:'অজানা সমস্যা');toast.classList.add('show','toast-error');}}
   }finally{
     if(button)button.disabled=false;
   }
 }
 
 
-// Bind the payment settings save action independently of the general settings initializer.
-function e24BindPaymentSettingsSave(){
-  const button=document.getElementById('e24-save-payment-settings');
-  if(button&&!button.dataset.e24SaveBound){
-    button.dataset.e24SaveBound='1';
-    button.addEventListener('click',e24SavePaymentSettings);
-  }
-}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',e24BindPaymentSettingsSave,{once:true});
-else e24BindPaymentSettingsSave();
+// Public entry point for the Web payment settings button.
+window.e24SavePaymentSettings=e24SavePaymentSettings;

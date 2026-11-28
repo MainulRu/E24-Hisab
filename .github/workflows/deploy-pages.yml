@@ -28,10 +28,16 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Assemble HTML page fragments
+        run: |
+          mkdir -p site
+          cp -R docs/. site/
+          python3 scripts/assemble_pages.py --source-dir docs --output-file site/index.html
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "./docs"
+          path: "./site"
 
   deploy:
     environment:

@@ -255,16 +255,19 @@ async function e24SavePaymentSettings() {
 // Public entry point retained for compatibility with existing Web integrations.
 window.e24SavePaymentSettings = e24SavePaymentSettings;
 
-// Bind the payment settings save action independently of the general settings initializer.
+// Use delegated binding because settings pages are inserted dynamically.
 function e24BindPaymentSettingsSave() {
-  const button = document.getElementById("e24-save-payment-settings");
-  if (button && !button.dataset.e24SaveBound) {
-    button.dataset.e24SaveBound = "1";
-    button.addEventListener("click", e24SavePaymentSettings);
-  }
-}
-if (document.readyState === "loading")
-  document.addEventListener("DOMContentLoaded", e24BindPaymentSettingsSave, {
-    once: true,
+  if (document.documentElement.dataset.e24PaymentSaveDelegated === "1") return;
+  document.documentElement.dataset.e24PaymentSaveDelegated = "1";
+  document.addEventListener("click", function (event) {
+    const target = event.target;
+    const button =
+      target && typeof target.closest === "function"
+        ? target.closest("#e24-save-payment-settings")
+        : null;
+    if (!button) return;
+    event.preventDefault();
+    e24SavePaymentSettings();
   });
-else e24BindPaymentSettingsSave();
+}
+e24BindPaymentSettingsSave();

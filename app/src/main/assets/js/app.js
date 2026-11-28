@@ -1587,8 +1587,7 @@ document.addEventListener('DOMContentLoaded',e24SetupAuthUI);
 
     })();
 
-// Global bridge for inline handlers and code outside the customer data scope.
-var customerTotals = function(cid) { return window.customerTotals(cid); };
+// customerTotals is already exposed from the customer data scope.
 
 
   

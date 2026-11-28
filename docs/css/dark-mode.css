@@ -317,7 +317,7 @@
   background:#24445d!important;
 }
 
-/* ===== PAGE 9 DARK MODE ===== */
+/* ===== SUPPLIER / PURCHASE PAGE - page-9 ===== */
 
 
 /* Dark theme for supplier management, supplier detail and new purchase pages. */
@@ -413,6 +413,15 @@
 .phone-screen.e24-dark #page-9 .supplier-detail-payment{
   background:#19764b!important;
 }
+
+/* ===== TRANSACTION PAGE - page-4 ===== */
+/* Page-specific dark rules are currently covered by common dark mode rules. */
+
+/* ===== PAYMENT PAGE - page-5 ===== */
+/* Page-specific dark rules are currently covered by common dark mode rules. */
+
+/* ===== MESSAGE PAGE - page-6 ===== */
+/* Page-specific dark rules are currently covered by common dark mode rules. */
 
 /* ===== OTHER / SHARED PAGE DARK MODE ===== */
 

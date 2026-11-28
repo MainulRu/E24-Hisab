@@ -152,3 +152,14 @@ async function e24SavePaymentSettings(){
   }
 }
 
+
+// Bind the payment settings save action independently of the general settings initializer.
+function e24BindPaymentSettingsSave(){
+  const button=document.getElementById('e24-save-payment-settings');
+  if(button&&!button.dataset.e24SaveBound){
+    button.dataset.e24SaveBound='1';
+    button.addEventListener('click',e24SavePaymentSettings);
+  }
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',e24BindPaymentSettingsSave,{once:true});
+else e24BindPaymentSettingsSave();

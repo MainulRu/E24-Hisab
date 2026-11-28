@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - "docs/**"
+      - "shared/js/**"
+      - "scripts/sync_shared_js.py"
       - "scripts/assemble_pages.py"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
@@ -28,6 +30,9 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+
+      - name: Sync shared JavaScript
+        run: python3 scripts/sync_shared_js.py
 
       - name: Assemble HTML page fragments
         run: |

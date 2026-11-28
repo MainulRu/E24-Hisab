@@ -1,0 +1,65 @@
+<!-- 1. HOME PAGE -->
+        <div class="app-page active-page" id="page-1">
+          <div class="section-title text-center">আজকের সারাংশ</div>
+          <div class="e24-load-timing" id="e24-load-timing" hidden></div>
+          <div class="stats-grid">
+            <div class="stat-card bg-green" onclick="switchPage('7')">
+              <i class="fa-solid fa-sack-dollar"></i>
+              <div class="stat-label">মোট জমা</div>
+              <div class="stat-amount" id="today-paid">৳ 0</div>
+            </div>
+            <div class="stat-card bg-red">
+              <i class="fa-solid fa-clock"></i>
+              <div class="stat-label">মোট বাকি</div>
+              <div class="stat-amount" id="today-due">৳ 0</div>
+            </div>
+            <div class="stat-card bg-blue" onclick="switchPage('7')">
+              <i class="fa-solid fa-cart-shopping"></i>
+              <div class="stat-label">মোট বিক্রি</div>
+              <div class="stat-amount" id="today-sales">৳ 0</div>
+            </div>
+            <div class="stat-card bg-purple" onclick="switchPage('2')">
+              <i class="fa-solid fa-users"></i>
+              <div class="stat-label">মোট গ্রাহক</div>
+              <div class="stat-amount" id="customer-count">0 জন</div>
+            </div>
+          </div>
+          <div class="current-due-card customer-receivable-card">
+            <div class="customer-receivable-top">
+              <span class="customer-receivable-icon"><i class="fa-solid fa-wallet"></i></span>
+              <span class="customer-receivable-heading">গ্রাহকের কাছে পাবো</span>
+              <span class="customer-receivable-tag">সব গ্রাহক</span>
+            </div>
+            <div class="customer-receivable-note">সকল গ্রাহকের কাছ থেকে মোট পাওনা</div>
+            <div class="current-due-amount customer-receivable-amount" id="current-total-due">৳ 0</div>
+            <!-- Developer note: বর্তমান পাওনা = আগের বাকি + নতুন বাকি − পরবর্তী জমা। -->
+          </div>
+          <div class="supplier-home-panel" onclick="switchPage('9')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchPage('9')}">
+            <div class="supplier-home-head">
+              <span class="supplier-home-icon"><i class="fa-solid fa-truck"></i></span>
+              <span class="supplier-home-title">সাপ্লায়ার ব্যবস্থাপনা</span>
+              <span class="supplier-home-link">হিসাব দেখুন <i class="fa-solid fa-chevron-right"></i></span>
+            </div>
+            <div class="supplier-home-balance-label">সাপ্লায়ারকে মোট পরিশোধযোগ্য</div>
+            <div class="supplier-home-balance" id="supplier-total-due">৳ 0</div>
+            <div class="supplier-home-metrics">
+              <div><span>মোট ক্রয়</span><strong id="supplier-total-purchase">৳ 0</strong></div>
+              <div><span>মোট পরিশোধ</span><strong id="supplier-total-paid">৳ 0</strong></div>
+            </div>
+          </div>
+          <div class="section-banner"><i class="fa-solid fa-chart-line"></i> সাম্প্রতিক লেনদেন</div>
+          <ul class="transaction-list">
+            <li class="transaction-item" onclick="switchPage('3')">
+              <span class="tx-icon icon-up"><i class="fa-solid fa-arrow-up"></i></span>
+              <div class="tx-info"><span class="tx-name">রহিম মিঞা</span><span class="tx-sub">জমা: ৳ 1,000</span></div>
+              <span class="tx-date">১৩-১১-২০২৬</span>
+            </li>
+            <li class="transaction-item" onclick="switchPage('3')">
+              <span class="tx-icon icon-down"><i class="fa-solid fa-arrow-down"></i></span>
+              <div class="tx-info"><span class="tx-name">করিম উদ্দিন</span><span class="tx-sub text-red">বাকি: ৳ 500</span></div>
+              <span class="tx-date">১২-১১-২০২৬</span>
+            </li>
+          </ul>
+        </div>
+
+        

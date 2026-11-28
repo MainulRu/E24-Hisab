@@ -1,57 +1,147 @@
 <div class="app-page" id="page-6">
-          
-          <!-- E24_REFERRAL_UI_V1 -->
-          <section class="sms-wallet-panel" id="e24-referral-panel" aria-label="Referral Bonus" style="margin-bottom:12px">
-            <strong><i class="fa-solid fa-user-group"></i> বন্ধু রেফার করুন — ৳৫ SMS Wallet Bonus</strong>
-            <p class="sms-wallet-note" style="margin:7px 0">আপনার কোড দিয়ে নতুন অ্যাকাউন্ট খুলে প্রথম SMS Wallet রিচার্জ সফল করলে আপনি একবার ৳৫ বোনাস পাবেন।</p>
-            <div style="display:flex;align-items:center;gap:8px">
-              <strong id="e24-referral-code" style="font-size:17px;letter-spacing:1px;flex:1">লোড হচ্ছে...</strong>
-              <button type="button" id="e24-referral-copy" class="btn btn-blue" style="width:auto;padding:7px 12px">কপি</button>
-            </div>
-            <div style="display:flex;justify-content:space-between;gap:8px;margin-top:10px">
-              <div><div class="sms-wallet-note">সফল রেফারেল</div><b id="e24-referral-count">০</b></div>
-              <div style="text-align:right"><div class="sms-wallet-note">মোট বোনাস</div><b id="e24-referral-bonus">৳ ০</b></div>
-            </div>
-            <div id="e24-referral-status" class="sms-wallet-note" style="margin-top:6px" aria-live="polite"></div>
-          </section>
-          <section class="sms-wallet-panel" aria-label="SMS Wallet">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
-              <strong><i class="fa-solid fa-wallet"></i> SMS Wallet</strong>
-              <span class="sms-test-badge">TEST MODE</span>
-            </div>
-            <div class="sms-wallet-balance">
-              <div><div class="sms-wallet-note">আপনার ওয়ালেট ব্যালেন্স</div><strong id="sms-wallet-balance">৳ 0.00</strong></div>
-              <div style="text-align:right"><div class="sms-wallet-note">প্রতি SMS</div><b>৳ 1.00</b></div>
-            </div>
-            <div class="sms-wallet-note">এটি পরীক্ষামূলক ব্যবস্থা। কোনো বাস্তব SMS পাঠানো হবে না। সফল Demo Send হলে ৳১ কাটা হবে।</div>
-          </section>
-          <div class="form-group">
-            <label class="form-label" for="sms-customer-select">বকেয়া আছে এমন গ্রাহক:</label>
-            <select id="sms-customer-select" class="form-input">
-              <option value="">বকেয়া আছে এমন গ্রাহক নির্বাচন করুন</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="sms-test-phone">প্রাপকের নম্বর:</label>
-            <div style="display:flex;gap:6px;align-items:stretch">
-              <input id="sms-test-phone" type="tel" class="form-input" placeholder="01XXXXXXXXX" inputmode="tel" style="flex:1;min-width:0">
-              <button id="sms-phonebook" type="button" class="btn btn-blue" style="width:auto;white-space:nowrap;padding:7px 9px;font-size:10px"><i class="fa-solid fa-address-book"></i> Phone Book</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="sms-test-message">মেসেজ (Default অথবা Custom):</label>
-            <textarea id="sms-test-message" class="form-input" rows="4" placeholder="সম্মানিত [গ্রাহকের নাম], আপনার বকেয়া টাকা: [বকেয়ার পরিমাণ]। দয়া করে দ্রুত পরিশোধ করুন। – E24 Hisab" style="resize:vertical;min-height:78px"></textarea>
-            <button id="sms-use-default" type="button" class="btn btn-blue" style="margin-top:6px;padding:7px 10px;font-size:10px;width:auto"><i class="fa-solid fa-file-lines"></i> Default SMS ব্যবহার করুন</button>
-            
-          </div>
-          <button id="sms-test-send" type="button" class="btn btn-green shadow-btn"><i class="fa-solid fa-paper-plane"></i> Test SMS পাঠান — ৳১</button>
-          
-          <section class="sms-wallet-panel sms-history-panel" id="sms-history-panel">
-            <strong><i class="fa-solid fa-clock-rotate-left"></i> SMS History</strong>
-            <div id="sms-history-list" class="sms-history-list"><div class="sms-wallet-note">এখনো কোনো SMS পাঠানো হয়নি।</div></div>
-          </section>
-          
-          
-          
-          
-        </div>
+  <!-- E24_REFERRAL_UI_V1 -->
+  <section
+    class="sms-wallet-panel"
+    id="e24-referral-panel"
+    aria-label="Referral Bonus"
+    style="margin-bottom: 12px"
+  >
+    <strong
+      ><i class="fa-solid fa-user-group"></i> বন্ধু রেফার করুন — ৳৫ SMS Wallet
+      Bonus</strong
+    >
+    <p class="sms-wallet-note" style="margin: 7px 0">
+      আপনার কোড দিয়ে নতুন অ্যাকাউন্ট খুলে প্রথম SMS Wallet রিচার্জ সফল করলে আপনি
+      একবার ৳৫ বোনাস পাবেন।
+    </p>
+    <div style="display: flex; align-items: center; gap: 8px">
+      <strong
+        id="e24-referral-code"
+        style="font-size: 17px; letter-spacing: 1px; flex: 1"
+        >লোড হচ্ছে...</strong
+      >
+      <button
+        type="button"
+        id="e24-referral-copy"
+        class="btn btn-blue"
+        style="width: auto; padding: 7px 12px"
+      >
+        কপি
+      </button>
+    </div>
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 10px;
+      "
+    >
+      <div>
+        <div class="sms-wallet-note">সফল রেফারেল</div>
+        <b id="e24-referral-count">০</b>
+      </div>
+      <div style="text-align: right">
+        <div class="sms-wallet-note">মোট বোনাস</div>
+        <b id="e24-referral-bonus">৳ ০</b>
+      </div>
+    </div>
+    <div
+      id="e24-referral-status"
+      class="sms-wallet-note"
+      style="margin-top: 6px"
+      aria-live="polite"
+    ></div>
+  </section>
+  <section class="sms-wallet-panel" aria-label="SMS Wallet">
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+      "
+    >
+      <strong><i class="fa-solid fa-wallet"></i> SMS Wallet</strong>
+      <span class="sms-test-badge">TEST MODE</span>
+    </div>
+    <div class="sms-wallet-balance">
+      <div>
+        <div class="sms-wallet-note">আপনার ওয়ালেট ব্যালেন্স</div>
+        <strong id="sms-wallet-balance">৳ 0.00</strong>
+      </div>
+      <div style="text-align: right">
+        <div class="sms-wallet-note">প্রতি SMS</div>
+        <b>৳ 1.00</b>
+      </div>
+    </div>
+    <div class="sms-wallet-note">
+      এটি পরীক্ষামূলক ব্যবস্থা। কোনো বাস্তব SMS পাঠানো হবে না। সফল Demo Send হলে
+      ৳১ কাটা হবে।
+    </div>
+  </section>
+  <div class="form-group">
+    <label class="form-label" for="sms-customer-select"
+      >বকেয়া আছে এমন গ্রাহক:</label
+    >
+    <select id="sms-customer-select" class="form-input">
+      <option value="">বকেয়া আছে এমন গ্রাহক নির্বাচন করুন</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label class="form-label" for="sms-test-phone">প্রাপকের নম্বর:</label>
+    <div style="display: flex; gap: 6px; align-items: stretch">
+      <input
+        id="sms-test-phone"
+        type="tel"
+        class="form-input"
+        placeholder="01XXXXXXXXX"
+        inputmode="tel"
+        style="flex: 1; min-width: 0"
+      />
+      <button
+        id="sms-phonebook"
+        type="button"
+        class="btn btn-blue"
+        style="
+          width: auto;
+          white-space: nowrap;
+          padding: 7px 9px;
+          font-size: 10px;
+        "
+      >
+        <i class="fa-solid fa-address-book"></i> Phone Book
+      </button>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label" for="sms-test-message"
+      >মেসেজ (Default অথবা Custom):</label
+    >
+    <textarea
+      id="sms-test-message"
+      class="form-input"
+      rows="4"
+      placeholder="সম্মানিত [গ্রাহকের নাম], আপনার বকেয়া টাকা: [বকেয়ার পরিমাণ]। দয়া করে দ্রুত পরিশোধ করুন। – E24 Hisab"
+      style="resize: vertical; min-height: 78px"
+    ></textarea>
+    <button
+      id="sms-use-default"
+      type="button"
+      class="btn btn-blue"
+      style="margin-top: 6px; padding: 7px 10px; font-size: 10px; width: auto"
+    >
+      <i class="fa-solid fa-file-lines"></i> Default SMS ব্যবহার করুন
+    </button>
+  </div>
+  <button id="sms-test-send" type="button" class="btn btn-green shadow-btn">
+    <i class="fa-solid fa-paper-plane"></i> Test SMS পাঠান — ৳১
+  </button>
+
+  <section class="sms-wallet-panel sms-history-panel" id="sms-history-panel">
+    <strong><i class="fa-solid fa-clock-rotate-left"></i> SMS History</strong>
+    <div id="sms-history-list" class="sms-history-list">
+      <div class="sms-wallet-note">এখনো কোনো SMS পাঠানো হয়নি।</div>
+    </div>
+  </section>
+</div>

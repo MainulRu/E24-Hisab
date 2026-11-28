@@ -1,6 +1,60 @@
 <div class="app-page e24-customer-directory" id="page-2">
-          <div class="customer-directory-search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" id="search-input" placeholder="গ্রাহকের নাম / মোবাইল খুঁজুন"></div>
-          <div class="customer-directory-summary"><div class="customer-directory-heading"><span class="customer-directory-icon"><i class="fa-solid fa-users"></i></span><div><strong>গ্রাহক তালিকা</strong><small>আপনার সকল গ্রাহকের হিসাব একসাথে</small></div><span class="customer-directory-count" id="directory-customer-count">০ জন</span></div><div class="customer-directory-metrics"><div><span>মোট পাওনা</span><strong id="directory-total-due">৳ ০</strong></div><div><span>মোট জমা</span><strong id="directory-total-paid">৳ ০</strong></div><div><span>অগ্রিম</span><strong id="directory-total-advance">৳ ০</strong></div></div></div>
-          <div class="customer-directory-tabs" role="group" aria-label="গ্রাহক ফিল্টার"><button type="button" class="active" data-customer-filter="all"><i class="fa-solid fa-list"></i> সকল</button><button type="button" data-customer-filter="due"><i class="fa-solid fa-arrow-up"></i> বাকি</button><button type="button" data-customer-filter="advance"><i class="fa-solid fa-arrow-down"></i> অগ্রিম</button><button type="button" data-customer-filter="settled"><i class="fa-solid fa-circle-check"></i> পরিশোধিত</button></div>
-          <div class="customer-directory-list-head"><strong>গ্রাহকসমূহ</strong><span id="directory-visible-count">০ জন</span></div><ul class="customer-list directory-customer-list" id="directory-customer-list"></ul>
-          <button class="btn btn-green shadow-btn directory-add-customer" id="add-customer-button" type="button"><i class="fa-solid fa-user-plus"></i> নতুন গ্রাহক যোগ করুন</button></div>
+  <div class="customer-directory-search">
+    <i class="fa-solid fa-magnifying-glass"></i
+    ><input
+      type="search"
+      id="search-input"
+      placeholder="গ্রাহকের নাম / মোবাইল খুঁজুন"
+    />
+  </div>
+  <div class="customer-directory-summary">
+    <div class="customer-directory-heading">
+      <span class="customer-directory-icon"
+        ><i class="fa-solid fa-users"></i
+      ></span>
+      <div>
+        <strong>গ্রাহক তালিকা</strong
+        ><small>আপনার সকল গ্রাহকের হিসাব একসাথে</small>
+      </div>
+      <span class="customer-directory-count" id="directory-customer-count"
+        >০ জন</span
+      >
+    </div>
+    <div class="customer-directory-metrics">
+      <div>
+        <span>মোট পাওনা</span><strong id="directory-total-due">৳ ০</strong>
+      </div>
+      <div>
+        <span>মোট জমা</span><strong id="directory-total-paid">৳ ০</strong>
+      </div>
+      <div>
+        <span>অগ্রিম</span><strong id="directory-total-advance">৳ ০</strong>
+      </div>
+    </div>
+  </div>
+  <div class="customer-directory-tabs" role="group" aria-label="গ্রাহক ফিল্টার">
+    <button type="button" class="active" data-customer-filter="all">
+      <i class="fa-solid fa-list"></i> সকল</button
+    ><button type="button" data-customer-filter="due">
+      <i class="fa-solid fa-arrow-up"></i> বাকি</button
+    ><button type="button" data-customer-filter="advance">
+      <i class="fa-solid fa-arrow-down"></i> অগ্রিম</button
+    ><button type="button" data-customer-filter="settled">
+      <i class="fa-solid fa-circle-check"></i> পরিশোধিত
+    </button>
+  </div>
+  <div class="customer-directory-list-head">
+    <strong>গ্রাহকসমূহ</strong><span id="directory-visible-count">০ জন</span>
+  </div>
+  <ul
+    class="customer-list directory-customer-list"
+    id="directory-customer-list"
+  ></ul>
+  <button
+    class="btn btn-green shadow-btn directory-add-customer"
+    id="add-customer-button"
+    type="button"
+  >
+    <i class="fa-solid fa-user-plus"></i> নতুন গ্রাহক যোগ করুন
+  </button>
+</div>

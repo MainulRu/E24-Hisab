@@ -1,25 +1,38 @@
 <div class="app-page" id="page-4">
-          <div class="type-selector">
-            <button class="type-btn active-green" id="tx-due"><i class="fa-solid fa-arrow-down"></i> বিক্রি</button>
-            <button class="type-btn inactive-red" id="tx-paid"><i class="fa-solid fa-arrow-up"></i> জমা</button>
-          </div>
-          <div class="form-group">
-            <label class="form-label">গ্রাহক নির্বাচন:</label>
-            <div class="custom-select"><span>রহিম মিঞা</span><i class="fa-solid fa-chevron-down"></i></div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">পরিমাণ (৳):</label>
-            <input type="text" class="form-input" value="1000">
-          </div>
-          <div class="form-group">
-            <label class="form-label">পেমেন্ট মাধ্যম:</label>
-            <div class="custom-select" onclick="switchPage('5')"><span style="color:#e91e63; font-weight:600;"><i class="fa-solid fa-mobile-screen"></i> বিকাশ (bKash)</span><i class="fa-solid fa-chevron-right"></i></div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Transaction ID:</label>
-            <input type="text" class="form-input" value="TRX123456789">
-          </div>
-          <button class="btn btn-green shadow-btn" onclick="showToast('লেনদেন সফলভাবে সংরক্ষিত!')">
-            <i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন
-          </button>
-        </div>
+  <div class="type-selector">
+    <button class="type-btn active-green" id="tx-due">
+      <i class="fa-solid fa-arrow-down"></i> বিক্রি
+    </button>
+    <button class="type-btn inactive-red" id="tx-paid">
+      <i class="fa-solid fa-arrow-up"></i> জমা
+    </button>
+  </div>
+  <div class="form-group">
+    <label class="form-label">গ্রাহক নির্বাচন:</label>
+    <div class="custom-select">
+      <span>রহিম মিঞা</span><i class="fa-solid fa-chevron-down"></i>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">পরিমাণ (৳):</label>
+    <input type="text" class="form-input" value="1000" />
+  </div>
+  <div class="form-group">
+    <label class="form-label">পেমেন্ট মাধ্যম:</label>
+    <div class="custom-select" onclick="switchPage('5')">
+      <span style="color: #e91e63; font-weight: 600"
+        ><i class="fa-solid fa-mobile-screen"></i> বিকাশ (bKash)</span
+      ><i class="fa-solid fa-chevron-right"></i>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Transaction ID:</label>
+    <input type="text" class="form-input" value="TRX123456789" />
+  </div>
+  <button
+    class="btn btn-green shadow-btn"
+    onclick="showToast('লেনদেন সফলভাবে সংরক্ষিত!')"
+  >
+    <i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন
+  </button>
+</div>

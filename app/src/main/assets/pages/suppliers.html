@@ -1,21 +1,179 @@
-<div class="app-page" id="page-9"><div class="supplier-unified-page supplier-page-shell"><div class="supplier-unified-header supplier-page-top"><button type="button" class="supplier-unified-back supplier-page-back" aria-label="ফিরে যান" onclick="switchPage('1')"><i class="fa-solid fa-arrow-left"></i></button><div class="supplier-unified-title"><strong>সাপ্লায়ার ব্যবস্থাপনা</strong><small>সাপ্লায়ারদের আলাদা হিসাব ও লেনদেন</small></div><span class="supplier-unified-icon supplier-page-top-icon"><i class="fa-solid fa-truck"></i></span></div><div id="supplier-list-view"><div class="supplier-summary-card"><div class="supplier-summary-label">সাপ্লায়ারকে মোট পরিশোধযোগ্য</div><div class="supplier-summary-total" id="supplier-page-total-due">৳ 0</div><div class="supplier-summary-stats"><div><span>মোট ক্রয়</span><strong id="supplier-page-total-purchase">৳ 0</strong></div><div><span>মোট পরিশোধ</span><strong id="supplier-page-total-paid">৳ 0</strong></div></div></div><div class="supplier-list-heading"><strong>সাপ্লায়ার তালিকা</strong><span id="supplier-count-label">সব সাপ্লায়ার</span></div><div class="supplier-search-wrap"><i class="fa-solid fa-magnifying-glass"></i><input class="form-input" id="supplier-search" type="search" placeholder="নাম / মোবাইল দিয়ে খুঁজুন"></div><ul class="supplier-page-list" id="supplier-list"></ul><div class="supplier-list-actions"><button class="supplier-add-button" type="button" onclick="e24OpenSupplierForm()"><i class="fa-solid fa-plus"></i> নতুন সাপ্লায়ার যুক্ত</button><button class="supplier-purchase-button" type="button" onclick="e24OpenPurchasePage()"><i class="fa-solid fa-cart-shopping"></i> ক্রয় পেজ</button></div></div><div id="supplier-form-view" class="supplier-form-view supplier-unified-page" hidden>
- <div class="supplier-unified-header supplier-form-header supplier-page-top"><button class="supplier-unified-back supplier-page-back" type="button" aria-label="ফিরে যান" onclick="e24CancelSupplierForm()"><i class="fa-solid fa-arrow-left"></i></button><div class="supplier-unified-title supplier-form-header-title"><strong>নতুন সাপ্লায়ার</strong><small>সাপ্লায়ারের তথ্য যুক্ত করুন</small></div><span class="supplier-unified-icon supplier-form-header-icon supplier-page-top-icon"><i class="fa-solid fa-truck"></i></span></div>
- <div class="supplier-form-content">
-  <div class="supplier-form-entry-top">
-   <div class="supplier-form-avatar-wrap">
-    <div class="supplier-form-avatar" id="supplier-entry-avatar"><i class="fa-solid fa-user"></i></div>
-    <button type="button" class="supplier-form-camera" id="supplier-avatar-camera" aria-label="ছবি যোগ করুন"><i class="fa-solid fa-camera"></i></button>
-    <input type="file" id="supplier-entry-photo" accept="image/*" hidden>
-   </div>
-   <div class="supplier-form-entry-type" role="radiogroup" aria-label="ধরন">
-    <button type="button" class="supplier-form-entry-option active" data-supplier-entry-type="supplier" role="radio" aria-checked="true" onclick="e24SetSupplierEntryType('supplier')"><i class="fa-solid fa-circle-dot"></i><span>সাপ্লায়ার</span></button>
-    <button type="button" class="supplier-form-entry-option" data-supplier-entry-type="customer" role="radio" aria-checked="false" onclick="e24SetSupplierEntryType('customer')"><i class="fa-regular fa-circle"></i><span>কাস্টমার</span></button>
-   </div>
+<div class="app-page" id="page-9">
+  <div class="supplier-unified-page supplier-page-shell">
+    <div class="supplier-unified-header supplier-page-top">
+      <button
+        type="button"
+        class="supplier-unified-back supplier-page-back"
+        aria-label="ফিরে যান"
+        onclick="switchPage('1')"
+      >
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <div class="supplier-unified-title">
+        <strong>সাপ্লায়ার ব্যবস্থাপনা</strong
+        ><small>সাপ্লায়ারদের আলাদা হিসাব ও লেনদেন</small>
+      </div>
+      <span class="supplier-unified-icon supplier-page-top-icon"
+        ><i class="fa-solid fa-truck"></i
+      ></span>
+    </div>
+    <div id="supplier-list-view">
+      <div class="supplier-summary-card">
+        <div class="supplier-summary-label">সাপ্লায়ারকে মোট পরিশোধযোগ্য</div>
+        <div class="supplier-summary-total" id="supplier-page-total-due">
+          ৳ 0
+        </div>
+        <div class="supplier-summary-stats">
+          <div>
+            <span>মোট ক্রয়</span
+            ><strong id="supplier-page-total-purchase">৳ 0</strong>
+          </div>
+          <div>
+            <span>মোট পরিশোধ</span
+            ><strong id="supplier-page-total-paid">৳ 0</strong>
+          </div>
+        </div>
+      </div>
+      <div class="supplier-list-heading">
+        <strong>সাপ্লায়ার তালিকা</strong
+        ><span id="supplier-count-label">সব সাপ্লায়ার</span>
+      </div>
+      <div class="supplier-search-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i
+        ><input
+          class="form-input"
+          id="supplier-search"
+          type="search"
+          placeholder="নাম / মোবাইল দিয়ে খুঁজুন"
+        />
+      </div>
+      <ul class="supplier-page-list" id="supplier-list"></ul>
+      <div class="supplier-list-actions">
+        <button
+          class="supplier-add-button"
+          type="button"
+          onclick="e24OpenSupplierForm()"
+        >
+          <i class="fa-solid fa-plus"></i> নতুন সাপ্লায়ার যুক্ত</button
+        ><button
+          class="supplier-purchase-button"
+          type="button"
+          onclick="e24OpenPurchasePage()"
+        >
+          <i class="fa-solid fa-cart-shopping"></i> ক্রয় পেজ
+        </button>
+      </div>
+    </div>
+    <div
+      id="supplier-form-view"
+      class="supplier-form-view supplier-unified-page"
+      hidden
+    >
+      <div
+        class="supplier-unified-header supplier-form-header supplier-page-top"
+      >
+        <button
+          class="supplier-unified-back supplier-page-back"
+          type="button"
+          aria-label="ফিরে যান"
+          onclick="e24CancelSupplierForm()"
+        >
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div class="supplier-unified-title supplier-form-header-title">
+          <strong>নতুন সাপ্লায়ার</strong
+          ><small>সাপ্লায়ারের তথ্য যুক্ত করুন</small>
+        </div>
+        <span
+          class="supplier-unified-icon supplier-form-header-icon supplier-page-top-icon"
+          ><i class="fa-solid fa-truck"></i
+        ></span>
+      </div>
+      <div class="supplier-form-content">
+        <div class="supplier-form-entry-top">
+          <div class="supplier-form-avatar-wrap">
+            <div class="supplier-form-avatar" id="supplier-entry-avatar">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <button
+              type="button"
+              class="supplier-form-camera"
+              id="supplier-avatar-camera"
+              aria-label="ছবি যোগ করুন"
+            >
+              <i class="fa-solid fa-camera"></i>
+            </button>
+            <input
+              type="file"
+              id="supplier-entry-photo"
+              accept="image/*"
+              hidden
+            />
+          </div>
+          <div
+            class="supplier-form-entry-type"
+            role="radiogroup"
+            aria-label="ধরন"
+          >
+            <button
+              type="button"
+              class="supplier-form-entry-option active"
+              data-supplier-entry-type="supplier"
+              role="radio"
+              aria-checked="true"
+              onclick="e24SetSupplierEntryType('supplier')"
+            >
+              <i class="fa-solid fa-circle-dot"></i><span>সাপ্লায়ার</span>
+            </button>
+            <button
+              type="button"
+              class="supplier-form-entry-option"
+              data-supplier-entry-type="customer"
+              role="radio"
+              aria-checked="false"
+              onclick="e24SetSupplierEntryType('customer')"
+            >
+              <i class="fa-regular fa-circle"></i><span>কাস্টমার</span>
+            </button>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="supplier-phonebook-button"
+          id="supplier-phonebook"
+        >
+          <i class="fa-regular fa-address-card"></i
+          ><span>ফোনবুক থেকে যোগ করি</span>
+        </button>
+        <input
+          class="form-input supplier-entry-input"
+          id="supplier-name"
+          maxlength="80"
+          placeholder="সাপ্লায়ারের নাম *"
+          aria-label="সাপ্লায়ারের নাম"
+          required
+        />
+        <input
+          class="form-input supplier-entry-input"
+          id="supplier-phone"
+          maxlength="20"
+          placeholder="মোবাইল নম্বর"
+          aria-label="মোবাইল নম্বর"
+          inputmode="tel"
+        />
+        <textarea
+          class="form-input supplier-entry-input supplier-entry-address"
+          id="supplier-address"
+          rows="3"
+          maxlength="250"
+          placeholder="ঠিকানা"
+          aria-label="ঠিকানা"
+        ></textarea>
+      </div>
+      <div class="supplier-form-actions">
+        <button type="button" onclick="e24SaveSupplier()">নিশ্চিত করুন</button>
+      </div>
+    </div>
+    <div id="supplier-detail-view" class="supplier-unified-page" hidden></div>
   </div>
-  <button type="button" class="supplier-phonebook-button" id="supplier-phonebook"><i class="fa-regular fa-address-card"></i><span>ফোনবুক থেকে যোগ করি</span></button>
-  <input class="form-input supplier-entry-input" id="supplier-name" maxlength="80" placeholder="সাপ্লায়ারের নাম *" aria-label="সাপ্লায়ারের নাম" required>
-  <input class="form-input supplier-entry-input" id="supplier-phone" maxlength="20" placeholder="মোবাইল নম্বর" aria-label="মোবাইল নম্বর" inputmode="tel">
-  <textarea class="form-input supplier-entry-input supplier-entry-address" id="supplier-address" rows="3" maxlength="250" placeholder="ঠিকানা" aria-label="ঠিকানা"></textarea>
- </div>
- <div class="supplier-form-actions"><button type="button" onclick="e24SaveSupplier()">নিশ্চিত করুন</button></div>
- </div><div id="supplier-detail-view" class="supplier-unified-page" hidden></div></div></div>
+</div>

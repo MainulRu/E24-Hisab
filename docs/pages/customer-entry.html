@@ -1,23 +1,112 @@
 <div class="app-page customer-entry-page" id="page-14">
-    <form class="customer-modal" id="customer-modal" autocomplete="off" data-lpignore="true" data-1p-ignore="true">
-      <div class="customer-page-header"><button type="button" id="customer-cancel" aria-label="ফিরে যান" onclick="event.preventDefault();if(typeof window.e24CloseCustomerModal==='function'){window.e24CloseCustomerModal();}return false;"><i class="fa-solid fa-arrow-left"></i></button><h2 id="customer-modal-title">নতুন গ্রাহক</h2></div>
-      <div class="customer-page-content">
-        <div class="customer-entry-top">
-          <div class="customer-page-avatar-wrap">
-          <div class="customer-page-avatar" id="customer-entry-avatar"><i class="fa-solid fa-user"></i></div>
-          <button type="button" class="customer-avatar-camera" id="customer-avatar-camera" aria-label="ছবি যোগ করুন"><i class="fa-solid fa-camera"></i></button>
-          <input type="file" id="customer-entry-photo" accept="image/*" hidden>
+  <form
+    class="customer-modal"
+    id="customer-modal"
+    autocomplete="off"
+    data-lpignore="true"
+    data-1p-ignore="true"
+  >
+    <div class="customer-page-header">
+      <button
+        type="button"
+        id="customer-cancel"
+        aria-label="ফিরে যান"
+        onclick="event.preventDefault();if(typeof window.e24CloseCustomerModal==='function'){window.e24CloseCustomerModal();}return false;"
+      >
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <h2 id="customer-modal-title">নতুন গ্রাহক</h2>
+    </div>
+    <div class="customer-page-content">
+      <div class="customer-entry-top">
+        <div class="customer-page-avatar-wrap">
+          <div class="customer-page-avatar" id="customer-entry-avatar">
+            <i class="fa-solid fa-user"></i>
           </div>
-          <div class="customer-entry-type" id="customer-entry-type">
-            <button type="button" class="customer-entry-option active" data-entry-type="customer"><i class="fa-regular fa-circle-dot"></i><span>কাস্টমার</span></button>
-            <button type="button" class="customer-entry-option" data-entry-type="supplier"><i class="fa-regular fa-circle"></i><span>সাপ্লায়ার</span></button>
-          </div>
+          <button
+            type="button"
+            class="customer-avatar-camera"
+            id="customer-avatar-camera"
+            aria-label="ছবি যোগ করুন"
+          >
+            <i class="fa-solid fa-camera"></i>
+          </button>
+          <input
+            type="file"
+            id="customer-entry-photo"
+            accept="image/*"
+            hidden
+          />
         </div>
-        <button type="button" class="customer-phonebook-button" id="customer-phonebook"><i class="fa-regular fa-address-card"></i><span>ফোনবুক থেকে যোগ করি</span></button>
-        <input id="new-customer-name" name="e24-entry-name" type="text" placeholder="নাম" required maxlength="80" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" data-form-type="other" aria-autocomplete="none">
-        <input id="new-customer-phone" name="e24-entry-phone" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর" maxlength="20" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" data-form-type="other" aria-autocomplete="none">
-        <textarea id="new-customer-address" name="e24-entry-address" rows="2" maxlength="250" placeholder="ঠিকানা (ঐচ্ছিক)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" data-form-type="other" aria-autocomplete="none"></textarea>
+        <div class="customer-entry-type" id="customer-entry-type">
+          <button
+            type="button"
+            class="customer-entry-option active"
+            data-entry-type="customer"
+          >
+            <i class="fa-regular fa-circle-dot"></i><span>কাস্টমার</span>
+          </button>
+          <button
+            type="button"
+            class="customer-entry-option"
+            data-entry-type="supplier"
+          >
+            <i class="fa-regular fa-circle"></i><span>সাপ্লায়ার</span>
+          </button>
+        </div>
       </div>
-      <div class="customer-modal-actions"><button type="submit" id="customer-submit-label">নিশ্চিত করুন</button></div>
-    </form>
-  </div>
+      <button
+        type="button"
+        class="customer-phonebook-button"
+        id="customer-phonebook"
+      >
+        <i class="fa-regular fa-address-card"></i
+        ><span>ফোনবুক থেকে যোগ করি</span>
+      </button>
+      <input
+        id="new-customer-name"
+        name="e24-entry-name"
+        type="text"
+        placeholder="নাম"
+        required
+        maxlength="80"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="none"
+        spellcheck="false"
+        data-form-type="other"
+        aria-autocomplete="none"
+      />
+      <input
+        id="new-customer-phone"
+        name="e24-entry-phone"
+        type="tel"
+        inputmode="numeric"
+        placeholder="মোবাইল নম্বর"
+        maxlength="20"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="none"
+        spellcheck="false"
+        data-form-type="other"
+        aria-autocomplete="none"
+      />
+      <textarea
+        id="new-customer-address"
+        name="e24-entry-address"
+        rows="2"
+        maxlength="250"
+        placeholder="ঠিকানা (ঐচ্ছিক)"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="none"
+        spellcheck="false"
+        data-form-type="other"
+        aria-autocomplete="none"
+      ></textarea>
+    </div>
+    <div class="customer-modal-actions">
+      <button type="submit" id="customer-submit-label">নিশ্চিত করুন</button>
+    </div>
+  </form>
+</div>

@@ -1,1 +1,104 @@
-<div class="app-page" id="page-10"><div class="supplier-unified-page purchase-page-shell"><div class="supplier-unified-header purchase-page-top"><button type="button" class="supplier-unified-back purchase-page-back" aria-label="ফিরে যান" onclick="switchPage(9)"><i class="fa-solid fa-arrow-left"></i></button><div class="supplier-unified-title"><strong>নতুন ক্রয়</strong><small>সাপ্লায়ার থেকে পণ্য ক্রয়ের হিসাব</small></div><span class="supplier-unified-icon purchase-page-top-icon"><i class="fa-solid fa-cart-shopping"></i></span></div><label class="form-label" for="purchase-supplier-select">সাপ্লায়ার নির্বাচন *</label><select class="form-input" id="purchase-supplier-select" onchange="window.e24SelectPurchaseSupplier(this.value)"><option value="">সাপ্লায়ার নির্বাচন করুন</option></select><div class="purchase-supplier-label" id="purchase-supplier-label"><span>নির্বাচিত সাপ্লায়ার</span><strong>নির্বাচন করা হয়নি</strong></div><label class="form-label">পণ্যের নাম</label><input class="form-input" id="purchase-product-name" maxlength="100" placeholder="পণ্যের নাম"><div class="purchase-fields"><div><label class="form-label">পরিমাণ</label><input class="form-input" id="purchase-quantity" type="number" min="0" step="0.01" inputmode="decimal" placeholder="পরিমাণ"></div><div><label class="form-label">একক দাম (৳)</label><input class="form-input" id="purchase-unit-price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="একক দাম (ঐচ্ছিক)"></div></div><div class="purchase-total-box"><span>মোট ক্রয় মূল্য</span><strong id="purchase-total">৳ 0</strong></div><div class="purchase-fields purchase-payment-fields"><div><label class="form-label" for="purchase-entry-amount">ক্রয় করলাম (৳)</label><input class="form-input" id="purchase-entry-amount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="ক্রয়ের টাকা"></div><div><label class="form-label" for="purchase-paid-amount">জমা দিলাম (৳)</label><input class="form-input" id="purchase-paid-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="জমার টাকা"></div></div><div class="purchase-actions"><button class="btn btn-logout" type="button" onclick="switchPage(9)">বাতিল</button><button class="btn btn-green" type="button" onclick="e24SavePurchase()">ক্রয় সংরক্ষণ</button></div></div></div>
+<div class="app-page" id="page-10">
+  <div class="supplier-unified-page purchase-page-shell">
+    <div class="supplier-unified-header purchase-page-top">
+      <button
+        type="button"
+        class="supplier-unified-back purchase-page-back"
+        aria-label="ফিরে যান"
+        onclick="switchPage(9)"
+      >
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <div class="supplier-unified-title">
+        <strong>নতুন ক্রয়</strong
+        ><small>সাপ্লায়ার থেকে পণ্য ক্রয়ের হিসাব</small>
+      </div>
+      <span class="supplier-unified-icon purchase-page-top-icon"
+        ><i class="fa-solid fa-cart-shopping"></i
+      ></span>
+    </div>
+    <label class="form-label" for="purchase-supplier-select"
+      >সাপ্লায়ার নির্বাচন *</label
+    ><select
+      class="form-input"
+      id="purchase-supplier-select"
+      onchange="window.e24SelectPurchaseSupplier(this.value)"
+    >
+      <option value="">সাপ্লায়ার নির্বাচন করুন</option>
+    </select>
+    <div class="purchase-supplier-label" id="purchase-supplier-label">
+      <span>নির্বাচিত সাপ্লায়ার</span><strong>নির্বাচন করা হয়নি</strong>
+    </div>
+    <label class="form-label">পণ্যের নাম</label
+    ><input
+      class="form-input"
+      id="purchase-product-name"
+      maxlength="100"
+      placeholder="পণ্যের নাম"
+    />
+    <div class="purchase-fields">
+      <div>
+        <label class="form-label">পরিমাণ</label
+        ><input
+          class="form-input"
+          id="purchase-quantity"
+          type="number"
+          min="0"
+          step="0.01"
+          inputmode="decimal"
+          placeholder="পরিমাণ"
+        />
+      </div>
+      <div>
+        <label class="form-label">একক দাম (৳)</label
+        ><input
+          class="form-input"
+          id="purchase-unit-price"
+          type="number"
+          min="0"
+          step="0.01"
+          inputmode="decimal"
+          placeholder="একক দাম (ঐচ্ছিক)"
+        />
+      </div>
+    </div>
+    <div class="purchase-total-box">
+      <span>মোট ক্রয় মূল্য</span><strong id="purchase-total">৳ 0</strong>
+    </div>
+    <div class="purchase-fields purchase-payment-fields">
+      <div>
+        <label class="form-label" for="purchase-entry-amount"
+          >ক্রয় করলাম (৳)</label
+        ><input
+          class="form-input"
+          id="purchase-entry-amount"
+          type="number"
+          min="0.01"
+          step="0.01"
+          inputmode="decimal"
+          placeholder="ক্রয়ের টাকা"
+        />
+      </div>
+      <div>
+        <label class="form-label" for="purchase-paid-amount"
+          >জমা দিলাম (৳)</label
+        ><input
+          class="form-input"
+          id="purchase-paid-amount"
+          type="number"
+          min="0"
+          step="0.01"
+          inputmode="decimal"
+          placeholder="জমার টাকা"
+        />
+      </div>
+    </div>
+    <div class="purchase-actions">
+      <button class="btn btn-logout" type="button" onclick="switchPage(9)">
+        বাতিল</button
+      ><button class="btn btn-green" type="button" onclick="e24SavePurchase()">
+        ক্রয় সংরক্ষণ
+      </button>
+    </div>
+  </div>
+</div>

@@ -8,7 +8,7 @@ TARGETS = (
     ROOT / "docs" / "js",
     ROOT / "app" / "src" / "main" / "assets" / "js",
 )
-FILES = ("customer.js", "notification.js", "setting.js", "transaction.js")
+FILES = ("customer.js", "notification.js", "setting.js", "transaction.js", "payment.js")
 
 
 def main():

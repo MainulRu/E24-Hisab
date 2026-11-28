@@ -115,7 +115,11 @@ async function e24SavePaymentSettings(){
   const activeDataUid=paymentContext&&paymentContext.activeDataUid;
   const e24Store=paymentContext&&paymentContext.store;
   const showToast=paymentContext&&paymentContext.showToast;
-  if(!currentUser||!activeDataUid||!e24Store){if(showToast)showToast('আগে লগইন করুন');return;}
+  if(!currentUser||!activeDataUid||!e24Store){
+    if(typeof showToast==='function')showToast('লগইন তথ্য পাওয়া যায়নি। আবার লগইন করুন।','error');
+    else {const toast=document.getElementById('toast');if(toast){toast.textContent='লগইন তথ্য পাওয়া যায়নি। আবার লগইন করুন।';toast.classList.add('show','toast-error');}}
+    return;
+  }
   const button=document.getElementById('e24-save-payment-settings');
   const fields={
     bkashPersonalNumber:'e24-pay-bkash-number',

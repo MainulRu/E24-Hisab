@@ -37,6 +37,32 @@ function e24RenderPaymentPage() {
       ? db.paymentSettings
       : {};
   const customers = Array.isArray(db && db.customers) ? db.customers : [];
+  const customerSelect = document.getElementById("e24-payment-customer-select");
+  if (customerSelect) {
+    const selectedId = db.selectedCustomerId ? String(db.selectedCustomerId) : "";
+    customerSelect.textContent = "";
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "গ্রাহক নির্বাচন করুন";
+    customerSelect.appendChild(placeholder);
+    customers.forEach(function (item) {
+      const option = document.createElement("option");
+      option.value = String(item.id);
+      option.textContent = String(item.name || "নাম নেই") +
+        (item.phone ? " — " + String(item.phone) : "");
+      customerSelect.appendChild(option);
+    });
+    customerSelect.value = customers.some(function (item) {
+      return String(item.id) === selectedId;
+    }) ? selectedId : "";
+    if (customerSelect.dataset.bound !== "1") {
+      customerSelect.addEventListener("change", function () {
+        db.selectedCustomerId = this.value || "";
+        e24RenderPaymentPage();
+      });
+      customerSelect.dataset.bound = "1";
+    }
+  }
   const customer = db.selectedCustomerId
     ? customers.find(function (item) {
         return String(item.id) === String(db.selectedCustomerId);
@@ -97,10 +123,9 @@ function e24RenderPaymentPage() {
       amountInput.dataset.customerId = "";
     }
     if (amountHint)
-      amountHint.textContent =
-        "প্রথমে গ্রাহকের বিস্তারিত পেজ থেকে Payment পেজে আসুন।";
+      amountHint.textContent = "পেমেন্ট করতে উপরের তালিকা থেকে গ্রাহক নির্বাচন করুন।";
     if (nameElement) nameElement.textContent = "গ্রাহক নির্বাচন করা হয়নি";
-    if (phoneElement) phoneElement.textContent = "গ্রাহকের বিস্তারিত পেজ খুলুন";
+    if (phoneElement) phoneElement.textContent = "তালিকা থেকে গ্রাহক নির্বাচন করুন";
     if (dueElement) dueElement.textContent = "বকেয়া পরিমাণ: ৳ ০";
   }
   const paymentAction = document.getElementById("e24-payment-submit");

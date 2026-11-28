@@ -252,6 +252,9 @@ async function e24SavePaymentSettings() {
   }
 }
 
+// Public entry point retained for compatibility with existing Web integrations.
+window.e24SavePaymentSettings = e24SavePaymentSettings;
+
 // Bind the payment settings save action independently of the general settings initializer.
 function e24BindPaymentSettingsSave() {
   const button = document.getElementById("e24-save-payment-settings");

@@ -19,17 +19,17 @@ android {
 def generatedE24Assets = layout.buildDirectory.dir("generated/e24Assets")
 
 tasks.register("assembleE24Pages") {
-    inputs.file("src/main/assets/template/index.html")
+    inputs.file("src/main/assets/index.html")
     inputs.file("src/main/assets/pages/home.html")
     outputs.file(generatedE24Assets.map { it.file("index.html") })
 
     doLast {
-        def templateFile = file("src/main/assets/template/index.html")
+        def templateFile = file("src/main/assets/index.html")
         def pageFile = file("src/main/assets/pages/home.html")
         def html = templateFile.getText("UTF-8")
         def marker = "<!-- E24_PAGE:1 -->"
         if (html.count(marker) != 1) {
-            throw new GradleException("Expected exactly one Home page marker in template/index.html")
+            throw new GradleException("Expected exactly one Home page marker in index.html")
         }
         def pageHtml = pageFile.getText("UTF-8")
         if (!pageHtml.contains('id="page-1"')) {
@@ -41,6 +41,8 @@ tasks.register("assembleE24Pages") {
     }
 }
 
+// Use the generated index.html in the APK; the source index.html is the assembler input.
+android.sourceSets.main.assets.exclude("index.html")
 android.sourceSets.main.assets.srcDir(generatedE24Assets)
 tasks.named("preBuild").configure {
     dependsOn("assembleE24Pages")

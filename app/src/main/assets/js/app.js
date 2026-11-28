@@ -840,6 +840,14 @@ function e24AdminRoleName(role){return role==='main'?'Administrator':role==='ful
 
 if(!firebase.apps.length)firebase.initializeApp(E24_FIREBASE_CONFIG);
 const e24Auth=firebase.auth(),e24Store=firebase.firestore();
+// Notification module dependencies are exposed through live getters (not copied state).
+window.E24NotificationContext={
+ get currentUser(){return currentUser;},
+ get activeDataUid(){return activeDataUid;},
+ get isAdmin(){return isAdmin;},
+ get store(){return e24Store;}
+};
+
 window.e24Logout=()=>e24Auth.signOut().catch(()=>showToast('লগআউট করা যায়নি'));
 async function e24ReferralRequest(path,options={}) {
  if(!e24Auth.currentUser)throw new Error('AUTH_REQUIRED');
@@ -880,155 +888,6 @@ function e24AuthMessage(err){const m={'auth/email-already-in-use':'এই Email 
 function e24SetAuthMode(mode){authMode=mode;document.getElementById("e24-launch-splash").hidden=true;document.querySelector(".e24-auth-card").classList.remove("launching");document.getElementById("e24-auth-subtitle").hidden=false;document.getElementById('e24-login-form').hidden=mode!=='login';document.getElementById('e24-register-form').hidden=mode!=='register';document.getElementById('e24-verify-panel').hidden=true;document.getElementById('e24-forgot-panel').hidden=true;document.getElementById('e24-forgot-password-link').hidden=mode!=='login';document.getElementById('e24-auth-switch').hidden=false;document.getElementById('e24-auth-subtitle').textContent=mode==='login'?'আপনার হিসাব নিরাপদে সংরক্ষণ করতে লগইন করুন':'নতুন E24 Hisab অ্যাকাউন্ট তৈরি করুন';document.getElementById('e24-auth-switch').textContent=mode==='login'?'নতুন অ্যাকাউন্ট তৈরি করবেন?':'আগে অ্যাকাউন্ট আছে? লগইন করুন';document.getElementById('e24-auth-error').textContent='';}
 async function e24LoadData(uid){const started=performance.now();activeDataUid=uid;const ref=e24Store.collection('users').doc(uid).collection('data').doc('main'),snap=await ref.get(),elapsed=(performance.now()-started)/1000;if(snap.exists)db={customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি',suppliers:[],supplierTransactions:[],selectedSupplierId:null,...snap.data()};else{let legacy=null;try{const old=JSON.parse(localStorage.getItem(KEY));if(old&&Array.isArray(old.customers)&&Array.isArray(old.transactions))legacy=old;}catch(_){}db=legacy||{customers:[],transactions:[],selectedCustomerId:null,txType:'বাকি',suppliers:[],supplierTransactions:[],selectedSupplierId:null};}// Transaction images are intentionally not bulk-loaded at startup; the report fetches only visible images.
 if(!Array.isArray(db.suppliers))db.suppliers=[];if(!Array.isArray(db.supplierTransactions))db.supplierTransactions=[];const patch={};if(!Object.prototype.hasOwnProperty.call(db,'smsWalletBalance')||!Number.isFinite(Number(db.smsWalletBalance))){db.smsWalletBalance=0;patch.smsWalletBalance=0;}if(!Array.isArray(db.smsHistory)){db.smsHistory=[];patch.smsHistory=[];}if(!Array.isArray(db.smsRechargeRequests)){db.smsRechargeRequests=[];patch.smsRechargeRequests=[];}if(!Array.isArray(db.smsWalletTransactions)){db.smsWalletTransactions=[];patch.smsWalletTransactions=[];}if(Number(db.smsWalletBalance)===500&&db.smsWalletTransactions.length===0&&db.smsHistory.length===0&&!db.smsRechargeRequests.some(x=>String(x.status||'').toUpperCase()==='APPROVED')){db.smsWalletBalance=0;patch.smsWalletBalance=0;}if(!snap.exists||Object.keys(patch).length){await ref.set({...db,...patch,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});if(legacy)localStorage.removeItem(KEY);}e24ProcessLoadedNotifications(uid);refreshAll();renderSmsWallet();if(isAdmin&&typeof e24AdminUpdateSummary==='function')e24AdminUpdateSummary();const timing=document.getElementById('e24-load-timing');if(timing){timing.textContent='ডেটা: '+elapsed.toFixed(2)+' সেকেন্ড · অ্যাপ চালু: '+((performance.now()-e24BootStartedAt)/1000).toFixed(2)+' সেকেন্ড';timing.hidden=false;}}
-
-let e24NotificationPollTimer=null;
-function e24EnsureNotificationData(){
- if(!Array.isArray(db.notifications))db.notifications=[];
- if(!Array.isArray(db.notificationArchive))db.notificationArchive=[];
- if(!db.notificationMeta||typeof db.notificationMeta!=='object')db.notificationMeta={};
- if(!db.notificationMeta.rechargeStatusById||typeof db.notificationMeta.rechargeStatusById!=='object')db.notificationMeta.rechargeStatusById={};
- let migrated=false;
- if(db.notifications.length>35){const moved=db.notifications.splice(0,db.notifications.length-35);db.notificationArchive=db.notificationArchive.concat(moved);migrated=true;}
- if(migrated)e24PersistNotificationState();
-}
-function e24QueueNotification(notificationId,type,title,message,page,customerId){
- e24EnsureNotificationData();
- const key=String(notificationId||'');
- if(!key||db.notifications.some(x=>String(x.id)===key)||db.notificationArchive.some(x=>String(x.id)===key))return false;
- db.notifications.push({id:key,type:String(type||''),title:String(title||''),message:String(message||''),page:String(page||'1'),customerId:customerId==null?null:String(customerId),createdAt:Date.now(),read:false});
- if(db.notifications.length>35){const moved=db.notifications.splice(0,db.notifications.length-35);db.notificationArchive=db.notificationArchive.concat(moved);}
- return true;
-}
-function e24PersistNotificationState(){
- if(!currentUser||!activeDataUid)return Promise.resolve();
- const ref=e24Store.collection('users').doc(activeDataUid).collection('data').doc('main');
- return ref.set({notifications:db.notifications||[],notificationMeta:db.notificationMeta||{},updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(err=>console.error('Notification save failed:',err));
-}
-function e24ProcessLoadedNotifications(uid){
- e24EnsureNotificationData();
- let changed=false;
- const now=new Date(),dayKey=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
- (db.customers||[]).forEach(customer=>{
-  const due=Number(customerTotals(customer.id).due)||0,reminderId='due-reminder-'+String(customer.id)+'-'+dayKey;
-  const reminder=[...db.notifications,...(db.notificationArchive||[])].find(x=>String(x.id)===reminderId);
-  if(due>0){
-   const amount=due.toLocaleString('bn-BD',{maximumFractionDigits:0}),message=String(customer.name||'গ্রাহক')+' সাহেবের ৳'+amount+' বকেয়া রয়েছে।';
-   if(reminder){if(reminder.message!==message){reminder.message=message;reminder.createdAt=Date.now();changed=true;}}
-   else if(e24QueueNotification(reminderId,'due-reminder','বকেয়া পরিশোধের স্মরণ',message,'3',customer.id))changed=true;
-  }else if(reminder&&!reminder.read){reminder.read=true;changed=true;}
- });
- const statusMap=db.notificationMeta.rechargeStatusById;
- (db.smsRechargeRequests||[]).forEach(request=>{
-  if(!request||!request.id)return;
-  const requestId=String(request.id),status=String(request.status||'PENDING').toUpperCase(),previous=String(statusMap[requestId]||'').toUpperCase();
-  if(previous==='PENDING'&&(status==='APPROVED'||status==='CANCELLED')){
-   const approved=status==='APPROVED';
-   if(e24QueueNotification('recharge-status-'+requestId,approved?'recharge-approved':'recharge-cancelled','SMS Wallet Recharge',approved?'আপনার Recharge Request অনুমোদিত হয়েছে।':'আপনার Recharge Request বাতিল করা হয়েছে।','8'))changed=true;
-  }
-  if(previous!==status){statusMap[requestId]=status;changed=true;}
- });
- if(changed)e24PersistNotificationState();
- e24RenderNotifications();
-}
-function e24NotificationEscape(value){
- return String(value==null?'':value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-}
-let e24NotificationArchiveView=false;
-function e24RenderNotifications(){
- const panel=document.getElementById('e24-notification-panel'),list=document.getElementById('e24-notification-list'),badge=document.getElementById('e24-notification-count');
- if(!db)return;
- e24EnsureNotificationData();
- const unread=db.notifications.filter(x=>!x.read).length,archiveUnread=db.notificationArchive.filter(x=>!x.read).length,archiveCount=db.notificationArchive.length;
- if(badge){badge.textContent=unread>99?'99+':String(unread);badge.hidden=unread===0;}
- if(!panel||!list)return;
- const rows=(e24NotificationArchiveView?db.notificationArchive:db.notifications).slice().sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
- const heading=document.getElementById('e24-notification-heading'),archiveButton=document.getElementById('e24-notification-archive');
- if(heading)heading.textContent=e24NotificationArchiveView?'নোটিফিকেশন আর্কাইভ':'নোটিফিকেশন';
- if(archiveButton){archiveButton.textContent=e24NotificationArchiveView?'সর্বশেষ ৩৫টি':'আর্কাইভ ('+archiveCount+')';archiveButton.classList.toggle('active',e24NotificationArchiveView);}
- list.innerHTML=rows.length?rows.map(item=>{
-  const time=Number(item.createdAt)?new Date(Number(item.createdAt)).toLocaleString('bn-BD',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}):'';
-  return '<button type="button" class="e24-notification-item '+(item.read?'':'unread')+'" data-e24-notification-id="'+e24NotificationEscape(item.id)+'"><span class="e24-notification-title">'+e24NotificationEscape(item.title)+'</span><span class="e24-notification-message">'+e24NotificationEscape(item.message)+'</span><span class="e24-notification-time">'+e24NotificationEscape(time)+'</span></button>';
- }).join(''):'<div class="e24-notification-empty">'+(e24NotificationArchiveView?'আর্কাইভে কোনো Notification নেই।':'এখনো কোনো Notification নেই।')+'</div>';
- const readAll=document.getElementById('e24-notification-read-all');if(readAll)readAll.disabled=unread+archiveUnread===0;
-}
-window.e24RenderNotifications=e24RenderNotifications;
-function e24CloseNotificationPanel(){
- const panel=document.getElementById('e24-notification-panel');
- if(panel){panel.classList.remove('show');panel.setAttribute('aria-hidden','true');}
-}
-function e24ToggleNotificationPanel(){
- const panel=document.getElementById('e24-notification-panel');if(!panel)return;
- e24RenderNotifications();
- const show=!panel.classList.contains('show');
- panel.classList.toggle('show',show);panel.setAttribute('aria-hidden',show?'false':'true');
-}
-function e24OpenNotification(item){
- if(!item)return;
- item.read=true;e24CloseNotificationPanel();e24RenderNotifications();e24PersistNotificationState();
- if(item.customerId){db.selectedCustomerId=item.customerId;renderLedger();switchPage('3');return;}
- const page=String(item.page||'1');switchPage(page);
- if(page==='8'){
-  const settings=[...document.querySelectorAll('#page-8 details.e24-settings-card')].find(x=>x.querySelector('#sms-recharge-request'));
-  if(settings)settings.open=true;
- }
-}
-document.addEventListener('click',event=>{
- const bell=event.target.closest('#e24-notification-bell');
- if(bell){event.preventDefault();event.stopPropagation();e24ToggleNotificationPanel();return;}
- const archiveButton=event.target.closest('#e24-notification-archive');
- if(archiveButton){e24NotificationArchiveView=!e24NotificationArchiveView;e24RenderNotifications();return;}
- const readAll=event.target.closest('#e24-notification-read-all');
- if(readAll){e24EnsureNotificationData();db.notifications.forEach(x=>x.read=true);db.notificationArchive.forEach(x=>x.read=true);e24PersistNotificationState();e24RenderNotifications();return;}
- const itemButton=event.target.closest('[data-e24-notification-id]');
- if(itemButton){const key=itemButton.getAttribute('data-e24-notification-id'),item=[...(db.notifications||[]),...(db.notificationArchive||[])].find(x=>String(x.id)===key);e24OpenNotification(item);return;}
- if(!event.target.closest('#e24-notification-panel'))e24CloseNotificationPanel();
-});
-async function e24CheckRechargeStatusFromCloud(){
- if(!currentUser||!activeDataUid)return;
- try{
-  const ref=e24Store.collection('users').doc(activeDataUid).collection('data').doc('main'),snap=await ref.get();
-  if(!snap.exists)return;
-  const remote=snap.data()||{},latest=Array.isArray(remote.smsRechargeRequests)?remote.smsRechargeRequests:[];
-  e24EnsureNotificationData();
-  let changed=false;
-  latest.forEach(request=>{
-   if(!request||!request.id)return;
-   const id=String(request.id),status=String(request.status||'PENDING').toUpperCase(),previous=String(db.notificationMeta.rechargeStatusById[id]||'').toUpperCase();
-   if(previous==='PENDING'&&(status==='APPROVED'||status==='CANCELLED')){
-    const approved=status==='APPROVED';
-    if(e24QueueNotification('recharge-status-'+id,approved?'recharge-approved':'recharge-cancelled','SMS Wallet Recharge',approved?'আপনার Recharge Request অনুমোদিত হয়েছে।':'আপনার Recharge Request বাতিল করা হয়েছে।','8'))changed=true;
-   }
-   if(previous!==status){db.notificationMeta.rechargeStatusById[id]=status;changed=true;}
-  });
-  db.smsRechargeRequests=latest;
-  if(changed){await e24PersistNotificationState();e24RenderNotifications();}
- }catch(err){console.error('Recharge notification sync failed:',err);}
-}
-function e24TrackNewRechargeRequests(requests){
- e24EnsureNotificationData();
- const meta=db.notificationMeta;
- if(!Array.isArray(meta.knownRechargeRequestIds)){
-  meta.knownRechargeRequestIds=(requests||[]).map(x=>String(x.id)).filter(Boolean).slice(-200);
-  e24PersistNotificationState();return;
- }
- let changed=false;
- (requests||[]).forEach(request=>{
-  const requestId=String(request&&request.id||'');if(!requestId||meta.knownRechargeRequestIds.includes(requestId))return;
-  meta.knownRechargeRequestIds.push(requestId);
-  if(e24QueueNotification('new-recharge-'+requestId,'new-recharge-request','নতুন Recharge Request',e24Money(request.amount)+' রিচার্জের নতুন Request এসেছে।','8'))changed=true;
-  changed=true;
- });
- meta.knownRechargeRequestIds=meta.knownRechargeRequestIds.slice(-200);
- if(changed){e24PersistNotificationState();e24RenderNotifications();}
-}
-function e24StartNotificationPolling(){
- if(e24NotificationPollTimer)clearInterval(e24NotificationPollTimer);
- e24NotificationPollTimer=setInterval(()=>{
-  if(!currentUser||!activeDataUid)return;
-  e24CheckRechargeStatusFromCloud();
-  if(isAdmin)e24RenderAdminRechargeRequests();
- },30000);
-}
 
 let e24AdminUsersCache=[];
 function e24AdminUserLabel(uid,data){const d=data||{};return uid===E24_ADMIN_UID?'Administrator — '+(d.email||'নিজের হিসাব'):(d.name||d.email||'User '+uid.slice(0,8));}

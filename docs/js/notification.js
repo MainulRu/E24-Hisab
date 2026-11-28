@@ -66,6 +66,14 @@ function e24RenderNotifications(){
   const time=Number(item.createdAt)?new Date(Number(item.createdAt)).toLocaleString('bn-BD',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}):'';
   return '<button type="button" class="e24-notification-item '+(item.read?'':'unread')+'" data-e24-notification-id="'+e24NotificationEscape(item.id)+'"><span class="e24-notification-title">'+e24NotificationEscape(item.title)+'</span><span class="e24-notification-message">'+e24NotificationEscape(item.message)+'</span><span class="e24-notification-time">'+e24NotificationEscape(time)+'</span></button>';
  }).join(''):'<div class="e24-notification-empty">'+(e24NotificationArchiveView?'আর্কাইভে কোনো Notification নেই।':'এখনো কোনো Notification নেই।')+'</div>';
+ list.querySelectorAll('[data-e24-notification-id]').forEach(button=>{
+  button.addEventListener('click',event=>{
+   event.preventDefault();event.stopPropagation();
+   const key=button.getAttribute('data-e24-notification-id');
+   const item=[...(window.db.notifications||[]),...(window.db.notificationArchive||[])].find(x=>String(x.id)===key);
+   e24OpenNotification(item);
+  });
+ });
  const readAll=document.getElementById('e24-notification-read-all');if(readAll)readAll.disabled=unread+archiveUnread===0;
 }
 window.e24RenderNotifications=e24RenderNotifications;
@@ -82,8 +90,16 @@ function e24ToggleNotificationPanel(){
 function e24OpenNotification(item){
  if(!item)return;
  item.read=true;e24CloseNotificationPanel();e24RenderNotifications();e24PersistNotificationState();
- if(item.customerId){window.db.selectedCustomerId=item.customerId;window.renderLedger();window.switchPage('3');return;}
- const page=String(item.page||'1');window.switchPage(page);
+ if(item.customerId){
+  window.db.selectedCustomerId=item.customerId;
+  if(typeof window.renderLedger==='function')window.renderLedger();
+  if(typeof window.switchPage==='function')window.switchPage('3');
+  else console.error('Notification open failed: switchPage is unavailable');
+  return;
+ }
+ const page=String(item.page||'1');
+ if(typeof window.switchPage!=='function'){console.error('Notification open failed: switchPage is unavailable');return;}
+ window.switchPage(page);
  if(page==='8'){
   const settings=[...document.querySelectorAll('#page-8 details.e24-settings-card')].find(x=>x.querySelector('#sms-recharge-request'));
   if(settings)settings.open=true;
@@ -96,8 +112,6 @@ document.addEventListener('click',event=>{
  if(archiveButton){e24NotificationArchiveView=!e24NotificationArchiveView;e24RenderNotifications();return;}
  const readAll=event.target.closest('#e24-notification-read-all');
  if(readAll){e24EnsureNotificationData();window.db.notifications.forEach(x=>x.read=true);window.db.notificationArchive.forEach(x=>x.read=true);e24PersistNotificationState();e24RenderNotifications();return;}
- const itemButton=event.target.closest('[data-e24-notification-id]');
- if(itemButton){const key=itemButton.getAttribute('data-e24-notification-id'),item=[...(window.db.notifications||[]),...(window.db.notificationArchive||[])].find(x=>String(x.id)===key);e24OpenNotification(item);return;}
  if(!event.target.closest('#e24-notification-panel'))e24CloseNotificationPanel();
 });
 async function e24CheckRechargeStatusFromCloud(){

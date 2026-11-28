@@ -246,6 +246,8 @@
         return calculateBalances(validTransactions());
       }
       function selected() { return db.customers.find(c=>String(c.id)===String(db.selectedCustomerId)) || db.customers[0] || null; }
+      // Preserve the customer module's former global API for other app sections.
+      Object.assign(window,{validTransactions,calculateBalances,customerTotals,allCustomerTotals,selected,renderCustomers,renderLedger});
       let customerDirectoryFilter='all';
       function renderCustomers() {
         const ul=document.querySelector('#page-2 #directory-customer-list');if(!ul)return;

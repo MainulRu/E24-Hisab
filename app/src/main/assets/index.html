@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>E24 Hisab - Full Interactive App Simulator</title>
+  <!-- Google Font: Hind Siliguri -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/customers.css">
+  <link rel="stylesheet" href="css/ledger.css">
+  <link rel="stylesheet" href="css/transaction.css">
+  <link rel="stylesheet" href="css/payment.css">
+  <link rel="stylesheet" href="css/messages.css">
+  <link rel="stylesheet" href="css/reports.css">
+  <link rel="stylesheet" href="css/settings.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/dark-mode.css">
+</head>
+<body>
+
+  <div class="card-wrapper">
+    <div class="phone-screen">
+      
+      <!-- Status Bar -->
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="status-icons">
+          <i class="fa-solid fa-signal"></i>
+          <i class="fa-solid fa-wifi"></i>
+          <i class="fa-solid fa-battery-full"></i>
+        </div>
+      </div>
+
+      <!-- App Bar -->
+      <div class="app-bar" id="dynamic-app-bar">
+        <span class="app-title e24-header-brand"><i class="fa-solid fa-store" aria-hidden="true"></i><span id="bar-title">E24 Hisab</span></span>
+        <button type="button" class="e24-notification-trigger" id="e24-notification-bell" aria-label="ইনবক্স"><svg viewBox="0 0 32 32" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 10.5 16 5l12 5.5v15H4v-15Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="m4.5 11 11.5 8 11.5-8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 25.5 12 17M27.5 25.5 20 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span class="e24-notification-label">ইনবক্স</span><span class="e24-notification-count" id="e24-notification-count" hidden>0</span></button>
+        <button type="button" class="e24-ai-trigger" id="e24-ai-trigger" aria-label="সাপোর্ট" title="সাপোর্ট"><svg viewBox="0 0 36 32" width="36" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 5.5C3 3.6 4.6 2 6.5 2h18C26.4 2 28 3.6 28 5.5v12c0 1.9-1.6 3.5-3.5 3.5H13l-7.5 7v-7.2C4 20.2 3 19 3 17.5v-12Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M11 9h20c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-2v4l-5-4h-5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="e24-ai-label">সাপোর্ট</span></button>
+        <button type="button" class="e24-header-menu interactive-icon" aria-label="মেনু খুলুন" title="মেনু"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
+      </div>
+
+      <div class="e24-notification-panel" id="e24-notification-panel" aria-hidden="true">
+        <div class="e24-notification-head"><span id="e24-notification-heading">নোটিফিকেশন</span><div class="e24-notification-actions"><button type="button" class="e24-notification-archive" id="e24-notification-archive">আর্কাইভ (0)</button><button type="button" class="e24-notification-read-all" id="e24-notification-read-all">সবগুলো Read করুন</button></div></div>
+        <div class="e24-notification-list" id="e24-notification-list"><div class="e24-notification-empty">এখনো কোনো Notification নেই।</div></div>
+      </div>
+
+      <!-- Toast Message -->
+      
+      <div class="e24-ai-backdrop" id="e24-ai-backdrop" aria-hidden="true">
+        <section class="e24-ai-window" role="dialog" aria-modal="true" aria-label="E24 AI Support">
+          <header class="e24-ai-head">
+            <button type="button" class="e24-ai-close" id="e24-ai-close" aria-label="ফিরে যান"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="e24-ai-head-copy"><strong>সাপোর্ট</strong></div>
+            <div class="e24-ai-head-actions">
+              <a class="e24-ai-helpline" href="tel:+8801737537688" aria-label="+8801737-537688 নম্বরে কল করুন"><i class="fa-solid fa-headset" aria-hidden="true"></i><span>হেল্পলাইন</span></a>
+              <button type="button" class="e24-ai-history" id="e24-ai-history" aria-label="চ্যাট হিস্ট্রি"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>হিস্ট্রি</span></button>
+            </div>
+          </header>
+          <div class="e24-ai-messages" id="e24-ai-messages" aria-live="polite">
+            <div class="e24-ai-msg assistant">স্বাগতম! আমি E24 Hisab-এর AI সহকারী। অ্যাপের ফিচার বা ব্যবহারবিধি নিয়ে বাংলায় প্রশ্ন করুন।</div>
+          </div>
+          <div class="e24-ai-history-view" id="e24-ai-history-view" hidden>
+            <div class="e24-ai-history-toolbar"><strong>চ্যাট হিস্ট্রি</strong><button type="button" id="e24-ai-history-back"><i class="fa-solid fa-arrow-left"></i> চ্যাটে ফিরুন</button></div>
+            <div class="e24-ai-history-items" id="e24-ai-history-items"></div>
+          </div>
+          <div class="e24-ai-suggestions" id="e24-ai-suggestions">
+            <button type="button" class="e24-ai-suggestion">নতুন গ্রাহক কীভাবে যোগ করব?</button>
+            <button type="button" class="e24-ai-suggestion">বকেয়া হিসাব কীভাবে দেখব?</button>
+            <button type="button" class="e24-ai-suggestion">Recharge কীভাবে করব?</button>
+          </div>
+          <div class="e24-ai-compose">
+            <textarea class="e24-ai-input" id="e24-ai-input" rows="1" maxlength="1000" placeholder="আপনার প্রশ্ন লিখুন..." aria-label="আপনার প্রশ্ন"></textarea>
+            <button type="button" class="e24-ai-send" id="e24-ai-send" aria-label="পাঠান"><i class="fa-solid fa-paper-plane"></i></button>
+          </div>
+          <div class="e24-ai-note">গ্রাহকের ব্যক্তিগত তথ্য, পাসওয়ার্ড বা OTP লিখবেন না। AI উত্তর ভুল হতে পারে।</div>
+        </section>
+      </div>
+
+      <div class="toast-msg" id="toast">নোটিফিকেশন!</div>
+
+      <div class="side-menu-backdrop" id="side-menu-backdrop" aria-hidden="true">
+        <aside class="side-menu-panel" role="dialog" aria-modal="true" aria-label="আরও মেনু">
+          <div class="side-menu-head"><span><i class="fa-solid fa-store"></i> আরও মেনু</span><button type="button" class="side-menu-close" onclick="closeSideMenu()" aria-label="মেনু বন্ধ"><i class="fa-solid fa-xmark"></i></button></div>
+          <div class="side-menu-section-label">হিসাব ব্যবস্থাপনা</div>
+          <button class="side-menu-link" onclick="openMenuPage(9)"><i class="fa-solid fa-truck"></i> সাপ্লায়ার ব্যবস্থাপনা</button>
+          <button class="side-menu-link" onclick="openMenuPage(10)"><i class="fa-solid fa-cart-shopping"></i> নতুন ক্রয়</button>
+          <button class="side-menu-link" onclick="openMenuPage('3')"><i class="fa-solid fa-book"></i> গ্রাহকের হিসাব</button>
+          <button class="side-menu-link" onclick="openMenuPage('5')"><i class="fa-solid fa-wallet"></i> পেমেন্ট</button>
+          <div class="side-menu-section-label">যোগাযোগ ও বিশ্লেষণ</div>
+          <button class="side-menu-link" onclick="openMenuPage('6')"><i class="fa-solid fa-comments"></i> মেসেজ</button>
+          <button class="side-menu-link" onclick="openMenuPage('7')"><i class="fa-solid fa-chart-pie"></i> হিসাব রিপোর্ট</button>
+          <div class="side-menu-section-label">অ্যাপ</div>
+          <button class="side-menu-link" onclick="openMenuPage('8')"><i class="fa-solid fa-gear"></i> সেটিংস</button>
+        </aside>
+      </div>
+
+
+      <!-- Screen Body -->
+      <div class="screen-body">
+
+        <!-- E24_PAGE:1 -->
+
+        <!-- 2. CUSTOMER LIST PAGE -->
+        <!-- পুরোনো গ্রাহক তালিকা অক্ষত রাখা হলো; নতুন Page-2-এ রেফারেন্স ডিজাইন -->
+        <div class="app-page" id="page-11"><div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="legacy-search-input" placeholder="নাম দিয়ে খুঁজুন..."></div>
+          <ul class="customer-list"><li class="customer-item" onclick="switchPage('3')"><div class="user-avatar"><i class="fa-solid fa-user"></i></div><div class="customer-name">রহিম মিঞা</div><span class="amount-tag tag-red">বাকি: ৳ 2,500</span><i class="fa-solid fa-chevron-right"></i></li><li class="customer-item" onclick="switchPage('3')"><div class="user-avatar"><i class="fa-solid fa-user"></i></div><div class="customer-name">করিম উদ্দিন</div><span class="amount-tag tag-red">বাকি: ৳ 1,200</span><i class="fa-solid fa-chevron-right"></i></li><li class="customer-item" onclick="switchPage('3')"><div class="user-avatar"><i class="fa-solid fa-user"></i></div><div class="customer-name">আব্দুল কাদের</div><span class="amount-tag tag-green">জমা: ৳ 800</span><i class="fa-solid fa-chevron-right"></i></li></ul>
+          <button class="btn btn-green shadow-btn" style="margin-top:8px" id="legacy-add-customer-button" type="button"><i class="fa-solid fa-user-plus"></i> নতুন গ্রাহক যোগ করুন</button></div>
+        <!-- 12. SELECTED CUSTOMER REPORT PAGE; existing all-business report on Page-7 remains unchanged -->
+        <div class="app-page" id="page-12"><div class="customer-report-table" aria-label="নির্বাচিত গ্রাহকের লেনদেন রিপোর্ট"><div class="customer-report-head"><div>লেনদেন বিবরণ</div><div>বিক্রি করলাম</div><div>জমা নিলাম</div></div><div id="customer-report-rows"><div class="customer-report-empty">কোনো লেনদেন নেই</div></div></div></div>
+        <div class="app-page" id="page-13"></div>
+        <!-- Page-2: রেফারেন্স-স্টাইল গ্রাহক তালিকা -->
+        <div class="app-page e24-customer-directory" id="page-2">
+          <div class="customer-directory-search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" id="search-input" placeholder="গ্রাহকের নাম / মোবাইল খুঁজুন"></div>
+          <div class="customer-directory-summary"><div class="customer-directory-heading"><span class="customer-directory-icon"><i class="fa-solid fa-users"></i></span><div><strong>গ্রাহক তালিকা</strong><small>আপনার সকল গ্রাহকের হিসাব একসাথে</small></div><span class="customer-directory-count" id="directory-customer-count">০ জন</span></div><div class="customer-directory-metrics"><div><span>মোট পাওনা</span><strong id="directory-total-due">৳ ০</strong></div><div><span>মোট জমা</span><strong id="directory-total-paid">৳ ০</strong></div><div><span>অগ্রিম</span><strong id="directory-total-advance">৳ ০</strong></div></div></div>
+          <div class="customer-directory-tabs" role="group" aria-label="গ্রাহক ফিল্টার"><button type="button" class="active" data-customer-filter="all"><i class="fa-solid fa-list"></i> সকল</button><button type="button" data-customer-filter="due"><i class="fa-solid fa-arrow-up"></i> বাকি</button><button type="button" data-customer-filter="advance"><i class="fa-solid fa-arrow-down"></i> অগ্রিম</button><button type="button" data-customer-filter="settled"><i class="fa-solid fa-circle-check"></i> পরিশোধিত</button></div>
+          <div class="customer-directory-list-head"><strong>গ্রাহকসমূহ</strong><span id="directory-visible-count">০ জন</span></div><ul class="customer-list directory-customer-list" id="directory-customer-list"></ul>
+          <button class="btn btn-green shadow-btn directory-add-customer" id="add-customer-button" type="button"><i class="fa-solid fa-user-plus"></i> নতুন গ্রাহক যোগ করুন</button></div>
+        <!-- পুরোনো গ্রাহকের খাতা Page-3 আপাতত comment করে hide রাখা হলো।
+        <div class="app-page" id="page-3">
+          <div class="profile-header">
+            <div class="profile-avatar-large"><i class="fa-solid fa-user"></i></div>
+            <div class="profile-name">রহিম মিঞা</div>
+            <div class="profile-phone"><i class="fa-solid fa-phone"></i> 01712-345678</div>
+          </div>
+          <div class="two-col-summary">
+            <div class="summary-box box-green"><span>মোট জমা</span><strong>৳ 5,000</strong></div>
+            <div class="summary-box box-red"><span>মোট বাকি</span><strong>৳ 2,500</strong></div>
+          </div>
+          <div class="section-banner border-banner" style="margin:4px 0; font-size:11px;"><i class="fa-solid fa-list-check"></i> লেনদেনের ইতিহাস</div>
+          <ul class="transaction-history">
+            <li class="history-item"><span class="tx-icon icon-up"><i class="fa-solid fa-arrow-up"></i></span><div class="tx-info"><span class="tx-name">জমা</span><span class="green-text" style="font-weight:700;">৳ 1,000</span></div><span class="tx-date">13-11-2026</span></li>
+            <li class="history-item"><span class="tx-icon icon-down"><i class="fa-solid fa-arrow-down"></i></span><div class="tx-info"><span class="tx-name">বাকি</span><span class="red-text" style="font-weight:700;">৳ 500</span></div><span class="tx-date">12-11-2026</span></li>
+          </ul>
+          <div class="action-btn-group">
+            <button class="btn btn-blue" onclick="switchPage('4')"><i class="fa-solid fa-plus"></i> নতুন লেনদেন</button>
+            <button class="btn btn-purple" onclick="switchPage('6')"><i class="fa-solid fa-envelope"></i> মেসেজ পাঠান</button>
+          </div>
+        </div>
+
+        -->
+        <!-- 3. রেফারেন্স ডিজাইনের নতুন Page-3 -->
+        <div class="app-page e24-customer-tx-page" id="page-3"></div>
+
+        <!-- 4. NEW TRANSACTION PAGE (নতুন লেনদেন) -->
+        <div class="app-page" id="page-4">
+          <div class="type-selector">
+            <button class="type-btn active-green" id="tx-due"><i class="fa-solid fa-arrow-down"></i> বিক্রি</button>
+            <button class="type-btn inactive-red" id="tx-paid"><i class="fa-solid fa-arrow-up"></i> জমা</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">গ্রাহক নির্বাচন:</label>
+            <div class="custom-select"><span>রহিম মিঞা</span><i class="fa-solid fa-chevron-down"></i></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">পরিমাণ (৳):</label>
+            <input type="text" class="form-input" value="1000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">পেমেন্ট মাধ্যম:</label>
+            <div class="custom-select" onclick="switchPage('5')"><span style="color:#e91e63; font-weight:600;"><i class="fa-solid fa-mobile-screen"></i> বিকাশ (bKash)</span><i class="fa-solid fa-chevron-right"></i></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Transaction ID:</label>
+            <input type="text" class="form-input" value="TRX123456789">
+          </div>
+          <button class="btn btn-green shadow-btn" onclick="showToast('লেনদেন সফলভাবে সংরক্ষিত!')">
+            <i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন
+          </button>
+        </div>
+
+        <!-- 5. PAYMENT PAGE (পেমেন্ট পেজ) -->
+        <div class="app-page" id="page-5">
+          <div class="payment-header">
+            <div class="profile-avatar-small"><i class="fa-solid fa-user"></i></div>
+            <div class="payment-user-info">
+              <div class="name" id="e24-payment-customer-name">গ্রাহক নির্বাচন করুন</div>
+              <div class="due-text" id="e24-payment-customer-phone">মোবাইল নম্বর নেই</div>
+            </div>
+          </div>
+          <div class="payment-amount-box" id="e24-payment-customer-due">বকেয়া পরিমাণ: ৳ ০</div>
+          <div class="form-group" style="margin-top:10px">
+            <label class="form-label" for="e24-payment-amount">যে পরিমাণ টাকা পেমেন্ট করবে (৳):</label>
+            <input id="e24-payment-amount" class="form-input" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="পেমেন্টের পরিমাণ">
+            <small id="e24-payment-amount-hint" style="display:block;margin-top:4px;color:#667085">সর্বোচ্চ বকেয়ার সমান টাকা দেওয়া যাবে।</small>
+          </div>
+          <div class="form-label" style="font-weight:700; margin-bottom:5px;">পেমেন্ট মাধ্যম নির্বাচন করুন:</div>
+          <div class="payment-options" id="e24-payment-method-options">
+            <label class="pay-option" id="e24-pay-option-bkash"><input type="radio" name="pay" value="bkash" onchange="e24RenderPaymentPage()"><i class="fa-solid fa-mobile-button" style="color:#e91e63;"></i> বিকাশ দিয়ে পেমেন্ট</label>
+            <label class="pay-option" id="e24-pay-option-nagad"><input type="radio" name="pay" value="nagad" onchange="e24RenderPaymentPage()"><i class="fa-solid fa-wallet" style="color:#f57c00;"></i> নগদ দিয়ে পেমেন্ট</label>
+            <label class="pay-option" id="e24-pay-option-bank"><input type="radio" name="pay" value="bank" onchange="e24RenderPaymentPage()"><i class="fa-solid fa-building-columns" style="color:#1565c0;"></i> ব্যাংক পেমেন্ট</label>
+            <label class="pay-option" id="e24-pay-option-cash"><input type="radio" name="pay" value="cash" checked onchange="e24RenderPaymentPage()"><i class="fa-solid fa-money-bill-1" style="color:#2e7d32;"></i> নগদ টাকা (Cash)</label>
+          </div>
+          <div id="e24-payment-account-details" class="sms-wallet-panel" style="margin-top:9px" aria-live="polite">
+            <strong id="e24-payment-account-title">পেমেন্ট তথ্য</strong>
+            <div id="e24-payment-account-content" class="sms-wallet-note" style="margin-top:6px">Settings থেকে পেমেন্ট তথ্য যোগ করুন।</div>
+          </div>
+          <button class="btn btn-pink shadow-btn" style="margin-top:8px;" onclick="showToast('এখনো বাস্তব পেমেন্ট গেটওয়ে যুক্ত হয়নি।')">
+            <i class="fa-solid fa-paper-plane"></i> পেমেন্ট করুন
+          </button>
+        </div>
+
+        <!-- 6. MESSAGE CENTER: TEST MODE SMS WALLET -->
+        <div class="app-page" id="page-6">
+          
+          <!-- E24_REFERRAL_UI_V1 -->
+          <section class="sms-wallet-panel" id="e24-referral-panel" aria-label="Referral Bonus" style="margin-bottom:12px">
+            <strong><i class="fa-solid fa-user-group"></i> বন্ধু রেফার করুন — ৳৫ SMS Wallet Bonus</strong>
+            <p class="sms-wallet-note" style="margin:7px 0">আপনার কোড দিয়ে নতুন অ্যাকাউন্ট খুলে প্রথম SMS Wallet রিচার্জ সফল করলে আপনি একবার ৳৫ বোনাস পাবেন।</p>
+            <div style="display:flex;align-items:center;gap:8px">
+              <strong id="e24-referral-code" style="font-size:17px;letter-spacing:1px;flex:1">লোড হচ্ছে...</strong>
+              <button type="button" id="e24-referral-copy" class="btn btn-blue" style="width:auto;padding:7px 12px">কপি</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;gap:8px;margin-top:10px">
+              <div><div class="sms-wallet-note">সফল রেফারেল</div><b id="e24-referral-count">০</b></div>
+              <div style="text-align:right"><div class="sms-wallet-note">মোট বোনাস</div><b id="e24-referral-bonus">৳ ০</b></div>
+            </div>
+            <div id="e24-referral-status" class="sms-wallet-note" style="margin-top:6px" aria-live="polite"></div>
+          </section>
+          <section class="sms-wallet-panel" aria-label="SMS Wallet">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+              <strong><i class="fa-solid fa-wallet"></i> SMS Wallet</strong>
+              <span class="sms-test-badge">TEST MODE</span>
+            </div>
+            <div class="sms-wallet-balance">
+              <div><div class="sms-wallet-note">আপনার ওয়ালেট ব্যালেন্স</div><strong id="sms-wallet-balance">৳ 0.00</strong></div>
+              <div style="text-align:right"><div class="sms-wallet-note">প্রতি SMS</div><b>৳ 1.00</b></div>
+            </div>
+            <div class="sms-wallet-note">এটি পরীক্ষামূলক ব্যবস্থা। কোনো বাস্তব SMS পাঠানো হবে না। সফল Demo Send হলে ৳১ কাটা হবে।</div>
+          </section>
+          <div class="form-group">
+            <label class="form-label" for="sms-customer-select">বকেয়া আছে এমন গ্রাহক:</label>
+            <select id="sms-customer-select" class="form-input">
+              <option value="">বকেয়া আছে এমন গ্রাহক নির্বাচন করুন</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="sms-test-phone">প্রাপকের নম্বর:</label>
+            <div style="display:flex;gap:6px;align-items:stretch">
+              <input id="sms-test-phone" type="tel" class="form-input" placeholder="01XXXXXXXXX" inputmode="tel" style="flex:1;min-width:0">
+              <button id="sms-phonebook" type="button" class="btn btn-blue" style="width:auto;white-space:nowrap;padding:7px 9px;font-size:10px"><i class="fa-solid fa-address-book"></i> Phone Book</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="sms-test-message">মেসেজ (Default অথবা Custom):</label>
+            <textarea id="sms-test-message" class="form-input" rows="4" placeholder="সম্মানিত [গ্রাহকের নাম], আপনার বকেয়া টাকা: [বকেয়ার পরিমাণ]। দয়া করে দ্রুত পরিশোধ করুন। – E24 Hisab" style="resize:vertical;min-height:78px"></textarea>
+            <button id="sms-use-default" type="button" class="btn btn-blue" style="margin-top:6px;padding:7px 10px;font-size:10px;width:auto"><i class="fa-solid fa-file-lines"></i> Default SMS ব্যবহার করুন</button>
+            
+          </div>
+          <button id="sms-test-send" type="button" class="btn btn-green shadow-btn"><i class="fa-solid fa-paper-plane"></i> Test SMS পাঠান — ৳১</button>
+          
+          <section class="sms-wallet-panel sms-history-panel" id="sms-history-panel">
+            <strong><i class="fa-solid fa-clock-rotate-left"></i> SMS History</strong>
+            <div id="sms-history-list" class="sms-history-list"><div class="sms-wallet-note">এখনো কোনো SMS পাঠানো হয়নি।</div></div>
+          </section>
+          
+          
+          
+          
+        </div>
+
+        <!-- 7. REPORT PAGE -->
+        <div class="app-page" id="page-7">
+          <div class="report-tabs">
+            <div class="rep-tab active" data-mode="daily" onclick="reportSetMode('daily')">দৈনিক</div>
+            <div class="rep-tab" data-mode="monthly" onclick="reportSetMode('monthly')">মাসিক</div>
+            <div class="rep-tab" data-mode="yearly" onclick="reportSetMode('yearly')">বার্ষিক</div>
+          </div>
+          <div class="month-picker">
+            <button type="button" class="report-arrow" onclick="reportShift(-1)" aria-label="আগের সময়"><i class="fa-solid fa-chevron-left"></i></button>
+            <span id="report-period-label"><i class="fa-regular fa-calendar"></i> রিপোর্ট</span>
+            <button type="button" class="report-arrow" onclick="reportShift(1)" aria-label="পরের সময়"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+          <div class="report-summary-grid">
+            <div class="summary-box box-blue"><span>মোট বিক্রি</span><strong id="report-total-sales">৳ 0</strong></div>
+            <div class="summary-box box-green"><span>মোট জমা</span><strong id="report-total-paid">৳ 0</strong></div>
+            <div class="summary-box box-red"><span>সময়ের বাকি</span><strong id="report-total-due">৳ 0</strong></div>
+            <div class="summary-box box-blue"><span>অগ্রিম</span><strong id="report-total-advance">৳ 0</strong></div>
+          </div>
+          <section class="supplier-report-panel">
+            <div class="supplier-report-heading"><span><i class="fa-solid fa-truck"></i> সাপ্লায়ার রিপোর্ট</span><small>নির্বাচিত সময়ের হিসাব</small></div>
+            <div class="supplier-report-grid">
+              <div class="supplier-report-metric"><span>মোট ক্রয়</span><strong id="report-supplier-purchase">৳ 0</strong></div>
+              <div class="supplier-report-metric"><span>মোট পরিশোধ</span><strong id="report-supplier-paid">৳ 0</strong></div>
+              <div class="supplier-report-metric supplier-report-outstanding"><span>বর্তমান বকেয়া</span><strong id="report-supplier-due">৳ 0</strong></div>
+            </div>
+          </section>
+          <div class="chart-container">
+            <div class="pie-chart" id="report-pie-chart" style="background:transparent"></div>
+            <div class="chart-legend">
+              <div class="legend-item"><span class="legend-color" style="background:var(--primary-green)"></span> <span id="report-paid-label">জমা (0%)</span></div>
+              <div class="legend-item"><span class="legend-color" style="background:var(--accent-red)"></span> <span id="report-due-label">বাকি (0%)</span></div>
+              <div class="report-total-count" id="report-tx-count">লেনদেন: ০টি</div>
+            </div>
+          </div>
+          <div class="section-banner border-banner"><i class="fa-solid fa-list"></i> নির্বাচিত সময়ের লেনদেন</div>
+          <ul class="e24-report-recent-list" id="report-transaction-list"><li class="e24-report-recent-empty">কোনো লেনদেন নেই</li></ul>
+          <button class="btn btn-blue shadow-btn" style="margin-top:8px" onclick="printReport()">
+            <i class="fa-solid fa-print"></i> রিপোর্ট প্রিন্ট / PDF সংরক্ষণ
+          </button>
+        </div>
+
+        <!-- 8. SETTINGS PAGE -->
+        <div class="app-page" id="page-8">
+          <div class="settings-app-info">
+            <div class="app-logo inline-logo"><i class="fa-solid fa-book-bookmark"></i><span>E24</span></div>
+            <div><div class="setting-title">E24 Hisab</div><div class="setting-sub">Version 1.0.0</div></div>
+          </div>
+          <div class="e24-settings-list">
+            <details class="e24-settings-card">
+              <summary><span class="e24-settings-icon"><i class="fa-solid fa-user"></i></span> অ্যাকাউন্ট সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
+              <div class="e24-settings-content">
+                <div class="e24-settings-hint">আপনার অ্যাকাউন্টের তথ্য</div>
+                <label>প্রোফাইল ছবি</label>
+                <div style="display:flex;align-items:center;gap:12px;margin:6px 0 12px">
+                  <div id="e24-profile-photo-preview" style="width:76px;height:76px;flex:0 0 76px;border-radius:50%;background:#e8f0fe;color:#1a73e8;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:28px"><i class="fa-solid fa-user"></i></div>
+                  <div style="flex:1;min-width:0">
+                    <input id="e24-profile-photo-file" type="file" accept="image/*" style="width:100%;font-size:12px">
+                    <div class="e24-settings-hint">ছবি নির্বাচন করুন (সর্বোচ্চ ৫ MB)। ছবিটি ছোট করে সংরক্ষণ হবে।</div>
+                  </div>
+                </div>
+                <label>নাম / প্রোফাইল</label><input id="e24-settings-name" type="text" placeholder="আপনার নাম">
+                <label>ব্যবসা প্রতিষ্ঠানের নাম</label><input id="e24-settings-organization" type="text" placeholder="ব্যবসা প্রতিষ্ঠানের নাম (ঐচ্ছিক)">
+                <!-- Developer note: ব্যবসা প্রতিষ্ঠানের নাম Header-এ দেখানো হয়; ফাঁকা থাকলে ডিফল্ট E24 Hisab। -->
+                <label>মোবাইল নম্বর</label><input id="e24-settings-mobile" type="tel" placeholder="মোবাইল নম্বর">
+                <div class="e24-settings-actions"><button id="e24-save-profile" type="button">প্রোফাইল সংরক্ষণ</button></div>
+              </div>
+            </details>
+            <details class="e24-settings-card">
+              <summary><span class="e24-settings-icon"><i class="fa-solid fa-sliders"></i></span> অ্যাপ সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
+              <div class="e24-settings-content">
+                <label for="e24-settings-language">ভাষা</label><select id="e24-settings-language"><option value="bn">বাংলা</option><option value="en" disabled>English (শীঘ্রই)</option></select>
+                <div class="e24-settings-row"><label for="e24-settings-dark">ডার্ক থিম</label><input id="e24-settings-dark" type="checkbox" style="width:20px;min-height:20px"></div>
+                <div class="e24-settings-row"><label for="e24-settings-notifications">নোটিফিকেশন পছন্দ</label><input id="e24-settings-notifications" type="checkbox" style="width:20px;min-height:20px"></div>
+                <!-- Developer note: নোটিফিকেশন পছন্দ সংরক্ষিত হয়; Push notification backend আলাদা। -->
+              </div>
+            </details>
+            <details class="e24-settings-card">
+              <summary><span class="e24-settings-icon"><i class="fa-solid fa-database"></i></span> ডাটা সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
+              <div class="e24-settings-content">
+                <div class="e24-settings-hint">আপনার বর্তমান হিসাব JSON ফাইলে Backup নিন। Restore করলে বর্তমান ডাটার জায়গায় Backup-এর ডাটা বসবে।</div>
+                <div class="e24-settings-actions"><button type="button" onclick="e24ExportBackup()">Backup Download</button><button class="secondary" type="button" onclick="document.getElementById('e24-restore-file').click()">Backup Restore</button></div>
+                <input id="e24-restore-file" type="file" accept="application/json,.json" hidden>
+              </div>
+            </details>
+            <details class="e24-settings-card">
+              <summary><span class="e24-settings-icon"><i class="fa-solid fa-credit-card"></i></span> পেমেন্ট সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
+              <div class="e24-settings-content">
+
+                <div class="e24-settings-hint">গ্রাহকের কাছ থেকে পেমেন্ট নেওয়ার অ্যাকাউন্ট তথ্য এখানে সেট করুন।</div>
+                <section class="sms-wallet-panel" style="margin-top:8px">
+                  <strong><i class="fa-solid fa-mobile-screen-button"></i> Personal Account</strong>
+                  <label for="e24-pay-bkash-number">বিকাশ Personal Number</label>
+                  <input id="e24-pay-bkash-number" class="form-input" type="tel" inputmode="tel" maxlength="20" placeholder="01XXXXXXXXX">
+                  <label for="e24-pay-nagad-number">নগদ Personal Number</label>
+                  <input id="e24-pay-nagad-number" class="form-input" type="tel" inputmode="tel" maxlength="20" placeholder="01XXXXXXXXX">
+                </section>
+                <section class="sms-wallet-panel">
+                  <strong><i class="fa-solid fa-building-columns"></i> Bank Account</strong>
+                  <label for="e24-pay-bank-name">ব্যাংকের নাম</label>
+                  <input id="e24-pay-bank-name" class="form-input" type="text" maxlength="80" placeholder="ব্যাংকের নাম">
+                  <label for="e24-pay-bank-holder">Account Holder Name</label>
+                  <input id="e24-pay-bank-holder" class="form-input" type="text" maxlength="100" placeholder="হিসাবধারীর নাম">
+                  <label for="e24-pay-bank-account">Account Number</label>
+                  <input id="e24-pay-bank-account" class="form-input" type="text" inputmode="numeric" maxlength="40" placeholder="ব্যাংক অ্যাকাউন্ট নম্বর">
+                  <label for="e24-pay-bank-branch">Branch</label>
+                  <input id="e24-pay-bank-branch" class="form-input" type="text" maxlength="80" placeholder="শাখার নাম">
+                  <label for="e24-pay-bank-routing">Routing Number (ঐচ্ছিক)</label>
+                  <input id="e24-pay-bank-routing" class="form-input" type="text" inputmode="numeric" maxlength="20" placeholder="Routing Number">
+                </section>
+                <section class="sms-wallet-panel">
+                  <strong><i class="fa-solid fa-store"></i> Merchant Account (ভবিষ্যৎ)</strong>
+                  <label for="e24-pay-bkash-mode">bKash Account Type</label>
+                  <select id="e24-pay-bkash-mode" class="form-input"><option value="personal">Personal</option><option value="merchant">Merchant</option></select>
+                  <label for="e24-pay-bkash-merchant">bKash Merchant Account / ID</label>
+                  <input id="e24-pay-bkash-merchant" class="form-input" type="text" maxlength="100" placeholder="Merchant Account / ID">
+                  <label for="e24-pay-nagad-mode">Nagad Account Type</label>
+                  <select id="e24-pay-nagad-mode" class="form-input"><option value="personal">Personal</option><option value="merchant">Merchant</option></select>
+                  <label for="e24-pay-nagad-merchant">Nagad Merchant Account / ID</label>
+                  <input id="e24-pay-nagad-merchant" class="form-input" type="text" maxlength="100" placeholder="Merchant Account / ID">
+                  <div class="e24-settings-hint">Merchant API Key বা Secret এখানে রাখবেন না। ভবিষ্যতে এগুলো নিরাপদ সার্ভারে সংরক্ষণ করা হবে।</div>
+                </section>
+                <div class="e24-settings-actions"><button id="e24-save-payment-settings" type="button">পেমেন্ট তথ্য সংরক্ষণ</button></div>
+                <button class="secondary" type="button" onclick="switchPage('5')">পেমেন্ট পেজ দেখুন</button>
+              </div>
+            </details>
+            <details class="e24-settings-card">
+              <summary><span class="e24-settings-icon"><i class="fa-solid fa-comments"></i></span> মেসেজ সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
+              <div class="e24-settings-content">
+                <!-- Developer note: SMS Recharge Request ও Wallet history এই settings section-এ; SMS send/history Message Center-এ। -->
+
+<section class="sms-wallet-panel">
+            <strong><i class="fa-solid fa-circle-plus"></i> SMS Wallet Recharge</strong>
+            <!-- Developer note: Manual recharge-এ payment পাঠানোর পর Transaction ID জমা হয়; Admin যাচাই করে অনুমোদন করেন। -->
+            <div class="form-group" style="margin-top:8px"><label class="form-label" for="sms-recharge-amount">রিচার্জের পরিমাণ (৳):</label><input id="sms-recharge-amount" type="number" class="form-input" min="10" step="10" inputmode="decimal" placeholder="যেমন 100"></div>
+            <!--
+            SSLCOMMERZ AUTOMATIC RECHARGE — DISABLED FOR NOW
+            Sandbox and Live integration code is intentionally kept in comments below
+            so it can be enabled after manual recharge workflow is finalized.
+            -->
+
+            <div class="form-group"><label class="form-label" for="sms-recharge-method">পেমেন্ট মাধ্যম:</label><select id="sms-recharge-method" class="form-input"><option value="bKash">বিকাশ</option><option value="Nagad">নগদ</option></select></div>
+            <div class="form-group"><label class="form-label">Send Money নম্বর:</label><div style="display:flex;gap:8px;align-items:center"><input id="sms-recharge-pay-number" class="form-input" value="01737-537688" readonly><button type="button" class="secondary" onclick="document.getElementById('sms-recharge-pay-number').select();document.execCommand('copy');showToast('নম্বর কপি হয়েছে')">কপি</button></div></div>
+            <div class="form-group"><label class="form-label" for="sms-recharge-trxid">Transaction ID:</label><input id="sms-recharge-trxid" type="text" class="form-input" maxlength="80" autocomplete="off" placeholder="পেমেন্টের TrxID লিখুন"></div>
+            <button id="sms-recharge-request" type="button" class="btn btn-blue">পেমেন্ট তথ্য জমা দিন</button>
+            <!-- Developer note: Admin payment verification ও approval-এর পর wallet balance credit হয়। -->
+          </section>
+
+<section class="sms-wallet-panel" id="sms-wallet-transactions-panel">
+            <strong><i class="fa-solid fa-wallet"></i> Wallet লেনদেনের ইতিহাস</strong>
+            <div id="sms-wallet-transactions" class="sms-history-list"><div class="sms-wallet-note">এখনো কোনো Admin অনুমোদিত Test Recharge নেই।</div></div>
+          </section>
+                <button class="secondary" type="button" onclick="switchPage('6')">মেসেজ সেন্টার খুলুন</button>
+              </div>
+            </details>
+            <details class="e24-settings-card" id="e24-admin-settings" hidden>
+              <summary><span class="e24-settings-icon"><i class="fa-solid fa-user-shield"></i></span> অ্যাডমিন সেটিংস <i class="fa-solid fa-chevron-down e24-settings-chevron"></i></summary>
+              <!-- Developer note: এই settings বিভাগটি অনুমোদিত Admin role-এর জন্য সীমাবদ্ধ। -->
+              <div class="e24-settings-content">
+                <section class="sms-wallet-panel" aria-label="Account access settings">
+                  <strong><i class="fa-solid fa-user-lock"></i> Account & Security</strong>
+                  <label>বর্তমান Email</label><div class="e24-account-email" id="e24-account-email">লগইন হয়নি</div>
+                  <div class="e24-settings-actions"><button class="secondary" type="button" onclick="e24ChangeEmail()">Email পরিবর্তন</button><button class="secondary" type="button" onclick="e24ResetPassword()">Password Reset</button></div>
+                  <div class="e24-admin-label" id="e24-account-role">—</div>
+                </section>
+                <section class="sms-wallet-panel" id="sms-admin-recharge-panel" hidden>
+                  <strong><i class="fa-solid fa-user-shield"></i> Admin: Recharge Requests</strong>
+                  <!-- Developer note: Recharge Admin শুধু Pending Request Approve করতে পারে; Full/Main Admin Approve বা Cancel করতে পারেন। -->
+                  <div id="sms-admin-recharge-list"></div>
+                </section>
+                <section class="sms-wallet-panel" id="e24-admin-role-manager" hidden>
+                  <strong><i class="fa-solid fa-user-gear"></i> Make Admin and Remove User</strong>
+                  <!-- Developer note: শুধু Administrator role assignment ও user removal করতে পারে। -->
+                  <label class="e24-admin-label" for="e24-admin-role-user">ব্যবহারকারী নির্বাচন</label>
+                  <select id="e24-admin-role-user" aria-label="Admin Role-এর জন্য ব্যবহারকারী নির্বাচন"><option value="">ব্যবহারকারী নির্বাচন করুন</option></select>
+                  <label class="e24-admin-label" for="e24-admin-role-choice">Admin Role</label>
+                  <select id="e24-admin-role-choice"><option value="none">User</option><option value="limited">Recharge Admin</option><option value="full">Admin</option></select>
+                  <!-- Developer note: Recharge Admin-এর অনুমতি শুধু Pending Recharge Request Approve করা। -->
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+                    <button type="button" class="btn btn-green" onclick="e24SaveAdminRole()">Save Admin Role</button>
+                    <button type="button" class="btn btn-logout" onclick="e24DeleteSelectedUser()">Remove User</button>
+                  </div>
+                  <div id="e24-admin-role-status" class="sms-wallet-note" style="margin-top:8px"></div>
+                  <div class="setting-title" style="margin-top:14px">বর্তমান Admin তালিকা</div>
+                  <div id="e24-admin-role-list"></div>
+                </section>
+                <div class="e24-admin-panel" id="e24-admin-panel" hidden>
+                  <div class="setting-title">Administrator — ব্যবহারকারী ব্যবস্থাপনা</div>
+                  <!-- Developer note: এখানে target account select করা হয়। -->
+                  <select id="e24-admin-user-select" aria-label="ব্যবহারকারীর হিসাব নির্বাচন"></select>
+                  <div id="e24-admin-user-summary" class="e24-admin-user-summary">ব্যবহারকারীর হিসাব লোড হচ্ছে...</div>
+                </div>
+              </div>
+            </details>
+          </div>
+          <div class="e24-settings-logout-wrap">
+            <button type="button" class="e24-settings-logout" onclick="window.e24Logout()"><i class="fa-solid fa-right-from-bracket"></i> লগ আউট</button>
+          </div>
+        </div>
+
+<div class="app-page" id="page-9"><div class="supplier-unified-page supplier-page-shell"><div class="supplier-unified-header supplier-page-top"><button type="button" class="supplier-unified-back supplier-page-back" aria-label="ফিরে যান" onclick="switchPage('1')"><i class="fa-solid fa-arrow-left"></i></button><div class="supplier-unified-title"><strong>সাপ্লায়ার ব্যবস্থাপনা</strong><small>সাপ্লায়ারদের আলাদা হিসাব ও লেনদেন</small></div><span class="supplier-unified-icon supplier-page-top-icon"><i class="fa-solid fa-truck"></i></span></div><div id="supplier-list-view"><div class="supplier-summary-card"><div class="supplier-summary-label">সাপ্লায়ারকে মোট পরিশোধযোগ্য</div><div class="supplier-summary-total" id="supplier-page-total-due">৳ 0</div><div class="supplier-summary-stats"><div><span>মোট ক্রয়</span><strong id="supplier-page-total-purchase">৳ 0</strong></div><div><span>মোট পরিশোধ</span><strong id="supplier-page-total-paid">৳ 0</strong></div></div></div><div class="supplier-list-heading"><strong>সাপ্লায়ার তালিকা</strong><span id="supplier-count-label">সব সাপ্লায়ার</span></div><div class="supplier-search-wrap"><i class="fa-solid fa-magnifying-glass"></i><input class="form-input" id="supplier-search" type="search" placeholder="নাম / মোবাইল দিয়ে খুঁজুন"></div><ul class="supplier-page-list" id="supplier-list"></ul><div class="supplier-list-actions"><button class="supplier-add-button" type="button" onclick="e24OpenSupplierForm()"><i class="fa-solid fa-plus"></i> নতুন সাপ্লায়ার যুক্ত</button><button class="supplier-purchase-button" type="button" onclick="e24OpenPurchasePage()"><i class="fa-solid fa-cart-shopping"></i> ক্রয় পেজ</button></div></div><div id="supplier-form-view" class="supplier-form-view supplier-unified-page" hidden>
+ <div class="supplier-unified-header supplier-form-header supplier-page-top"><button class="supplier-unified-back supplier-page-back" type="button" aria-label="ফিরে যান" onclick="e24CancelSupplierForm()"><i class="fa-solid fa-arrow-left"></i></button><div class="supplier-unified-title supplier-form-header-title"><strong>নতুন সাপ্লায়ার</strong><small>সাপ্লায়ারের তথ্য যুক্ত করুন</small></div><span class="supplier-unified-icon supplier-form-header-icon supplier-page-top-icon"><i class="fa-solid fa-truck"></i></span></div>
+ <div class="supplier-form-content">
+  <div class="supplier-form-entry-top">
+   <div class="supplier-form-avatar-wrap">
+    <div class="supplier-form-avatar" id="supplier-entry-avatar"><i class="fa-solid fa-user"></i></div>
+    <button type="button" class="supplier-form-camera" id="supplier-avatar-camera" aria-label="ছবি যোগ করুন"><i class="fa-solid fa-camera"></i></button>
+    <input type="file" id="supplier-entry-photo" accept="image/*" hidden>
+   </div>
+   <div class="supplier-form-entry-type" role="radiogroup" aria-label="ধরন">
+    <button type="button" class="supplier-form-entry-option active" data-supplier-entry-type="supplier" role="radio" aria-checked="true" onclick="e24SetSupplierEntryType('supplier')"><i class="fa-solid fa-circle-dot"></i><span>সাপ্লায়ার</span></button>
+    <button type="button" class="supplier-form-entry-option" data-supplier-entry-type="customer" role="radio" aria-checked="false" onclick="e24SetSupplierEntryType('customer')"><i class="fa-regular fa-circle"></i><span>কাস্টমার</span></button>
+   </div>
+  </div>
+  <button type="button" class="supplier-phonebook-button" id="supplier-phonebook"><i class="fa-regular fa-address-card"></i><span>ফোনবুক থেকে যোগ করি</span></button>
+  <input class="form-input supplier-entry-input" id="supplier-name" maxlength="80" placeholder="সাপ্লায়ারের নাম *" aria-label="সাপ্লায়ারের নাম" required>
+  <input class="form-input supplier-entry-input" id="supplier-phone" maxlength="20" placeholder="মোবাইল নম্বর" aria-label="মোবাইল নম্বর" inputmode="tel">
+  <textarea class="form-input supplier-entry-input supplier-entry-address" id="supplier-address" rows="3" maxlength="250" placeholder="ঠিকানা" aria-label="ঠিকানা"></textarea>
+ </div>
+ <div class="supplier-form-actions"><button type="button" onclick="e24SaveSupplier()">নিশ্চিত করুন</button></div>
+ </div><div id="supplier-detail-view" class="supplier-unified-page" hidden></div></div></div><div class="app-page" id="page-10"><div class="supplier-unified-page purchase-page-shell"><div class="supplier-unified-header purchase-page-top"><button type="button" class="supplier-unified-back purchase-page-back" aria-label="ফিরে যান" onclick="switchPage(9)"><i class="fa-solid fa-arrow-left"></i></button><div class="supplier-unified-title"><strong>নতুন ক্রয়</strong><small>সাপ্লায়ার থেকে পণ্য ক্রয়ের হিসাব</small></div><span class="supplier-unified-icon purchase-page-top-icon"><i class="fa-solid fa-cart-shopping"></i></span></div><label class="form-label" for="purchase-supplier-select">সাপ্লায়ার নির্বাচন *</label><select class="form-input" id="purchase-supplier-select" onchange="window.e24SelectPurchaseSupplier(this.value)"><option value="">সাপ্লায়ার নির্বাচন করুন</option></select><div class="purchase-supplier-label" id="purchase-supplier-label"><span>নির্বাচিত সাপ্লায়ার</span><strong>নির্বাচন করা হয়নি</strong></div><label class="form-label">পণ্যের নাম</label><input class="form-input" id="purchase-product-name" maxlength="100" placeholder="পণ্যের নাম"><div class="purchase-fields"><div><label class="form-label">পরিমাণ</label><input class="form-input" id="purchase-quantity" type="number" min="0" step="0.01" inputmode="decimal" placeholder="পরিমাণ"></div><div><label class="form-label">একক দাম (৳)</label><input class="form-input" id="purchase-unit-price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="একক দাম (ঐচ্ছিক)"></div></div><div class="purchase-total-box"><span>মোট ক্রয় মূল্য</span><strong id="purchase-total">৳ 0</strong></div><div class="purchase-fields purchase-payment-fields"><div><label class="form-label" for="purchase-entry-amount">ক্রয় করলাম (৳)</label><input class="form-input" id="purchase-entry-amount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="ক্রয়ের টাকা"></div><div><label class="form-label" for="purchase-paid-amount">জমা দিলাম (৳)</label><input class="form-input" id="purchase-paid-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="জমার টাকা"></div></div><div class="purchase-actions"><button class="btn btn-logout" type="button" onclick="switchPage(9)">বাতিল</button><button class="btn btn-green" type="button" onclick="e24SavePurchase()">ক্রয় সংরক্ষণ</button></div></div></div>
+      </div>
+      <button type="button" class="home-transaction-fab" id="home-transaction-fab" onclick="switchPage('4')"><i class="fa-solid fa-plus"></i><span>নতুন লেনদেন</span></button>
+
+      <!-- Compact Bottom Navigation: Home, Customers, Transactions, More -->
+      <nav class="bottom-nav" aria-label="প্রধান নেভিগেশন">
+        <div class="nav-item active" id="nav-1" role="button" tabindex="0" aria-label="হোম" onclick="switchPage('1')">
+          <i class="fa-solid fa-house"></i><span>হোম</span>
+        </div>
+        <div class="nav-item" id="nav-2" role="button" tabindex="0" aria-label="গ্রাহক" onclick="switchPage('2')">
+          <i class="fa-solid fa-users"></i><span>গ্রাহক</span>
+        </div>
+        <div class="nav-item" id="nav-4" role="button" tabindex="0" aria-label="লেনদেন" onclick="switchPage('4')">
+          <i class="fa-solid fa-arrow-right-arrow-left"></i><span>লেনদেন</span>
+        </div>
+        <div class="nav-item" id="nav-more" role="button" tabindex="0" aria-label="আরও মেনু" aria-haspopup="dialog" onclick="openSideMenu()">
+          <i class="fa-solid fa-grip"></i><span>আরও</span>
+        </div>
+      </nav>
+
+  <div class="app-page customer-entry-page" id="page-14">
+    <form class="customer-modal" id="customer-modal" autocomplete="off" data-lpignore="true" data-1p-ignore="true">
+      <div class="customer-page-header"><button type="button" id="customer-cancel" aria-label="ফিরে যান" onclick="event.preventDefault();if(typeof window.e24CloseCustomerModal==='function'){window.e24CloseCustomerModal();}return false;"><i class="fa-solid fa-arrow-left"></i></button><h2 id="customer-modal-title">নতুন গ্রাহক</h2></div>
+      <div class="customer-page-content">
+        <div class="customer-entry-top">
+          <div class="customer-page-avatar-wrap">
+          <div class="customer-page-avatar" id="customer-entry-avatar"><i class="fa-solid fa-user"></i></div>
+          <button type="button" class="customer-avatar-camera" id="customer-avatar-camera" aria-label="ছবি যোগ করুন"><i class="fa-solid fa-camera"></i></button>
+          <input type="file" id="customer-entry-photo" accept="image/*" hidden>
+          </div>
+          <div class="customer-entry-type" id="customer-entry-type">
+            <button type="button" class="customer-entry-option active" data-entry-type="customer"><i class="fa-regular fa-circle-dot"></i><span>কাস্টমার</span></button>
+            <button type="button" class="customer-entry-option" data-entry-type="supplier"><i class="fa-regular fa-circle"></i><span>সাপ্লায়ার</span></button>
+          </div>
+        </div>
+        <button type="button" class="customer-phonebook-button" id="customer-phonebook"><i class="fa-regular fa-address-card"></i><span>ফোনবুক থেকে যোগ করি</span></button>
+        <input id="new-customer-name" name="e24-entry-name" type="text" placeholder="নাম" required maxlength="80" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" data-form-type="other" aria-autocomplete="none">
+        <input id="new-customer-phone" name="e24-entry-phone" type="tel" inputmode="numeric" placeholder="মোবাইল নম্বর" maxlength="20" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" data-form-type="other" aria-autocomplete="none">
+        <textarea id="new-customer-address" name="e24-entry-address" rows="2" maxlength="250" placeholder="ঠিকানা (ঐচ্ছিক)" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" data-form-type="other" aria-autocomplete="none"></textarea>
+      </div>
+      <div class="customer-modal-actions"><button type="submit" id="customer-submit-label">নিশ্চিত করুন</button></div>
+    </form>
+  </div>
+  <div class="supplier-payment-backdrop" id="supplier-payment-modal" onclick="if(event.target===this)e24CloseSupplierPayment()"><div class="supplier-payment-card" role="dialog" aria-modal="true" aria-labelledby="supplier-payment-title"><div class="supplier-payment-icon"><i class="fa-solid fa-wallet"></i></div><h3 id="supplier-payment-title">সাপ্লায়ারকে টাকা পরিশোধ</h3><p>পরিশোধের টাকার পরিমাণ লিখুন</p><label for="supplier-payment-amount">পরিশোধের পরিমাণ (৳)</label><input id="supplier-payment-amount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="টাকার পরিমাণ"><div class="supplier-payment-actions"><button type="button" class="supplier-payment-cancel" onclick="e24CloseSupplierPayment()">বাতিল</button><button type="button" class="supplier-payment-save" onclick="e24SaveSupplierPayment()">পরিশোধ সংরক্ষণ</button></div></div></div>
+  <div class="app-confirm-backdrop" id="app-confirm-backdrop" aria-hidden="true">
+    <div class="app-confirm-box" role="alertdialog" aria-modal="true" aria-labelledby="app-confirm-title">
+      <div class="app-confirm-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <h3 id="app-confirm-title">নিশ্চিত করুন</h3>
+      <div class="app-confirm-message" id="app-confirm-message"></div>
+      <div class="app-confirm-actions"><button type="button" class="app-confirm-cancel" id="app-confirm-cancel">বাতিল</button><button type="button" class="app-confirm-ok" id="app-confirm-ok">স্থায়ীভাবে মুছুন</button></div>
+    </div>
+  </div>
+    </div>
+    <div class="label-badge">E24 Hisab</div>
+  </div>
+
+  <!-- JavaScript Logic -->
+
+  <script>
+    // Android startup diagnostics: expose the reason if Firebase/WebView boot never completes.
+    (function(){
+      var firstBootError='';
+      function report(message){
+        var status=document.querySelector('.e24-launch-status');
+        if(status)status.textContent=message;
+        var error=document.getElementById('e24-auth-error');
+        if(error)error.textContent=message;
+      }
+      window.__e24ReportBootError=report;
+      window.addEventListener('error',function(event){
+        if(event.target&&event.target.tagName==='SCRIPT'){
+          firstBootError='স্ক্রিপ্ট লোড হয়নি: '+(event.target.src||'অজানা');
+        }else{
+          firstBootError='JavaScript Error: '+String(event.message||'অজানা')+
+            (event.lineno?' (Line '+event.lineno+')':'');
+        }
+        setTimeout(function(){report(firstBootError);},0);
+      },true);
+      window.addEventListener('unhandledrejection',function(event){
+        firstBootError='Startup Promise Error: '+String(event.reason&&event.reason.message||event.reason||'অজানা');
+        report(firstBootError);
+      });
+      setTimeout(function(){
+        if(window.__e24AuthStateReceived)return;
+        report(firstBootError||(!window.firebase
+          ?'Firebase SDK লোড হয়নি। ইন্টারনেট ও Android System WebView পরীক্ষা করুন।'
+          :(!window.__e24AuthUiStarted
+            ?'অ্যাপের JavaScript startup সম্পন্ন হয়নি।'
+            :'Firebase Auth থেকে response পাওয়া যায়নি।')));
+      },12000);
+    })();
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="js/transaction.js"></script>
+  <script src="js/payment.js"></script>
+  <script src="js/notification.js"></script>
+  <script src="js/setting.js"></script>
+  <script src="js/app.js"></script>
+
+<div class="e24-auth-screen" id="e24-auth-screen"><div class="e24-auth-card launching"><div class="e24-launch-splash" id="e24-launch-splash"><svg class="e24-launch-logo" viewBox="0 0 240 240" role="img" aria-label="E24 Hisab লোগো"><circle cx="120" cy="120" r="111" fill="#fff" stroke="#16834b" stroke-width="8"/><circle cx="120" cy="120" r="99" fill="#f4fbf6" stroke="#d9ecdf" stroke-width="2"/><path d="M52 57h77a10 10 0 0 1 10 10v89H52z" fill="#fff" stroke="#16834b" stroke-width="5"/><path d="M65 78h49M65 94h39M65 110h47M65 126h31" stroke="#16834b" stroke-width="5" stroke-linecap="round"/><path d="m65 143 9 8 17-20" fill="none" stroke="#d93025" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="151" y="65" width="48" height="77" rx="8" fill="#173b69"/><rect x="158" y="73" width="34" height="16" rx="3" fill="#eaf4ff"/><g fill="#fff"><circle cx="165" cy="101" r="4"/><circle cx="184" cy="101" r="4"/><circle cx="165" cy="117" r="4"/><circle cx="184" cy="117" r="4"/></g><path d="M150 164h47M156 153l12-10 10 5 17-23" fill="none" stroke="#16834b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><g fill="#e5ad36" stroke="#b77c13" stroke-width="2"><ellipse cx="69" cy="176" rx="20" ry="8"/><ellipse cx="69" cy="166" rx="20" ry="8"/><ellipse cx="69" cy="156" rx="20" ry="8"/></g><text x="120" y="202" text-anchor="middle" font-family="Arial,sans-serif" font-size="30" font-weight="900" fill="#16834b">E24</text><text x="120" y="224" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" font-weight="800" fill="#173b69">HISAB</text></svg><div class="e24-launch-name">E24 Hisab</div><div class="e24-launch-tagline">সহজ হিসাব, সঠিক তথ্য</div><div class="e24-launch-status">অ্যাপ চালু হচ্ছে<span></span><span></span><span></span></div></div><div class="e24-auth-sub" id="e24-auth-subtitle" hidden>আপনার লগইন যাচাই করা হচ্ছে...</div><form id="e24-login-form" hidden><input id="e24-login-email" type="email" placeholder="Email address" autocomplete="username" required><div class="e24-password-wrap"><input id="e24-login-password" type="password" placeholder="Password" autocomplete="current-password" minlength="6" required><button class="e24-password-toggle" type="button" data-e24-toggle="e24-login-password">দেখুন</button></div><label for="e24-remember-me" style="display:flex;align-items:center;gap:8px;margin:2px 0 12px;font-size:13px;color:#374151;cursor:pointer"><input id="e24-remember-me" type="checkbox" checked style="width:16px;height:16px;accent-color:#008744"> আমাকে মনে রাখুন (Remember Me)</label><button class="e24-auth-primary" type="submit">লগইন</button></form><button class="e24-auth-switch" id="e24-forgot-password-link" type="button" hidden>পাসওয়ার্ড ভুলে গেছেন?</button><form id="e24-register-form" hidden><input id="e24-register-email" type="email" placeholder="Email address" autocomplete="email" required><input id="e24-register-mobile" type="tel" placeholder="Mobile Number" autocomplete="tel" required><input id="e24-register-referral" type="text" placeholder="Referral Code (ঐচ্ছিক)" autocomplete="off" autocapitalize="characters" maxlength="15"><div class="e24-password-wrap"><input id="e24-register-password" type="password" placeholder="কমপক্ষে ৬ অক্ষরের Password" autocomplete="new-password" minlength="6" required><button class="e24-password-toggle" type="button" data-e24-toggle="e24-register-password">দেখুন</button></div><div class="e24-password-wrap"><input id="e24-register-confirm-password" type="password" placeholder="Confirm Password" autocomplete="new-password" minlength="6" required><button class="e24-password-toggle" type="button" data-e24-toggle="e24-register-confirm-password">দেখুন</button></div><button class="e24-auth-primary" type="submit">নতুন অ্যাকাউন্ট তৈরি করুন</button></form><div class="e24-verify-panel" id="e24-verify-panel" hidden><p>আপনার Email-এ ৬ সংখ্যার OTP পাঠানো হবে। OTP দিয়ে Verify না করা পর্যন্ত অ্যাপ ব্যবহার করা যাবে না।</p><strong id="e24-verify-email"></strong><input id="e24-otp-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="৬ সংখ্যার OTP লিখুন"><button class="e24-auth-primary" id="e24-check-verification" type="button">OTP Verify করুন</button><button class="e24-auth-secondary" id="e24-resend-verification" type="button">আবার OTP পাঠান</button><button class="e24-auth-secondary" id="e24-verify-logout" type="button">লগআউট</button></div><div class="e24-verify-panel" id="e24-forgot-panel" hidden><div id="e24-forgot-send-step"><p>আপনার নিবন্ধিত Email address দিন।</p><input id="e24-forgot-email" name="password-reset-email" type="email" inputmode="email" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Enter your Gmail address" value=""><button class="e24-auth-primary" id="e24-forgot-send" type="button">OTP পাঠান</button></div><div id="e24-forgot-otp-step" hidden><p>Email-এ পাঠানো ৬ সংখ্যার OTP লিখুন।</p><input id="e24-forgot-otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="৬ সংখ্যার OTP"><button class="e24-auth-primary" id="e24-forgot-verify" type="button">OTP Verify করুন</button></div><div id="e24-forgot-password-step" hidden><p>নতুন Password দিন।</p><input id="e24-forgot-new-password" type="password" autocomplete="new-password" minlength="6" placeholder="নতুন Password"><input id="e24-forgot-confirm-password" type="password" autocomplete="new-password" minlength="6" placeholder="Confirm Password"><button class="e24-auth-primary" id="e24-forgot-reset" type="button">নতুন Password সংরক্ষণ করুন</button></div><button class="e24-auth-secondary" id="e24-forgot-back" type="button">Login-এ ফিরে যান</button></div><div class="e24-auth-error" id="e24-auth-error" role="alert"></div><button class="e24-auth-switch" id="e24-auth-switch" type="button" hidden>নতুন অ্যাকাউন্ট তৈরি করবেন?</button></div></div>
+</body>
+</html>

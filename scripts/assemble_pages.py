@@ -10,7 +10,22 @@ def main():
     args = parser.parse_args()
     source = Path(args.source_dir)
     template = (source / "index.html").read_text(encoding="utf-8")
-    pages = {"1": "home.html"}
+    pages = {
+        "1": "home.html",
+        "2": "customers.html",
+        "3": "ledger.html",
+        "4": "transaction.html",
+        "5": "payment.html",
+        "6": "messages.html",
+        "7": "reports.html",
+        "8": "settings.html",
+        "9": "suppliers.html",
+        "10": "purchases.html",
+        "11": "legacy-customers.html",
+        "12": "customer-report.html",
+        "13": "page-13.html",
+        "14": "customer-entry.html",
+    }
     for page_id, filename in pages.items():
         marker = f"<!-- E24_PAGE:{page_id} -->"
         if template.count(marker) != 1:

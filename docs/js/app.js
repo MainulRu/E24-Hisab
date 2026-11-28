@@ -3616,6 +3616,8 @@ function printLedger() {
     }
     e24ProcessLoadedNotifications(uid);
     refreshAll();
+    if (typeof window.e24RenderPaymentPage === "function")
+      window.e24RenderPaymentPage();
     renderSmsWallet();
     if (isAdmin && typeof e24AdminUpdateSummary === "function")
       e24AdminUpdateSummary();

@@ -110,7 +110,12 @@ function e24RenderPaymentPage(){
 }
 window.e24RenderPaymentPage=e24RenderPaymentPage;
 async function e24SavePaymentSettings(){
-  if(!currentUser||!activeDataUid){showToast('আগে লগইন করুন');return;}
+  const paymentContext=window.E24PaymentContext;
+  const currentUser=paymentContext&&paymentContext.currentUser;
+  const activeDataUid=paymentContext&&paymentContext.activeDataUid;
+  const e24Store=paymentContext&&paymentContext.store;
+  const showToast=paymentContext&&paymentContext.showToast;
+  if(!currentUser||!activeDataUid||!e24Store){if(showToast)showToast('আগে লগইন করুন');return;}
   const button=document.getElementById('e24-save-payment-settings');
   const fields={
     bkashPersonalNumber:'e24-pay-bkash-number',

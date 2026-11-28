@@ -12,3 +12,36 @@ android {
         versionName '1.0'
     }
 }
+
+ 
+// Build the runtime index.html from real HTML page fragments. The source template
+// stays separate so Web and Android can share the same page markup.
+def generatedE24Assets = layout.buildDirectory.dir("generated/e24Assets")
+
+tasks.register("assembleE24Pages") {
+    inputs.file("src/main/assets/index.template.html")
+    inputs.file("src/main/assets/pages/home.html")
+    outputs.file(generatedE24Assets.map { it.file("index.html") })
+
+    doLast {
+        def templateFile = file("src/main/assets/index.template.html")
+        def pageFile = file("src/main/assets/pages/home.html")
+        def html = templateFile.getText("UTF-8")
+        def marker = "<!-- E24_PAGE:1 -->"
+        if (html.count(marker) != 1) {
+            throw new GradleException("Expected exactly one Home page marker in index.template.html")
+        }
+        def pageHtml = pageFile.getText("UTF-8")
+        if (!pageHtml.contains('id="page-1"')) {
+            throw new GradleException("Home page fragment does not contain page-1")
+        }
+        def outputFile = generatedE24Assets.get().file("index.html").asFile
+        outputFile.parentFile.mkdirs()
+        outputFile.setText(html.replace(marker, pageHtml), "UTF-8")
+    }
+}
+
+android.sourceSets.main.assets.srcDir(generatedE24Assets)
+tasks.named("preBuild").configure {
+    dependsOn("assembleE24Pages")
+}

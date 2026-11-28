@@ -174,12 +174,13 @@ async function e24SavePaymentSettings() {
   const e24Store = paymentContext && paymentContext.store;
   const showToast = paymentContext && paymentContext.showToast;
   if (!currentUser || !activeDataUid || !e24Store) {
-    if (typeof showToast === "function")
-      showToast("লগইন তথ্য পাওয়া যায়নি। আবার লগইন করুন।", "error");
-    else {
+    const message = "লগইন তথ্য পাওয়া যায়নি। আবার লগইন করুন।";
+    if (typeof showToast === "function") {
+      showToast(message, "error");
+    } else {
       const toast = document.getElementById("toast");
       if (toast) {
-        toast.textContent = "লগইন তথ্য পাওয়া যায়নি। আবার লগইন করুন।";
+        toast.textContent = message;
         toast.classList.add("show", "toast-error");
       }
     }
@@ -234,18 +235,15 @@ async function e24SavePaymentSettings() {
     showToast("পেমেন্ট তথ্য সংরক্ষিত হয়েছে");
   } catch (error) {
     console.error("E24 payment settings save failed:", error);
-    if (typeof showToast === "function")
-      showToast(
-        "সংরক্ষণ হয়নি: " +
-          (error && error.message ? error.message : "অজানা সমস্যা"),
-        "error",
-      );
-    else {
+    const message =
+      "সংরক্ষণ হয়নি: " +
+      (error && error.message ? error.message : "অজানা সমস্যা");
+    if (typeof showToast === "function") {
+      showToast(message, "error");
+    } else {
       const toast = document.getElementById("toast");
       if (toast) {
-        toast.textContent =
-          "সংরক্ষণ হয়নি: " +
-          (error && error.message ? error.message : "অজানা সমস্যা");
+        toast.textContent = message;
         toast.classList.add("show", "toast-error");
       }
     }
@@ -254,5 +252,19 @@ async function e24SavePaymentSettings() {
   }
 }
 
-// Public entry point for the Web payment settings button.
+// Public entry point retained for compatibility with existing Web integrations.
 window.e24SavePaymentSettings = e24SavePaymentSettings;
+
+// Bind the payment settings save action independently of the general settings initializer.
+function e24BindPaymentSettingsSave() {
+  const button = document.getElementById("e24-save-payment-settings");
+  if (button && !button.dataset.e24SaveBound) {
+    button.dataset.e24SaveBound = "1";
+    button.addEventListener("click", e24SavePaymentSettings);
+  }
+}
+if (document.readyState === "loading")
+  document.addEventListener("DOMContentLoaded", e24BindPaymentSettingsSave, {
+    once: true,
+  });
+else e24BindPaymentSettingsSave();
